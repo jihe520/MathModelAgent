@@ -57,6 +57,11 @@
 
 ## 📖 使用教程
 
+0. 详细教程
+- [ ] Windows   waiting
+- [x] Linux/WSL [below](#wsl部署教程linux)
+- [ ] MacOS     waiting
+
 > 确保电脑中安装好 Python, Nodejs, **Redis** 环境
 
 > 如果你想运行 命令行版本 cli 切换到 [master](https://github.com/jihe520/MathModelAgent/tree/master) 分支,部署更简单，但未来不会更新
@@ -73,6 +78,7 @@
 # support all model, check out https://docs.litellm.ai/docs/ 
 API_KEY=
 # gpt-4.1,deepseek/deepseek-chat
+#注意这里deepseek/deepseek-chat才是一整个模型，如果只输入一般api无法成功调用
 MODEL=
 # 确保安装 Redis
 ```
@@ -154,3 +160,120 @@ Thanks to the following projects:
 [QQ 群：699970403](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=rFKquDTSxKcWpEhRgpJD-dPhTtqLwJ9r&authKey=xYKvCFG5My4uYZTbIIoV5MIPQedW7hYzf0%2Fbs4EUZ100UegQWcQ8xEEgTczHsyU6&noverify=0&group_code=699970403)
 
 <img src="./docs/qq.jpg" height="400px">
+
+
+## WSL部署教程/Linux
+
+使用WSL安装旨在规避win系统环境配置的问题
+
+默认WSL已安装完成，不会的可以参考网络教程，提供两处仅供参考
+- [图文教程](https://blog.csdn.net/x777777x/article/details/141092913)
+- [视频教程](https://www.bilibili.com/video/BV1tW42197za/?spm_id_from=333.337.search-card.all.click&vd_source=3a1d2230b9c1cfca59cf301925902d13)
+
+后续以Ubuntu为例
+### 项目文件的两种处理
+- Ubuntu下
+```bash
+git clone https://github.com/jihe520/MathModelAgent.git # 克隆项目
+```
+网速过慢也可以使用ssh下载，请自行网络查阅相关教程
+- Windows向Ubuntu转移
+在github上下载源代码（.zip）解压到Windows下 例如：D:\
+
+进入Ubuntu面板
+```bash
+mv /mnt/d/MathModelAgent ~/
+```
+
+### 环境配置
+- 下载环境
+一般python在Linux下自带，可以忽略
+```bash
+#更新包管理器
+sudo apt update
+#安装或更新python pip
+sudo apt install -y python3 python3-pip
+#安装node npm
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+#安装 redis
+sudo apt install redis
+```
+- 检查
+```bash
+python3 --version
+pip3 --version
+node -v
+npm -v
+sudo systemctl status redis-server
+redis-cli ping
+```
+输出版本号则说明正常，对应输出检查可以询问AI
+
+### 安装依赖项和启动
+
+后端
+```bash
+cd backend # 切换到 backend 目录下
+
+#Linux在最近版本不建议安装包管理，因此需要先创建虚拟环境
+python3 -m venv .venv
+#启用虚拟环境
+source .venv/bin/activate
+
+pip install uv # 推荐使用 uv 管理 python 项目
+uv sync # 安装依赖
+
+#上面不行的看这里,但是国内网络环境推荐使用清华镜像，否则科学上网是必要的
+pip install uv -i https://pypi.tuna.tsinghua.edu.cn/simple
+uv sync -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 启动后端
+ENV=DEV uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
+```
+下载成功后的结果一般为
+```bash
+$ pip install uv -i https://pypi.tuna.tsinghua.edu.cn/simple #你输入的命令行
+#返回结果
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+Requirement already satisfied: uv in ./.venv/lib/python3.12/site-packages (0.7.5)
+
+$ uv sync -i https://pypi.tuna.tsinghua.edu.cn/simple
+#初次下载会有一大串，还有进度条
+Resolved 154 packages in 8ms
+Audited 148 packages in 0.04ms
+```
+启动结果
+```bash
+$  ENV=DEV uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload #你输入的命令行
+#返回结果
+INFO:     Will watch for changes in these directories: ['/home/shuihong/MathModelAgent/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [13652] using WatchFiles
+INFO:     Started server process [13654]
+INFO:     Waiting for application startup.
+2025-05-19 11:07:56.028 | INFO     | app.main:lifespan:13 - Starting MathModelAgent
+INFO:     Application startup complete.
+2025-05-19 11:07:56.029 | INFO     | app.main:lifespan:18 - CORS_ALLOW_ORIGINS:
+```
+前端
+```bash
+cd frontend # 切换到 frontend 目录下
+npm install -g pnpm
+pnpm i #确保电脑安装了 pnpm 
+pnpm run dev
+```
+启动结果
+```bash
+$ pnpm run dev  #你输入的命令行
+#返回结果
+> frontend@0.0.0 dev /home/shuihong/MathModelAgent/frontend
+> vite
+  VITE v6.1.1  ready in 735 ms
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+```
+
+### 关闭
+Ctrl+C 退出
