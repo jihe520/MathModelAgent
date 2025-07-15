@@ -1,0 +1,12 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir jupyter_client pandas numpy matplotlib scikit-learn statsmodels
+
+# Expose the port jupyter kernel will run on, although it's not strictly necessary
+# as we will be using the connection file.
+EXPOSE 8888
+
+# Command to run when the container starts.
+CMD ["bash"]

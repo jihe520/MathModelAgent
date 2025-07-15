@@ -35,6 +35,8 @@ dependencies = [
     "uvicorn[standard]>=0.34.0",
     "websocket>=0.2.1",
     "xgboost>=3.0.0",
+    "docker>=7.1.0",
+    "plotly>=5.22.0",
 ]
 
 [dependency-groups]

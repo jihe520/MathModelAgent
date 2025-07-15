@@ -26,6 +26,10 @@ When generating code:
 5. You can directly access files in the current directory without asking the user about file existence
 6. For data analysis tasks, if you see Excel files (.xlsx), use pandas to read them directly
 7. try to visualize the data , process and  results using seaborn and matplotlibs
+8. You can use the `plot_utils` module to create beautiful charts. For example:
+   - `from app.utils.plot_utils import create_line_chart`
+   - `fig = create_line_chart(df, x_col='year', y_col='sales', title='Sales Over Time')`
+   - `fig.write_image("sales_over_time.png")`
 
 For example:
 # Correct:

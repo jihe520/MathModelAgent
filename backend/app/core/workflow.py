@@ -1,4 +1,4 @@
-from app.core.agents import WriterAgent, CoderAgent
+from app.core.agents import ModelerAgent, WriterAgent, CoderAgent
 from app.core.llm import LLM, simple_chat
 from app.models.model import CoderToWriter
 from app.schemas.request import Problem
@@ -93,20 +93,58 @@ class MathModelWorkFlow(WorkFlow):
             format_output=problem.format_output,
         )
 
+        modeler_agent = ModelerAgent(
+            task_id=problem.task_id,
+            model=llm_model,
+        )
+
         ################################################ solution steps
         solution_steps = self.get_solution_steps()
 
         config_template = get_config_template(problem.comp_template)
 
-        for key, value in solution_steps.items():
-            await redis_manager.publish_message(
-                self.task_id,
-                SystemMessage(content=f"代码手开始求解{key}"),
-            )
+        data_features_description = ""
+        recommended_model = "linear_regression"  # Default model
 
-            coder_response = await coder_agent.run(
-                prompt=value["coder_prompt"], subtask_title=key
-            )
+        for key, value in solution_steps.items():
+            if key == "eda":
+                await redis_manager.publish_message(
+                    self.task_id,
+                    SystemMessage(content=f"代码手开始求解{key}"),
+                )
+                coder_response = await coder_agent.run(
+                    prompt=value["coder_prompt"], subtask_title=key
+                )
+                data_features_description = coder_response  # Assume coder_response contains data features
+
+            elif key.startswith("ques"):
+                recommended_model = await modeler_agent.recommend_model(
+                    user_prompt=self.questions[key],
+                    data_features=data_features_description,
+                )
+                await redis_manager.publish_message(
+                    self.task_id,
+                    SystemMessage(content=f"推荐模型: {recommended_model}"),
+                )
+
+                value["coder_prompt"] = f"{value['coder_prompt']}\n请使用 {recommended_model} 模型."
+
+                await redis_manager.publish_message(
+                    self.task_id,
+                    SystemMessage(content=f"代码手开始求解{key}"),
+                )
+                coder_response = await coder_agent.run(
+                    prompt=value["coder_prompt"], subtask_title=key
+                )
+            else:
+                await redis_manager.publish_message(
+                    self.task_id,
+                    SystemMessage(content=f"代码手开始求解{key}"),
+                )
+
+                coder_response = await coder_agent.run(
+                    prompt=value["coder_prompt"], subtask_title=key
+                )
 
             await redis_manager.publish_message(
                 self.task_id,

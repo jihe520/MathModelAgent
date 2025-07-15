@@ -47,12 +47,16 @@ class OpenAlexScholar:
         # 拼接单词形成文本
         return " ".join(words).strip()
 
-    def search_papers(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+    def search_papers(
+        self, query: str, limit: int = 10, author: str = None, year: int = None
+    ) -> List[Dict[str, Any]]:
         """Search for papers using OpenAlex API.
 
         Args:
             query: Search query string
             limit: Maximum number of results to return
+            author: Filter by author name
+            year: Filter by publication year
 
         Returns:
             List of papers with their details
@@ -66,6 +70,16 @@ class OpenAlexScholar:
             "per_page": limit,
             "select": "id,title,display_name,authorships,cited_by_count,doi,publication_year,biblio,abstract_inverted_index",
         }
+
+        # Add filters for author and year
+        filters = []
+        if author:
+            filters.append(f"authorships.author.display_name:{author}")
+        if year:
+            filters.append(f"publication_year:{year}")
+
+        if filters:
+            params["filter"] = ",".join(filters)
 
         # 添加邮箱参数到请求URL
         if self.email:
@@ -146,34 +160,50 @@ class OpenAlexScholar:
 
         return papers
 
-    def _format_citation(self, work: Dict[str, Any]) -> str:
-        """Format citation in a readable format."""
-        # 获取所有作者
+    def _format_citation(self, work: Dict[str, Any], style: str = "apa") -> str:
+        """Format citation in a specified style."""
+        if style.lower() == "apa":
+            return self._format_apa(work)
+        else:
+            # Default to a simple format
+            return self._format_simple(work)
+
+    def _format_simple(self, work: Dict[str, Any]) -> str:
+        """Formats citation in a simple, readable format."""
+        authors = [
+            authorship.get("author", {}).get("display_name")
+            for authorship in work.get("authorships", [])
+            if authorship.get("author")
+        ]
+        authors_str = ", ".join(authors) if authors else "N.A."
+        title = work.get("display_name") or work.get("title", "No Title")
+        year = work.get("publication_year", "N.D.")
+        return f"{authors_str} ({year}). {title}."
+
+    def _format_apa(self, work: Dict[str, Any]) -> str:
+        """Formats citation in APA style."""
         authors = [
             authorship.get("author", {}).get("display_name")
             for authorship in work.get("authorships", [])
             if authorship.get("author")
         ]
 
-        # 格式化作者列表
-        if len(authors) > 3:
-            authors_str = f"{authors[0]} et al."
-        else:
-            authors_str = ", ".join(authors)
+        authors_str = ""
+        if len(authors) == 1:
+            authors_str = authors[0]
+        elif len(authors) > 1:
+            authors_str = ", ".join(authors[:-1]) + f" & {authors[-1]}"
 
-        # 获取标题
-        title = work.get("display_name") or work.get("title", "")
+        year = work.get("publication_year", "n.d.")
+        title = work.get("display_name") or work.get("title", "No Title")
 
-        # 获取年份
-        year = work.get("publication_year", "")
+        # This is a simplified APA format. A full implementation would need more details
+        # like journal name, volume, issue, pages, etc.
+        citation = f"{authors_str} ({year}). *{title}*."
 
-        # 获取DOI
-        doi = work.get("doi", "")
-
-        # 构建引用格式
-        citation = f"{authors_str} ({year}). {title}."
+        doi = work.get("doi")
         if doi:
-            citation += f" DOI: {doi}"
+            citation += f" https://doi.org/{doi}"
 
         return citation
 

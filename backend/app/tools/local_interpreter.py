@@ -3,6 +3,8 @@ from app.utils.notebook_serializer import NotebookSerializer
 import jupyter_client
 from app.utils.log_util import logger
 import os
+import docker
+import time
 from app.utils.redis_manager import redis_manager
 from app.schemas.response import (
     CoderMessage,
@@ -23,21 +25,62 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
         notebook_serializer: NotebookSerializer,
     ):
         super().__init__(task_id, work_dir, notebook_serializer)
-        self.km, self.kc = None, None
+        self.kc = None
+        self.container = None
+        self.docker_client = docker.from_env()
         self.interrupt_signal = False
+        self._build_docker_image()
 
     async def initialize(self):
-        # 本地内核一般不需异步上传文件，直接切换目录即可
-        # 初始化 Jupyter 内核管理器和客户端
-        logger.info("初始化本地内核")
-        self.km, self.kc = jupyter_client.manager.start_new_kernel(
-            kernel_name="python3"
-        )
-        self._pre_execute_code()
+        logger.info("Initializing Docker container for Jupyter kernel...")
+        try:
+            self.container = self.docker_client.containers.run(
+                "jupyter_kernel_image",  # Use the image name built from Dockerfile.jupyter
+                detach=True,
+                ports={'8888/tcp': 8888},
+                volumes={os.path.abspath(self.work_dir): {'bind': '/app/work_dir', 'mode': 'rw'}},
+                working_dir="/app/work_dir",
+                command="jupyter kernel --ip=0.0.0.0 --KernelManager.connection_file=/app/work_dir/connection.json",
+            )
+            # Wait for the connection file to be created
+            time.sleep(5)
+            connection_file_path = os.path.join(self.work_dir, "connection.json")
+
+            if not os.path.exists(connection_file_path):
+                raise Exception("Connection file not found in the container.")
+
+            self.kc = jupyter_client.BlockingKernelClient()
+            self.kc.load_connection_file(connection_file_path)
+            self.kc.start_channels()
+            logger.info("Jupyter kernel client connected.")
+            self._pre_execute_code()
+        except Exception as e:
+            logger.error(f"Failed to initialize Docker container: {e}")
+            if self.container:
+                self.container.stop()
+                self.container.remove()
+            raise
+
+    def _build_docker_image(self):
+        """Builds the Docker image for the Jupyter kernel."""
+        logger.info("Building Docker image for Jupyter kernel...")
+        try:
+            self.docker_client.images.build(
+                path="backend/app/tools",
+                dockerfile="Dockerfile.jupyter",
+                tag="jupyter_kernel_image",
+                rm=True
+            )
+            logger.info("Docker image built successfully.")
+        except Exception as e:
+            logger.error(f"Failed to build Docker image: {e}")
+            raise
 
     def _pre_execute_code(self):
         init_code = (
             f"import os\n"
+            f"import sys\n"
+            f"sys.path.append('/app')\n"
             f"work_dir = r'{self.work_dir}'\n"
             f"os.makedirs(work_dir, exist_ok=True)\n"
             f"os.chdir(work_dir)\n"
@@ -149,7 +192,7 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
                     break
             except:
                 if self.interrupt_signal:
-                    self.km.interrupt_kernel()
+                    self.kc.interrupt_kernel()
                     self.interrupt_signal = False
                 continue
 
@@ -210,18 +253,22 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
             return self.created_images
 
     async def cleanup(self):
-        # 关闭内核
-        self.kc.shutdown()
-        logger.info("关闭内核")
-        self.km.shutdown_kernel()
+        logger.info("Cleaning up Docker container...")
+        if self.kc:
+            self.kc.shutdown()
+            logger.info("Jupyter kernel client shut down.")
+        if self.container:
+            try:
+                self.container.stop()
+                self.container.remove()
+                logger.info("Docker container stopped and removed.")
+            except Exception as e:
+                logger.error(f"Failed to stop or remove Docker container: {e}")
 
     def send_interrupt_signal(self):
         self.interrupt_signal = True
 
-    def restart_jupyter_kernel(self):
-        self.kernel_client.shutdown()
-        self.kernel_manager, self.kernel_client = (
-            jupyter_client.manager.start_new_kernel(kernel_name="python3")
-        )
+    async def restart_jupyter_kernel(self):
+        await self.cleanup()
+        await self.initialize()
         self.interrupt_signal = False
-        self._create_work_dir()

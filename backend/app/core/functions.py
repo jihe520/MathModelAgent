@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from semanticscholar import SemanticScholar, PaginatedResults
+from app.tools.openalex_scholar import OpenAlexScholar
 
 tools = [
     {
@@ -22,30 +22,29 @@ tools = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_literature",
+            "description": "Search for academic literature using a query.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "The search query."},
+                    "author": {"type": "string", "description": "Filter by author name."},
+                    "year": {"type": "integer", "description": "Filter by publication year."},
+                },
+                "required": ["query"],
+            },
+        },
+    },
 ]
 
-# have installed: numpy scipy pandas matplotlib seaborn scikit-learn xgboost
-
-# TODO: pip install python
-
-# TODO: read files
-
-# TODO: get_cites
-
-
-def search_papers(query: str) -> List[Dict[str, Any]]:
-    """Search for papers using a query string."""
-    sch = SemanticScholar()
-    results: PaginatedResults = sch.search_paper(query, limit=10)
-    return [
-        {
-            "title": paper.title,
-            "abstract": paper.abstract,
-            "authorsName": [author.name for author in paper.authors],
-            "citations": [citation.title for citation in paper.citations],
-        }
-        for paper in results
-    ]
+def search_literature(query: str, author: str = None, year: int = None) -> List[Dict[str, Any]]:
+    """Search for academic literature."""
+    scholar = OpenAlexScholar()
+    papers = scholar.search_papers(query, author=author, year=year)
+    return papers
 
 
 ## writeragent tools

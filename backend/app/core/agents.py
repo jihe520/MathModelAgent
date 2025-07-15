@@ -9,6 +9,7 @@ from app.core.prompts import (
 )
 from app.core.functions import tools
 from app.models.model import CoderToWriter
+from app.models.mathematical_models import MathematicalModels
 from app.models.user_output import UserOutput
 from app.utils.enums import CompTemplate, FormatOutPut
 from app.utils.log_util import logger
@@ -57,9 +58,37 @@ class Agent:
             # 获取历史消息用于本次对话
             response = await self.model.chat(
                 history=self.chat_history,
+                tools=tools,
+                tool_choice="auto",
                 agent_name=self.__class__.__name__,
                 sub_title=sub_title,
             )
+            # 如果有工具调用
+            if (
+                hasattr(response.choices[0].message, "tool_calls")
+                and response.choices[0].message.tool_calls
+            ):
+                tool_call = response.choices[0].message.tool_calls[0]
+                if tool_call.function.name == "search_literature":
+                    logger.info(f"调用工具: {tool_call.function.name}")
+                    args = json.loads(tool_call.function.arguments)
+                    from app.core.functions import search_literature
+                    results = search_literature(**args)
+                    self.append_chat_history(
+                        {
+                            "role": "tool",
+                            "content": json.dumps(results),
+                            "tool_call_id": tool_call.id,
+                            "name": "search_literature",
+                        }
+                    )
+                    # 再次调用大模型,生成最终的回复
+                    response = await self.model.chat(
+                        history=self.chat_history,
+                        agent_name=self.__class__.__name__,
+                        sub_title=sub_title,
+                    )
+
             response_content = response.choices[0].message.content
             self.chat_history.append({"role": "assistant", "content": response_content})
             logger.info(f"{self.__class__.__name__}:完成:执行对话")
@@ -88,11 +117,42 @@ class Agent:
 class ModelerAgent(Agent):  # 继承自Agent类而不是BaseModel
     def __init__(
         self,
+        task_id: str,
         model: LLM,
-        max_chat_turns: int = 30,  # 添加最大对话轮次限制
+        max_chat_turns: int = 30,
     ) -> None:
-        super().__init__(model, max_chat_turns)
+        super().__init__(task_id=task_id, model=model, max_chat_turns=max_chat_turns)
         self.system_prompt = MODELER_PROMPT
+
+    async def recommend_model(self, user_prompt: str, data_features: str) -> str:
+        """
+        Recommends a mathematical model based on the user's prompt and data features.
+        """
+        model_list = [
+            func
+            for func in dir(MathematicalModels)
+            if callable(getattr(MathematicalModels, func)) and not func.startswith("__")
+        ]
+
+        recommend_prompt = f"""
+        Based on the user's request and data characteristics, which of the following models is most appropriate?
+        User request: {user_prompt}
+        Data characteristics: {data_features}
+        Available models: {', '.join(model_list)}
+        Please output only the name of the most suitable model.
+        """
+
+        response = await self.model.chat(
+            history=[{"role": "user", "content": recommend_prompt}],
+            agent_name=self.__class__.__name__,
+        )
+        recommended_model = response.choices[0].message.content.strip()
+
+        if recommended_model in model_list:
+            return recommended_model
+        else:
+            # Fallback or error handling
+            return "linear_regression"
 
 
 # 代码强
