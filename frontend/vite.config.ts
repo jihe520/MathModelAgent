@@ -17,20 +17,9 @@ export default defineConfig(({ mode }) => {
 				"@": path.resolve(__dirname, "./src"),
 			},
 		},
-		// 开发环境配置
+		// 开发环境配置 - 直接访问后端，不使用/api代理
 		server: {
-			proxy: {
-				'/api': {
-					target: 'http://localhost:8000',
-					changeOrigin: true,
-					rewrite: (path) => path.replace(/^\/api/, '')
-				},
-				'/ws': {
-					target: 'ws://localhost:8000',
-					ws: true,
-					changeOrigin: true
-				}
-			}
+			// 移除/api代理，开发模式下直接访问localhost:8000
 		},
 		// 生产环境构建配置
 		build: {
