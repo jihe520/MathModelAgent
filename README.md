@@ -101,8 +101,8 @@ docker-compose up
 2. 访问
 
 现在你可以访问：
-- 前端界面：http://localhost:5173
-- 后端API：http://localhost:8000
+- 前端界面：http://localhost
+- 后端API：http://localhost:8000 或 http://localhost/api
 
 3. 配置
 

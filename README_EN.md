@@ -97,8 +97,8 @@ docker-compose up -d
 3. Access
 
 You can now access:
-- Frontend interface: http://localhost:5173
-- Backend API: http://localhost:8000
+- Frontend interface: http://localhost
+- Backend API: http://localhost:8000 or http://localhost/api
 
 ### 💻 Option 2: Local Deployment
 
