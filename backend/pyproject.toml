@@ -2,7 +2,6 @@
 name = "backend"
 version = "0.1.0"
 description = "Add your description here"
-readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "aiofile>=3.9.0",
@@ -37,6 +36,13 @@ dependencies = [
     "websocket>=0.2.1",
     "xgboost>=3.0.0",
 ]
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["app"]
 
 [dependency-groups]
 dev = [

@@ -36,16 +36,9 @@ services:
       dockerfile: Dockerfile
     container_name: mathmodelagent_frontend
     ports:
-      - "5173:5173" # 将前端容器的 5173 端口 (Vite 默认) 映射到主机的 5173 端口
-    env_file:
-      - ./frontend/.env.development # 加载前端的环境变量
-    volumes:
-      - ./frontend:/app # 挂载前端代码以实现热重载 (开发环境)
-      - /app/node_modules # 匿名卷，防止主机的 node_modules 覆盖容器内的
+      - "80:80" # 将前端容器的 80 端口 (nginx) 映射到主机的 80 端口
     depends_on:
-      - backend # 确保后端可用 (尽管前端通常只需要其 URL)
-    stdin_open: true
-    tty: true
+      - backend # 确保后端可用，前端需要代理到后端API
 
 volumes:
   redis_data: # 定义用于 Redis 持久化的命名卷
