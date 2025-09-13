@@ -22,8 +22,13 @@ class RedisManager:
                 decode_responses=True,
                 max_connections=settings.REDIS_MAX_CONNECTIONS,
             )
-        logger.info(f"Redis 连接建立成功: {self.redis_url}")
-        return self._client
+        try:
+            await self._client.ping()
+            logger.info(f"Redis 连接建立成功: {self.redis_url}")
+            return self._client
+        except Exception as e:
+            logger.error(f"无法连接到Redis: {str(e)}")
+            raise
 
     async def set(self, key: str, value: str):
         """设置Redis键值对"""
