@@ -23,31 +23,42 @@ class CoordinatorAgent(Agent):
             {"role": "system", "content": self.system_prompt}
         )
         await self.append_chat_history({"role": "user", "content": ques_all})
+        max_retries = 3
+        attempt = 0
+        while attempt <= max_retries:
+            try:
+                response = await self.model.chat(
+                    history=self.chat_history,
+                    agent_name=self.__class__.__name__,
+                )
+                json_str = response.choices[0].message.content
 
-        response = await self.model.chat(
-            history=self.chat_history,
-            agent_name=self.__class__.__name__,
-        )
-        json_str = response.choices[0].message.content
+                # 清理 JSON 字符串
+                json_str = json_str.replace("```json", "").replace("```", "").strip()
+                json_str = re.sub(r"[\x00-\x1F\x7F]", "", json_str)
 
-        # if not json_str.startswith("```json"):
-        #     logger.info(f"拒绝回答用户非数学建模请求:{json_str}")
-        #     raise ValueError(f"拒绝回答用户非数学建模请求:{json_str}")
+                if not json_str:
+                    raise ValueError("返回的 JSON 字符串为空")
 
-        # 清理 JSON 字符串
-        json_str = json_str.replace("```json", "").replace("```", "").strip()
-        # 移除可能的控制字符
-        json_str = re.sub(r"[\x00-\x1F\x7F]", "", json_str)
-
-        if not json_str:
-            raise ValueError("返回的 JSON 字符串为空，请检查输入内容。")
-
-        try:
-            questions = json.loads(json_str)
-            ques_count = questions["ques_count"]
-            logger.info(f"questions:{questions}")
-            return CoordinatorToModeler(questions=questions, ques_count=ques_count)
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON 解析错误，原始字符串: {json_str}")
-            logger.error(f"错误详情: {str(e)}")
-            raise ValueError(f"JSON 解析错误: {e}")
+                questions = json.loads(json_str)
+                ques_count = questions["ques_count"]
+                logger.info(f"questions:{questions}")
+                return CoordinatorToModeler(questions=questions, ques_count=ques_count)
+                
+            except (json.JSONDecodeError, ValueError, KeyError) as e:
+                attempt += 1
+                logger.warning(f"解析失败 (尝试 {attempt}/{max_retries}): {str(e)}")
+                
+                if attempt > max_retries:
+                    logger.error(f"超过最大重试次数，放弃解析")
+                    raise RuntimeError(f"无法解析模型响应: {str(e)}")
+                    
+                # 添加错误反馈提示
+                error_prompt = f"⚠️ 上次响应格式错误: {str(e)}。请严格输出JSON格式"
+                await self.append_chat_history({
+                    "role": "system", 
+                    "content": self.system_prompt + "\n" + error_prompt
+                })
+        
+        # 永远不会执行到这里
+        raise RuntimeError("意外的流程终止")
