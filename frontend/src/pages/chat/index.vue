@@ -13,6 +13,7 @@ import {
 import { getHelloWorld } from '@/apis/commonApi'
 import MoreDetail from '@/pages/chat/components/MoreDetail.vue'
 import Button from '@/components/ui/button/Button.vue'
+import ServiceStatus from '@/components/ServiceStatus.vue'
 import { AppWindow, CircleEllipsis } from 'lucide-vue-next'
 onMounted(() => {
   getHelloWorld().then((res) => {
@@ -33,17 +34,20 @@ const isMoreDetailOpen = ref(false)
     <SidebarInset>
       <header class="flex h-16 shrink-0 items-center gap-2 px-4">
         <SidebarTrigger class="-ml-1" />
-        <div class="flex justify-end w-full gap-2">
-          <Button variant="outline" @click="isMoreDetailOpen = true">
-            <CircleEllipsis />
-            更多
-          </Button>
-          <a href="https://www.mathmodel.top/" target="_blank">
-            <Button variant="outline">
-              <AppWindow />
-              官网
+        <div class="flex justify-between w-full gap-2">
+          <ServiceStatus />
+          <div class="flex gap-2">
+            <Button variant="outline" @click="isMoreDetailOpen = true">
+              <CircleEllipsis />
+              更多
             </Button>
-          </a>
+            <a href="https://www.mathmodel.top/" target="_blank">
+              <Button variant="outline">
+                <AppWindow />
+                官网
+              </Button>
+            </a>
+          </div>
         </div>
       </header>
 

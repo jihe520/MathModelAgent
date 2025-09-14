@@ -28,3 +28,11 @@ export function exampleAPI(example_id: string, source: string) {
 		source,
 	});
 }
+
+// 获取服务状态
+export function getServiceStatus() {
+	return request.get<{
+		backend: { status: string; message: string };
+		redis: { status: string; message: string };
+	}>("/status");
+}
