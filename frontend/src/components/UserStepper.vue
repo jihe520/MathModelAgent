@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import FileConfirmDialog from './FileConfirmDialog.vue'
 import { submitModelingTask } from '@/apis/submitModelingApi'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Rocket } from 'lucide-vue-next'
@@ -25,6 +26,7 @@ const taskStore = useTaskStore()
 const { toast } = useToast()
 const apiKeyStore = useApiKeyStore()
 const currentStep = ref(1)
+const fileConfirmDialog = ref<InstanceType<typeof FileConfirmDialog> | null>(null)
 const fileUploaded = ref(true)
 
 // 表单数据
@@ -112,16 +114,19 @@ const handleSubmit = async () => {
       openalex_email: apiKeyStore.openalexEmail
     })
 
-
-
-
     if (uploadedFiles.value.length === 0) {
-      toast({
-        title: '请先上传文件',
-        description: '请先上传文件',
-        variant: 'destructive',
-      })
-      return
+      if (!fileConfirmDialog.value) return
+      
+      const shouldContinue = await fileConfirmDialog.value.openConfirmDialog()
+      
+      if (!shouldContinue) {
+        toast({
+          title: '请先上传文件',
+          description: '请先上传文件',
+          variant: 'destructive',
+        })
+        return
+      }
     }
     console.log(selectedOptions.value)
     console.log(question.value)
@@ -256,4 +261,5 @@ const handleSubmit = async () => {
       </div>
     </div>
   </div>
+  <FileConfirmDialog ref="fileConfirmDialog" />
 </template>
