@@ -2,6 +2,7 @@ import json
 from app.utils.common_utils import transform_link, split_footnotes
 from app.utils.log_util import logger
 import time
+import re
 from app.schemas.response import (
     CoderMessage,
     WriterMessage,
@@ -55,9 +56,10 @@ class LLM:
             "api_key": self.api_key,
             "model": self.model,
             "messages": history,
-            "stream": False,
+            "stream": True,
             "top_p": top_p,
             "metadata": {"agent_name": agent_name},
+            'num_retries': 3,  # 添加重试次数
         }
 
         if tools:
@@ -71,22 +73,34 @@ class LLM:
             kwargs["base_url"] = self.base_url
 
         # TODO: stream 输出
+        # 下面是流式输出的初步实现
         for attempt in range(max_retries):
             try:
                 # completion = self.client.chat.completions.create(**kwargs)
-                response = await acompletion(**kwargs)
+                chunks = []
+                response_stream = await acompletion(**kwargs)
+                logger.info("开始处理流式响应")
+                chunks = []
+                async for chunk in response_stream:
+                    content_chunk = chunk.choices[0].delta.content or ""
+                    chunks.append(chunk)
+                    print(content_chunk, end="", flush=True)
+                # 将所有块组合成最终响应
+                response = litellm.stream_chunk_builder(chunks)
+                # 去除think标签
+                response.choices[0].message.content = re.sub(r"<think>.*?</think>", "", response.choices[0].message.content, flags=re.DOTALL)
                 logger.info(f"API返回: {response}")
                 if not response or not hasattr(response, "choices"):
                     raise ValueError("无效的API响应")
                 self.chat_count += 1
                 await self.send_message(response, agent_name, sub_title)
                 return response
-            except (json.JSONDecodeError, litellm.InternalServerError) as e:
+            except Exception as e:
                 logger.error(f"第{attempt + 1}次重试: {str(e)}")
+                logger.debug(f"请求参数: {kwargs}")
                 if attempt < max_retries - 1:  # 如果不是最后一次尝试
                     time.sleep(retry_delay * (attempt + 1))  # 指数退避
                     continue
-                logger.debug(f"请求参数: {kwargs}")
                 raise  # 如果所有重试都失败，则抛出异常
 
     def _validate_and_fix_tool_calls(self, history: list) -> list:
