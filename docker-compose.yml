@@ -47,6 +47,27 @@ services:
     stdin_open: true
     tty: true
 
+  sandbox:
+    build:
+      context: ./sandbox # Dockerfile 的上下文路径
+      dockerfile: Dockerfile # Dockerfile 文件名
+    container_name: mathmodelagent_sandbox
+    ports:
+      - "8001:8001" # 将后端容器的 8000 端口映射到主机的 8000 端口
+    env_file:
+      - ./sandbox/.env.dev #从此文件加载环境变量
+    environment:
+      - ENV=DEV # 为后端显式设置 ENV
+    volumes:
+      - ./sandbox:/app # 挂载后端代码以实现热重载 (开发环境)
+      - ./sandbox/project/work_dir:/app/project/work_dir # 持久化生成的文件
+      - sandbox_venv:/app/.venv # 可选：持久化 venv 以在依赖不变时加快后续构建速度
+    depends_on:
+      - redis # 确保 Redis 在后端启动前启动
+    stdin_open: true # 保持标准输入打开
+    tty: true      # 分配一个伪终端
+
 volumes:
   redis_data: # 定义用于 Redis 持久化的命名卷
   backend_venv: # 定义用于后端 venv 的命名卷
+  sandbox_venv: # 定义用于后端 venv 的命名卷

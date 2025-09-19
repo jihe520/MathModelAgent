@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     REDIS_MAX_CONNECTIONS: int = 10
     CORS_ALLOW_ORIGINS: Annotated[list[str] | str, BeforeValidator(parse_cors)] = "*"
     SERVER_HOST: str = "http://localhost:8000"
+    SANDBOX_SERVICE_URL: str = "http://localhost:8001"
     OPENALEX_EMAIL: Optional[str] = None
 
     model_config = SettingsConfigDict(

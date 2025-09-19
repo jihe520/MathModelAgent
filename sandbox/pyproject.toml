@@ -1,0 +1,27 @@
+[project]
+name = "sandbox"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.116.2",
+    "kaleido>=1.1.0",
+    "loguru>=0.7.3",
+    "matplotlib>=3.10.6",
+    "mealpy>=3.0.2",
+    "networkx>=3.5",
+    "notebook>=7.4.5",
+    "numpy>=2.3.3",
+    "openpyxl>=3.1.5",
+    "pandas>=2.3.2",
+    "plotly>=6.3.0",
+    "pulp>=3.3.0",
+    "scikit-learn>=1.7.2",
+    "scipy>=1.16.2",
+    "seaborn>=0.13.2",
+    "shap>=0.48.0",
+    "statsmodels>=0.14.5",
+    "sympy>=1.14.0",
+    "xgboost>=3.0.5",
+]

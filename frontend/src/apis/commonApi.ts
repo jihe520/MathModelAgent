@@ -34,5 +34,6 @@ export function getServiceStatus() {
 	return request.get<{
 		backend: { status: string; message: string };
 		redis: { status: string; message: string };
+		sandbox: { status: string; message: string };
 	}>("/status");
 }

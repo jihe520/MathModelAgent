@@ -1,15 +1,8 @@
 <template>
   <div class="flex items-center gap-2">
-    <div
-      v-for="(service, key) in services"
-      :key="key"
-      class="flex items-center gap-1 px-2 py-1 rounded-md text-xs"
-      :class="getStatusClass(service.status)"
-    >
-      <div
-        class="w-2 h-2 rounded-full"
-        :class="getStatusDotClass(service.status)"
-      ></div>
+    <div v-for="(service, key) in services" :key="key" class="flex items-center gap-1 px-2 py-1 rounded-md text-xs"
+      :class="getStatusClass(service.status)">
+      <div class="w-2 h-2 rounded-full" :class="getStatusDotClass(service.status)"></div>
       <span class="capitalize">{{ key }}</span>
     </div>
   </div>
@@ -28,12 +21,14 @@ interface ServiceStatus {
 interface Services {
   backend: ServiceStatus
   redis: ServiceStatus
+  sandbox: ServiceStatus
 }
 
 const { toast } = useToast()
 const services = ref<Services>({
   backend: { status: 'unknown', message: 'Checking...' },
-  redis: { status: 'unknown', message: 'Checking...' }
+  redis: { status: 'unknown', message: 'Checking...' },
+  sandbox: { status: 'unknown', message: 'Checking...' }
 })
 
 let statusInterval: number | null = null

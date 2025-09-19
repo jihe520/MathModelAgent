@@ -1,0 +1,22 @@
+# backend/.dockerignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+# Git
+.git/
+.gitignore
+# IDE
+.idea/
+.vscode/
+# macOS
+.DS_Store

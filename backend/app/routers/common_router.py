@@ -3,6 +3,7 @@ from app.config.setting import settings
 from app.utils.common_utils import get_config_template
 from app.schemas.enums import CompTemplate
 from app.services.redis_manager import redis_manager
+from app.services.sandbox_manager import sandbox_manager
 from app.utils.log_util import logger
 
 router = APIRouter()
@@ -44,16 +45,37 @@ async def get_service_status():
     """获取各个服务的状态"""
     status = {
         "backend": {"status": "running", "message": "Backend service is running"},
-        "redis": {"status": "unknown", "message": "Redis connection status unknown"}
+        "redis": {"status": "unknown", "message": "Redis connection status unknown"},
+        "sandbox": {
+            "status": "unknown",
+            "message": "Sandbox connection status unknown",
+        },
     }
 
     # 检查Redis连接状态
     try:
         redis_client = await redis_manager.get_client()
         await redis_client.ping()
-        status["redis"] = {"status": "running", "message": "Redis connection is healthy"}
+        status["redis"] = {
+            "status": "running",
+            "message": "Redis connection is healthy",
+        }
     except Exception as e:
         logger.error(f"Redis connection failed: {str(e)}")
-        status["redis"] = {"status": "error", "message": f"Redis connection failed: {str(e)}"}
+        status["redis"] = {
+            "status": "error",
+            "message": f"Redis connection failed: {str(e)}",
+        }
+
+    # 检查Sandbox连接状态
+    try:
+        sandbox_status = await sandbox_manager.check_sandbox_status()
+        status["sandbox"] = sandbox_status
+    except Exception as e:
+        logger.error(f"Sandbox connection check failed: {str(e)}")
+        status["sandbox"] = {
+            "status": "error",
+            "message": f"Sandbox connection check failed: {str(e)}",
+        }
 
     return status
