@@ -45,7 +45,7 @@
 - [x] 添加正确文献引用
 - [x] 更多测试案例
 - [x] docker 部署
-- [ ] human in loop: 引入用户的交互（选择模型，@agent重写，等等）
+- [ ] human in loop ( HIL ): 引入用户的交互（选择模型，@agent重写，等等）
 - [ ] feedback: evaluate the result and modify
 - [x] codeinterpreter 接入云端 如 e2b 等供应商..
 - [ ] 多语言: R 语言, matlab
@@ -64,9 +64,6 @@
 > 项目处于实验探索迭代demo阶段，有许多需要改进优化改进地方，我(项目作者)很忙，有时间会优化更新
 > 欢迎贡献
 
-
-案例参考 [demo](./demo/) 文件夹下
-**如果你有跑出来好的案例可以提交 PR 在该目录下**
 
 ## 📖 使用教程
 
@@ -93,6 +90,8 @@ git clone https://github.com/jihe520/MathModelAgent.git # 克隆项目
 > 确保电脑安装了 docker 环境
 
 1. 启动服务
+
+在项目文件夹下运行:
 
 ```bash
 docker-compose up
@@ -172,7 +171,12 @@ Prompt Inject : [prompt](./backend/app/config/md_template.toml)
 
 ## 🤝 贡献和开发
 
-[DeepWiki](https://deepwiki.com/jihe520/MathModelAgent)
+[DeepWiki](https://deepwiki.com/jihe520/MathModelAgent) | [Zread](https://zread.ai/jihe520/MathModelAgent)
+
+
+> [!TIP]
+> 如果你有跑出来好的案例可以提交 PR 在该仓库下:
+> [MathModelAgent-Example](https://github.com/jihe520/MathModelAgent-Example)
 
 - 项目处于**开发实验阶段**（我有时间就会更新），变更较多，还存在许多 Bug，我正着手修复。
 - 希望大家一起参与，让这个项目变得更好
@@ -225,6 +229,10 @@ Thanks to the following projects:
 
 有问题可以进群问
 
+点击链接加入腾讯频道【MathModelAgent】：https://pd.qq.com/s/7rfbai3au
+
+点击链接加入群聊 779159301【MathModelAgent3】：https://qm.qq.com/q/Fw2cCJPoki
+
 [Discord](https://discord.gg/3Jmpqg5J)
 
 [QQ 群：699970403](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=rFKquDTSxKcWpEhRgpJD-dPhTtqLwJ9r&authKey=xYKvCFG5My4uYZTbIIoV5MIPQedW7hYzf0%2Fbs4EUZ100UegQWcQ8xEEgTczHsyU6&noverify=0&group_code=699970403)
@@ -234,4 +242,4 @@ Thanks to the following projects:
 </div>
 
 > [!CAUTION]
-> 注意，AI 生成仅供参考
+> 免责声明: 注意，AI 生成仅供参考，目前水平直接参加国赛获奖是不可能的，但我相信 AI 和 该项目未来的成长。
