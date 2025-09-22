@@ -1,4 +1,3 @@
-import json
 from app.utils.common_utils import transform_link, split_footnotes
 from app.utils.log_util import logger
 import time
@@ -17,7 +16,6 @@ from app.utils.track import agent_metrics
 from icecream import ic
 
 litellm.callbacks = [agent_metrics]
-
 
 class LLM:
     def __init__(
@@ -69,6 +67,7 @@ class LLM:
 
         if self.base_url:
             kwargs["base_url"] = self.base_url
+        litellm.enable_json_schema_validation = True #加入json格式验证
 
         # TODO: stream 输出
         for attempt in range(max_retries):
@@ -81,7 +80,7 @@ class LLM:
                 self.chat_count += 1
                 await self.send_message(response, agent_name, sub_title)
                 return response
-            except (json.JSONDecodeError, litellm.InternalServerError) as e:
+            except Exception as e:
                 logger.error(f"第{attempt + 1}次重试: {str(e)}")
                 if attempt < max_retries - 1:  # 如果不是最后一次尝试
                     time.sleep(retry_delay * (attempt + 1))  # 指数退避
