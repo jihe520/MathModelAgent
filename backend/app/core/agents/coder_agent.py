@@ -9,9 +9,8 @@ from app.schemas.A2A import CoderToWriter
 from app.core.prompts import CODER_PROMPT
 from app.utils.common_utils import get_current_files
 import json
-from app.core.prompts import get_reflection_prompt, get_completion_check_prompt
+from app.core.prompts import get_reflection_prompt
 from app.core.functions import coder_tools
-from icecream import ic
 
 # TODO: 时间等待过久，stop 进程
 # TODO: 支持 cuda
@@ -69,9 +68,11 @@ class CoderAgent(Agent):  # 同样继承自Agent类
                     self.task_id,
                     SystemMessage(content="超过最大尝试次数", type="error"),
                 )
-                raise Exception(
-                    f"Failed to complete task after {self.max_retries} attempts. Last error: {last_error_message}"
-                )
+                logger.warning(f"任务失败，超过最大尝试次数{self.max_retries}, 最后错误信息: {last_error_message}")
+                return CoderToWriter(
+                    coder_response=f"任务失败，超过最大尝试次数{self.max_retries}, 最后错误信息: {last_error_message}",
+                    created_images=[])
+                
 
             if self.current_chat_turns >= self.max_chat_turns:
                 logger.error(f"超过最大聊天次数: {self.max_chat_turns}")
