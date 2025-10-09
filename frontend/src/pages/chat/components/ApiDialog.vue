@@ -228,6 +228,12 @@ const resetAll = () => {
 
 
 const providers = {
+  "GiteeAI": {
+    "url": "https://ai.gitee.com/user/api_tokens",
+    "key": "GiteeAI",
+    "baseUrl": "https://ai.gitee.com/v1",
+    "modelId": "DeepSeek-V3"
+  },
   "DeepSeek": {
     "url": "https://platform.deepseek.com/api_keys",
     "key": "DeepSeek",

@@ -1,0 +1,29 @@
+feat: 集成 Gitee AI 并优化 Redis 连接处理
+
+主要更新：
+- 🔄 替换 OpenAI 为 Gitee AI，使用 DeepSeek-V3 模型
+- 🛡️ 移除硬编码 API 密钥，改为环境变量配置
+- 🔧 Redis 连接优化：支持优雅降级到文件存储
+- 📁 新增 .env.example 配置模板
+- 🔒 更新 .gitignore，保护敏感信息
+
+技术改进：
+- Redis 不可用时自动切换到文件系统存储
+- 改进错误处理和日志记录
+- 添加详细的配置文档
+
+安全增强：
+- 所有 API 密钥通过环境变量管理
+- 环境文件已从版本控制中排除
+- 提供安全的配置模板指南
+
+文件修改：
+- backend/.env.dev -> backend/.env.example (模板化)
+- app/services/redis_manager.py (优雅降级)
+- app/routers/common_router.py (状态检查优化)
+- app/core/llm/llm.py (Gitee AI 集成)
+- .gitignore (安全规则)
+- 新增: CHANGELOG.md, ENV_SETUP.md
+
+Breaking Changes: 无
+Migration: 需要重新配置环境变量文件
