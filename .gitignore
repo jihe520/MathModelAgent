@@ -7,3 +7,46 @@ backend/app/.DS_Store
 .Spotlight-V100
 .Trashes
 .idea/
+
+# Environment files - NEVER commit these!
+*.env
+*.env.*
+!*.env.example
+backend/.env*
+!backend/.env.example
+frontend/.env*
+!frontend/.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite3
+
+# Redis dumps
+dump.rdb
+
+# Generated files
+project/work_dir/

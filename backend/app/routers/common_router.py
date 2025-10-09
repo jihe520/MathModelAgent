@@ -50,8 +50,11 @@ async def get_service_status():
     # 检查Redis连接状态
     try:
         redis_client = await redis_manager.get_client()
-        await redis_client.ping()
-        status["redis"] = {"status": "running", "message": "Redis connection is healthy"}
+        if redis_client is not None:
+            await redis_client.ping()
+            status["redis"] = {"status": "running", "message": "Redis connection is healthy"}
+        else:
+            status["redis"] = {"status": "disabled", "message": "Redis is not available, running in fallback mode"}
     except Exception as e:
         logger.error(f"Redis connection failed: {str(e)}")
         status["redis"] = {"status": "error", "message": f"Redis connection failed: {str(e)}"}

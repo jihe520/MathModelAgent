@@ -94,20 +94,43 @@ async def validate_api_key(request: ValidateApiKeyRequest):
     验证 API Key 的有效性
     """
     try:
+        # 智能推断 provider 和构建正确的模型名称
+        base_url_lower = request.base_url.lower()
+        model_lower = request.model_id.lower()
+        
+        if "gitee" in base_url_lower:
+            # GiteeAI 使用 OpenAI 兼容 API，使用 openai 提供商
+            model_name = request.model_id
+            provider = "openai"
+            print(f"[validate_api_key 调试] 使用 GiteeAI 配置，provider: openai")
+        elif "deepseek" in model_lower or "deepseek" in base_url_lower:
+            model_name = f"deepseek/{request.model_id}"
+            provider = "deepseek"
+            print(f"[validate_api_key 调试] 使用 DeepSeek 配置，provider: deepseek")
+        else:
+            model_name = request.model_id
+            provider = "openai"
+            print(f"[validate_api_key 调试] 使用默认 OpenAI 配置，provider: openai")
+
+        # 构建参数
+        kwargs = {
+            "model": model_name,
+            "messages": [{"role": "user", "content": "Hi"}],
+            "max_tokens": 1,
+            "api_key": request.api_key,
+            "base_url": request.base_url,
+            "custom_llm_provider": provider,
+        }
+        
+        print(f"[validate_api_key 调试] 调用参数: {kwargs}")
+        
         # 使用 litellm 发送测试请求
-        await litellm.acompletion(
-            model=request.model_id,
-            messages=[{"role": "user", "content": "Hi"}],
-            max_tokens=1,
-            api_key=request.api_key,
-            base_url=request.base_url
-            if request.base_url != "https://api.openai.com/v1"
-            else None,
-        )
+        await litellm.acompletion(**kwargs)
 
         return ValidateApiKeyResponse(valid=True, message="✓ 模型 API 验证成功")
     except Exception as e:
         error_msg = str(e)
+        print(f"[validate_api_key 调试] 验证失败: {error_msg}")
 
         # 解析不同类型的错误
         if "401" in error_msg or "Unauthorized" in error_msg:
