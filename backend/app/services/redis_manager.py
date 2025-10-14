@@ -15,7 +15,7 @@ class RedisManager:
         self.messages_dir = Path("logs/messages")
         self.messages_dir.mkdir(parents=True, exist_ok=True)
 
-    async def get_client(self) -> aioredis.Redis:
+    async def get_client(self) -> Optional[aioredis.Redis]:
         if self._client is None:
             self._client = aioredis.Redis.from_url(
                 self.redis_url,
@@ -28,13 +28,16 @@ class RedisManager:
             return self._client
         except Exception as e:
             logger.error(f"无法连接到Redis: {str(e)}")
-            raise
+            return None  # 返回 None 而不是抛出异常
 
     async def set(self, key: str, value: str):
         """设置Redis键值对"""
         client = await self.get_client()
-        await client.set(key, value)
-        await client.expire(key, 36000)
+        if client is not None:
+            await client.set(key, value)
+            await client.expire(key, 36000)
+        else:
+            logger.warning(f"Redis 不可用，跳过设置键值对: {key}")
 
     async def _save_message_to_file(self, task_id: str, message: Message):
         """将消息保存到文件中，同一任务的消息保存在同一个文件中"""
@@ -67,25 +70,32 @@ class RedisManager:
     async def publish_message(self, task_id: str, message: Message):
         """发布消息到特定任务的频道并保存到文件"""
         client = await self.get_client()
-        channel = f"task:{task_id}:messages"
-        try:
-            message_json = message.model_dump_json()
-            await client.publish(channel, message_json)
-            logger.debug(
-                f"消息已发布到频道 {channel}:mes_type:{message.msg_type}:msg_content:{message.content}"
-            )
-            # 保存消息到文件
-            await self._save_message_to_file(task_id, message)
-        except Exception as e:
-            logger.error(f"发布消息失败: {str(e)}")
-            raise
+        if client is not None:
+            channel = f"task:{task_id}:messages"
+            try:
+                message_json = message.model_dump_json()
+                await client.publish(channel, message_json)
+                logger.debug(
+                    f"消息已发布到频道 {channel}:mes_type:{message.msg_type}:msg_content:{message.content}"
+                )
+            except Exception as e:
+                logger.error(f"发布消息失败: {str(e)}")
+        else:
+            logger.warning(f"Redis 不可用，跳过发布消息到任务 {task_id}")
+        
+        # 无论Redis是否可用，都保存消息到文件
+        await self._save_message_to_file(task_id, message)
 
     async def subscribe_to_task(self, task_id: str):
         """订阅特定任务的消息"""
         client = await self.get_client()
-        pubsub = client.pubsub()
-        await pubsub.subscribe(f"task:{task_id}:messages")
-        return pubsub
+        if client is not None:
+            pubsub = client.pubsub()
+            await pubsub.subscribe(f"task:{task_id}:messages")
+            return pubsub
+        else:
+            logger.warning(f"Redis 不可用，无法订阅任务 {task_id}")
+            return None
 
     async def close(self):
         """关闭Redis连接"""
