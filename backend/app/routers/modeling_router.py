@@ -98,7 +98,6 @@ async def validate_api_key(request: ValidateApiKeyRequest):
         await litellm.acompletion(
             model=request.model_id,
             messages=[{"role": "user", "content": "Hi"}],
-            max_tokens=1,
             api_key=request.api_key,
             base_url=request.base_url
             if request.base_url != "https://api.openai.com/v1"
