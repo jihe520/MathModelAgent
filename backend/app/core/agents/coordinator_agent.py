@@ -1,8 +1,9 @@
+import json
+import re
+from json_repair import repair_json
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import COORDINATOR_PROMPT
-import json
-import re
 from app.utils.log_util import logger
 from app.schemas.A2A import CoordinatorToModeler
 
@@ -39,8 +40,8 @@ class CoordinatorAgent(Agent):
 
                 if not json_str:
                     raise ValueError("返回的 JSON 字符串为空")
-
-                questions = json.loads(json_str)
+            
+                questions = json.loads(repair_json(json_str))
                 ques_count = questions["ques_count"]
                 logger.info(f"questions:{questions}")
                 return CoordinatorToModeler(questions=questions, ques_count=ques_count)

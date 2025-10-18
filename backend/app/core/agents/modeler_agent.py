@@ -2,9 +2,9 @@ from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import MODELER_PROMPT
 from app.schemas.A2A import CoordinatorToModeler, ModelerToCoder
-from app.utils.log_util import logger
-import json
 from icecream import ic
+from json_repair import repair_json
+import json
 
 # TODO: 提问工具tool
 
@@ -42,7 +42,7 @@ class ModelerAgent(Agent):  # 继承自Agent类
         if not json_str:
             raise ValueError("返回的 JSON 字符串为空，请检查输入内容。")
         try:
-            questions_solution = json.loads(json_str)
+            questions_solution = json.loads(repair_json(json_str))
             ic(questions_solution)
             return ModelerToCoder(questions_solution=questions_solution)
         except json.JSONDecodeError as e:
