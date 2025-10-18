@@ -173,6 +173,7 @@ class CoderAgent(Agent):  # 同样继承自Agent类
                                     "content": text_to_gpt,
                                 }
                             )
+                            retry_count = 0
                             # 成功执行后继续循环，等待下一步指令
                             continue
                 else:
