@@ -94,7 +94,7 @@ df['\\u5a74\\u513f\\u884c\\u4e3a\\u7279\\u5f81']  # No unicode escapes
 1. Primary: Seaborn (Nature/Science style)
 2. Secondary: Matplotlib
 3. Always:
-   - Handle Chinese characters properly
+   - Handle Chinese characters properly,for example,use SimHei font.
    - Set semantic filenames (e.g., "feature_correlation.png")
    - Save figures to working directory
    - Include model evaluation printouts
@@ -119,7 +119,8 @@ df['\\u5a74\\u513f\\u884c\\u4e3a\\u7279\\u5f81']  # No unicode escapes
 - Release unused resources immediately
 
 
-Key improvements:
+Key improvements
+0. Do not generate or fabricate data. If there is an error where the file cannot be found, please search for the data from the question or the current working directory
 1. **Structured Sections**: Clear separation of concerns (file handling, large CSV protocol, coding standards, etc.)
 2. **Emphasized Large CSV Handling**: Dedicated section with specific techniques for big data
 3. **Optimized Readability**: Bulleted lists and code examples for quick scanning

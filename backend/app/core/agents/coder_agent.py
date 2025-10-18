@@ -1,3 +1,4 @@
+import json_repair
 from app.core.agents.agent import Agent
 from app.config.setting import settings
 from app.utils.log_util import logger
@@ -8,7 +9,6 @@ from app.core.llm.llm import LLM
 from app.schemas.A2A import CoderToWriter
 from app.core.prompts import CODER_PROMPT
 from app.utils.common_utils import get_current_files
-import json
 from app.core.prompts import get_reflection_prompt
 from app.core.functions import coder_tools
 
@@ -113,7 +113,7 @@ class CoderAgent(Agent):  # 同样继承自Agent类
                             ),
                         )
 
-                        code = json.loads(tool_call.function.arguments)["code"]
+                        code = json_repair.loads(tool_call.function.arguments)["code"]
 
                         await redis_manager.publish_message(
                             self.task_id,

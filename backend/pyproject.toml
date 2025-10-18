@@ -14,6 +14,7 @@ dependencies = [
     "httpx[socks]>=0.28.1",
     "icecream>=2.1.4",
     "ipykernel>=6.29.5",
+    "json-repair>=0.52.1",
     "jupyter-client>=8.6.3",
     "litellm>=1.69.0",
     "loguru>=0.7.3",
