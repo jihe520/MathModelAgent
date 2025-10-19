@@ -1,5 +1,6 @@
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
+from app.config.setting import settings
 from app.core.prompts import MODELER_PROMPT
 from app.schemas.A2A import CoordinatorToModeler, ModelerToCoder
 from icecream import ic
@@ -14,7 +15,7 @@ class ModelerAgent(Agent):  # 继承自Agent类
         self,
         task_id: str,
         model: LLM,
-        max_chat_turns: int = 30,  # 添加最大对话轮次限制
+        max_chat_turns: int = settings.MAX_CHAT_TURNS,  # 添加最大对话轮次限制
     ) -> None:
         super().__init__(task_id, model, max_chat_turns)
         self.system_prompt = MODELER_PROMPT

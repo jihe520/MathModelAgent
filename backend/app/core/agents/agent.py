@@ -1,4 +1,5 @@
 from app.core.llm.llm import LLM, simple_chat
+from app.config.setting import settings
 from app.utils.log_util import logger
 from icecream import ic
 
@@ -11,7 +12,7 @@ class Agent:
         self,
         task_id: str,
         model: LLM,
-        max_chat_turns: int = 30,  # 单个agent最大对话轮次
+        max_chat_turns: int = settings.MAX_CHAT_TURNS,  # 单个agent最大对话轮次
         max_memory: int = 12,  # 最大记忆轮次
     ) -> None:
         self.task_id = task_id

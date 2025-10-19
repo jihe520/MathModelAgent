@@ -1,12 +1,13 @@
+import json
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
+from app.config.setting import settings
 from app.core.prompts import get_writer_prompt
 from app.schemas.enums import CompTemplate, FormatOutPut
 from app.tools.openalex_scholar import OpenAlexScholar
 from app.utils.log_util import logger
 from app.services.redis_manager import redis_manager
 from app.schemas.response import SystemMessage, WriterMessage
-import json
 from app.core.functions import writer_tools
 from icecream import ic
 from app.schemas.A2A import WriterResponse
@@ -21,7 +22,7 @@ class WriterAgent(Agent):  # 同样继承自Agent类
         self,
         task_id: str,
         model: LLM,
-        max_chat_turns: int = 10,  # 添加最大对话轮次限制
+        max_chat_turns: int = settings.MAX_CHAT_TURNS,  # 添加最大对话轮次限制
         comp_template: CompTemplate = CompTemplate,
         format_output: FormatOutPut = FormatOutPut.Markdown,
         scholar: OpenAlexScholar = None,

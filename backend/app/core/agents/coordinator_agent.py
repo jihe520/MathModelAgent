@@ -1,6 +1,7 @@
 import json
 import re
 from json_repair import repair_json
+from app.config.setting import settings
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import COORDINATOR_PROMPT
@@ -13,7 +14,7 @@ class CoordinatorAgent(Agent):
         self,
         task_id: str,
         model: LLM,
-        max_chat_turns: int = 30,
+        max_chat_turns: int = settings.MAX_CHAT_TURNS,
     ) -> None:
         super().__init__(task_id, model, max_chat_turns)
         self.system_prompt = COORDINATOR_PROMPT
