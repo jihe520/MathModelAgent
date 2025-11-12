@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useApiKeyStore } from '@/stores/apiKeys'
 import { CheckCircle, XCircle } from 'lucide-vue-next'
-import { validateApiKey, saveApiConfig, validateOpenalexEmail } from '@/apis/apiKeyApi'
+import { validateApiKey, saveApiConfig } from '@/apis/apiKeyApi'
 
 const apiKeyStore = useApiKeyStore()
 
@@ -31,7 +31,6 @@ const form = ref<{
   modeler: { apiKey: string; baseUrl: string; modelId: string; provider: string };
   coder: { apiKey: string; baseUrl: string; modelId: string; provider: string };
   writer: { apiKey: string; baseUrl: string; modelId: string; provider: string };
-  openalex_email: string;
 }>({
   coordinator: {
     apiKey: '',
@@ -56,8 +55,7 @@ const form = ref<{
     baseUrl: '',
     modelId: '',
     provider: ''
-  },
-  openalex_email: ''
+  }
 })
 
 // 验证状态
@@ -66,8 +64,7 @@ const validationResults = ref({
   coordinator: { valid: false, message: '' },
   modeler: { valid: false, message: '' },
   coder: { valid: false, message: '' },
-  writer: { valid: false, message: '' },
-  openalex_email: { valid: false, message: '' }
+  writer: { valid: false, message: '' }
 })
 
 // 计算所有验证是否都通过
@@ -89,7 +86,6 @@ const loadFromStore = () => {
   form.value.modeler = { ...apiKeyStore.modelerConfig }
   form.value.coder = { ...apiKeyStore.coderConfig }
   form.value.writer = { ...apiKeyStore.writerConfig }
-  form.value.openalex_email = apiKeyStore.openalexEmail
 }
 
 // 保存表单数据到 store
@@ -99,7 +95,6 @@ const saveToStore = async () => {
   apiKeyStore.setModelerConfig(form.value.modeler)
   apiKeyStore.setCoderConfig(form.value.coder)
   apiKeyStore.setWriterConfig(form.value.writer)
-  apiKeyStore.setOpenalexEmail(form.value.openalex_email)
   // 如果验证成功，也保存到后端设置
   if (allValid.value) {
     try {
@@ -108,7 +103,7 @@ const saveToStore = async () => {
         modeler: form.value.modeler,
         coder: form.value.coder,
         writer: form.value.writer,
-        openalex_email: form.value.openalex_email
+        openalex_email: ''
       })
     } catch (error) {
       console.error('保存配置到后端失败:', error)
@@ -177,8 +172,7 @@ const validateAllApiKeys = async () => {
     coordinator: { valid: false, message: '' },
     modeler: { valid: false, message: '' },
     coder: { valid: false, message: '' },
-    writer: { valid: false, message: '' },
-    openalex_email: { valid: false, message: '' }
+    writer: { valid: false, message: '' }
   }
 
   try {
@@ -197,8 +191,7 @@ const validateAllApiKeys = async () => {
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
 
-    // 验证 OpenAlex Email
-    validationResults.value.openalex_email = await validateOpenalexEmail({ email: form.value.openalex_email }).then(res => res.data)
+
 
   } catch (error) {
     console.error('验证过程中发生错误:', error)
@@ -221,8 +214,7 @@ const resetAll = () => {
     coordinator: { apiKey: '', baseUrl: '', modelId: '', provider: '' },
     modeler: { apiKey: '', baseUrl: '', modelId: '', provider: '' },
     coder: { apiKey: '', baseUrl: '', modelId: '', provider: '' },
-    writer: { apiKey: '', baseUrl: '', modelId: '', provider: '' },
-    openalex_email: ''
+    writer: { apiKey: '', baseUrl: '', modelId: '', provider: '' }
   }
 }
 
@@ -380,22 +372,7 @@ const onProviderChange = (configKey: string, providerKey: string) => {
 
 
 
-      <div class="space-y-2">
-        <h3 class="text-sm font-medium">其他</h3>
-        <Label :for="`openalex-email`" class="text-xs text-muted-foreground">OpenAlex Email</Label>
-        <div class="text-xs text-muted-foreground">
-          使用 email 注册账号从 <a href="https://openalex.org/" target="_blank"
-            class="text-blue-600 hover:text-blue-800 underline text-xs">OpenAlex</a> 获取访问文献权利
-        </div>
-        <Input :id="`openalex-email`" v-model.trim="form.openalex_email" placeholder="请输入 OpenAlex Email"
-          class="h-7 text-xs flex-1" />
-        <div v-if="validationResults.openalex_email.message" :class="[
-          'text-xs px-2 py-1 rounded text-left border',
-          validationResults.openalex_email.valid ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
-        ]">
-          {{ validationResults.openalex_email.message }}
-        </div>
-      </div>
+
 
       <div class="flex justify-between items-center pt-3 border-t">
         <div class="flex justify-between items-center gap-2">

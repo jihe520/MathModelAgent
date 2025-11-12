@@ -83,9 +83,16 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
     async def _pre_execute_code(self):
         init_code = (
             "import matplotlib.pyplot as plt\n"
-            # "plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial Unicode MS']\n"
-            # "plt.rcParams['axes.unicode_minus'] = False\n"
-            # "plt.rcParams['font.family'] = 'sans-serif'\n"
+            "import matplotlib as mpl\n"
+            "# 配置中文字体支持\n"
+            "plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'DejaVu Sans', 'Arial Unicode MS', 'WenQuanYi Micro Hei', 'sans-serif']\n"
+            "plt.rcParams['axes.unicode_minus'] = False\n"
+            "plt.rcParams['font.family'] = 'sans-serif'\n"
+            "mpl.rcParams['font.size'] = 12\n"
+            "mpl.rcParams['axes.labelsize'] = 12\n"
+            "mpl.rcParams['figure.dpi'] = 100\n"
+            "mpl.rcParams['savefig.dpi'] = 300\n"
+            "print('✓ 中文字体配置完成')\n"
         )
         await self.execute_code(init_code)
 
