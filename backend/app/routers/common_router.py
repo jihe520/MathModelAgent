@@ -12,6 +12,31 @@ router = APIRouter()
 async def root():
     return {"message": "Hello World"}
 
+@router.get("/health")
+async def health_check():
+    try:
+        # 测试Redis连接
+        redis_client = await redis_manager.get_client()
+        await redis_client.ping()
+        
+        return {
+            "status": "healthy",
+            "services": {
+                "redis": "connected",
+                "api": "running"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {
+            "status": "unhealthy",
+            "services": {
+                "redis": "disconnected",
+                "api": "running"
+            },
+            "error": str(e)
+        }
+
 
 @router.get("/config")
 async def config():
