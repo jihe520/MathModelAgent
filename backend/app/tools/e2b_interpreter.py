@@ -81,6 +81,9 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
             raise
 
     async def _pre_execute_code(self):
+        # 获取安全工具代码
+        safe_tools_code = self._get_safe_tools_code()
+        
         init_code = (
             "import matplotlib.pyplot as plt\n"
             "import matplotlib as mpl\n"
@@ -93,6 +96,9 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
             "mpl.rcParams['figure.dpi'] = 100\n"
             "mpl.rcParams['savefig.dpi'] = 300\n"
             "print('✓ 中文字体配置完成')\n"
+            f"\n# 注入安全数据处理工具\n"
+            f"{safe_tools_code}\n"
+            f"print('✓ 安全数据处理工具已加载')\n"
         )
         await self.execute_code(init_code)
 
@@ -376,3 +382,123 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
 
         except Exception as e:
             logger.error(f"文件同步失败: {str(e)}")
+    
+    def _get_safe_tools_code(self):
+        """获取安全数据处理工具的代码（与LocalCodeInterpreter相同）"""
+        return '''
+# 通用安全数据处理工具
+import pandas as pd
+from typing import List, Optional, Any, Dict
+
+class SafeDataProcessor:
+    """安全的数据处理工具类，适用于任意数据集"""
+    
+    def __init__(self, df: pd.DataFrame):
+        self.df = df
+        self.column_info = self._analyze_columns()
+        
+    def _analyze_columns(self) -> Dict[str, List[str]]:
+        """分析数据集的列结构"""
+        info = {
+            'numeric_cols': [],
+            'categorical_cols': [],
+            'datetime_cols': [],
+            'text_cols': []
+        }
+        
+        for col in self.df.columns:
+            dtype = str(self.df[col].dtype)
+            if 'int' in dtype or 'float' in dtype:
+                info['numeric_cols'].append(col)
+            elif 'datetime' in dtype:
+                info['datetime_cols'].append(col)
+            elif self.df[col].dtype == 'object':
+                unique_ratio = self.df[col].nunique() / len(self.df)
+                if unique_ratio < 0.5:
+                    info['categorical_cols'].append(col)
+                else:
+                    info['text_cols'].append(col)
+            else:
+                info['categorical_cols'].append(col)
+        return info
+    
+    def safe_get_column(self, possible_names: List[str], description: str = "目标列", fuzzy_match: bool = True) -> Optional[str]:
+        """安全获取列名，支持精确匹配和模糊匹配"""
+        for name in possible_names:
+            if name in self.df.columns:
+                print(f"找到{description}的精确匹配: {name}")
+                return name
+        if fuzzy_match:
+            for keyword in possible_names:
+                matches = [col for col in self.df.columns if keyword in col]
+                if matches:
+                    print(f"找到{description}的模糊匹配: {matches[0]} (关键词: {keyword})")
+                    return matches[0]
+        print(f"警告: 未找到{description}列，尝试的名称: {possible_names}")
+        print(f"可用列名: {self.df.columns.tolist()}")
+        return None
+    
+    def safe_get_numeric_columns(self) -> List[str]:
+        return self.column_info['numeric_cols']
+    
+    def safe_get_categorical_columns(self) -> List[str]:
+        return self.column_info['categorical_cols']
+    
+    def print_data_summary(self):
+        """打印数据集摘要信息"""
+        print("=" * 50)
+        print("数据集基本信息")
+        print("=" * 50)
+        print(f"数据形状: {self.df.shape}")
+        print(f"总列数: {len(self.df.columns)}")
+        print("\\n列名列表:")
+        for i, col in enumerate(self.df.columns, 1):
+            print(f"  {i:2d}. {col} ({self.df[col].dtype})")
+        print(f"\\n前5行数据:")
+        print(self.df.head())
+    
+    def auto_detect_target_column(self) -> Optional[str]:
+        """自动检测可能的目标变量列"""
+        target_patterns = ['label', 'target', '标签', '目标', '类别', '分类', 'class', 'category', 'type', '类型', '结果', 'result', '行为特征', '特征', '状态', 'status']
+        for pattern in target_patterns:
+            matched_col = self.safe_get_column([pattern], "目标变量", fuzzy_match=True)
+            if matched_col:
+                return matched_col
+        if len(self.df.columns) > 0:
+            last_col = self.df.columns[-1]
+            print(f"未找到明确的目标列，使用最后一列作为目标: {last_col}")
+            return last_col
+        return None
+
+def safe_load_data(file_path: str):
+    """通用安全数据加载函数"""
+    try:
+        if file_path.endswith(('.xlsx', '.xls')):
+            df = pd.read_excel(file_path)
+        elif file_path.endswith('.csv'):
+            for encoding in ['utf-8', 'gbk', 'gb2312', 'latin1']:
+                try:
+                    df = pd.read_csv(file_path, encoding=encoding)
+                    print(f"使用编码 {encoding} 成功加载数据")
+                    break
+                except (UnicodeDecodeError, UnicodeError):
+                    continue
+            else:
+                raise ValueError("无法使用常见编码解码CSV文件")
+        else:
+            df = pd.read_csv(file_path)
+        print(f"数据加载成功！形状: {df.shape}")
+        return df
+    except Exception as e:
+        print(f"数据加载失败: {e}")
+        return None
+
+def quick_data_analysis(file_path: str):
+    """快速数据分析函数"""
+    df = safe_load_data(file_path)
+    if df is not None:
+        processor = SafeDataProcessor(df)
+        processor.print_data_summary()
+        return df, processor
+    return None, None
+'''

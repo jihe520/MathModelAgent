@@ -216,6 +216,11 @@ class LLM:
     async def send_message(self, response, agent_name, sub_title=None):
         logger.info(f"subtitle是:{sub_title}")
         content = response.choices[0].message.content
+        
+        # 添加内容检查，防止传递 None 给后续处理函数
+        if content is None:
+            logger.warning(f"LLM返回内容为空，agent={agent_name}, subtitle={sub_title}")
+            content = ""  # 使用空字符串替代 None
 
         match agent_name:
             case AgentType.CODER:

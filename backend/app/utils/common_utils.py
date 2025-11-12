@@ -110,6 +110,11 @@ def md_2_docx(task_id: str):
 
 
 def split_footnotes(text: str) -> tuple[str, list[tuple[str, str]]]:
+    # 添加空值检查，防止 TypeError
+    if text is None:
+        logger.warning("split_footnotes received None text, returning empty result")
+        return "", []
+    
     main_text = re.sub(
         r"\n\[\^\d+\]:.*?(?=\n\[\^|\n\n|\Z)", "", text, flags=re.DOTALL
     ).strip()
