@@ -234,6 +234,12 @@ const providers = {
     "baseUrl": "https://api.deepseek.com",
     "modelId": "deepseek/deepseek-chat"
   },
+  千问百炼: {
+    url: "https://dashscope.console.aliyun.com/apiKey",
+    key: "千问百炼",
+    baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    modelId: "openai/qwen3-max",
+  },
   "硅基流动": {
     "url": "https://cloud.siliconflow.cn/i/UIb4Enf4",
     "key": "硅基流动",
