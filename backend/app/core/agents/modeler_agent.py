@@ -41,6 +41,7 @@ class ModelerAgent(Agent):  # 继承自Agent类
 
     def _get_default_modeling_solution(self) -> str:
         """生成默认的建模方案，作为 LLM 响应失败时的后备"""
+        logger.info("使用默认建模方案")
         return """{
   "eda": "进行数据探索性分析，包括描述性统计、相关性分析、数据分布可视化等，使用散点图、箱线图、热力图等图表展示数据特征",
   "ques1": "建立多元线性回归模型分析变量间关系，使用最小二乘法估计参数，通过F检验和t检验验证模型显著性，计算R²评估拟合优度",
@@ -77,8 +78,8 @@ class ModelerAgent(Agent):  # 继承自Agent类
         # 尝试提取JSON内容
         json_str = self._extract_json_from_response(json_str)
 
-        if not json_str:
-            logger.warning("LLM 返回空内容，使用默认建模方案")
+        if not json_str or json_str.strip() == "{}":
+            logger.warning("LLM 返回空内容或空JSON，使用默认建模方案")
             json_str = self._get_default_modeling_solution()
         
         try:
