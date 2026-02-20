@@ -194,6 +194,8 @@ Thanks to the following projects:
 
 ### 💖 Sponsor
 
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+
 [Buy Me a Coffee](./docs/sponser.md)
 
 Thanks to sponsors:
