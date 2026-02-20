@@ -213,6 +213,8 @@ Thanks to the following projects:
 
 #### 企业
 
+[![Powered by DartNode](https://dartnode.com/branding/DN-Open-Source-sm.png)](https://dartnode.com "Powered by DartNode - Free VPS for Open Source")
+
 <div align="center">
     <a href="https://share.302.ai/UoTruU" target="_blank">
     <img src="./docs/302ai.jpg">
