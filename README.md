@@ -233,15 +233,9 @@ Thanks to the following projects:
 
 点击链接加入腾讯频道【MathModelAgent】：https://pd.qq.com/s/7rfbai3au
 
-点击链接加入群聊 779159301【MathModelAgent3】：https://qm.qq.com/q/Fw2cCJPoki
+点击链接加入群聊 779159301【MathModelAgent】：https://qm.qq.com/q/Fw2cCJPoki
 
 [Discord](https://discord.gg/3Jmpqg5J)
-
-[QQ 群：699970403](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=rFKquDTSxKcWpEhRgpJD-dPhTtqLwJ9r&authKey=xYKvCFG5My4uYZTbIIoV5MIPQedW7hYzf0%2Fbs4EUZ100UegQWcQ8xEEgTczHsyU6&noverify=0&group_code=699970403)
-
-<div align="center">
-    <img src="./docs/qq.jpg" height="400px">
-</div>
 
 > [!CAUTION]
 > 免责声明: 注意，AI 生成仅供参考，目前水平直接参加国赛获奖是不可能的，但我相信 AI 和 该项目未来的成长。
