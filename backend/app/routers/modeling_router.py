@@ -100,9 +100,7 @@ async def validate_api_key(request: ValidateApiKeyRequest):
             messages=[{"role": "user", "content": "Hi"}],
             max_tokens=1,
             api_key=request.api_key,
-            base_url=request.base_url
-            if request.base_url != "https://api.openai.com/v1"
-            else None,
+            base_url=request.base_url if request.base_url else None
         )
 
         return ValidateApiKeyResponse(valid=True, message="✓ 模型 API 验证成功")
