@@ -7,3 +7,12 @@ backend/app/.DS_Store
 .Spotlight-V100
 .Trashes
 .idea/
+
+# Environment files - NEVER commit these!
+*.env
+*.env.*
+!*.env.example
+backend/.env*
+!backend/.env.example
+frontend/.env*
+!frontend/.env.example

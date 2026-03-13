@@ -38,11 +38,12 @@ app.include_router(files_router.router)
 # 跨域 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ALLOW_ORIGINS,  # 使用配置的允许源
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],  # 暴露所有响应头
+    max_age=3600,  # 预检请求缓存时间
 )
 
 app.mount(

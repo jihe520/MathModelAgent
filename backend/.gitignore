@@ -5,6 +5,11 @@ _pycache_/
 .idea/
 .vscode/
 
+# Environment files
+.env
+.env.*
+!.env.example
+
 # Project specific
 project/work_dir/*
 !project/work_dir/.gitkeep
