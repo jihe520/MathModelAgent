@@ -31,10 +31,11 @@ class Flows:
             for key, value in questions.items()
             if key.startswith("ques") and key != "ques_count"
         }
+        solutions = modeler_response.questions_solution
         ques_flow = {
             key: {
                 "coder_prompt": f"""
-                        参考建模手给出的解决方案{modeler_response.questions_solution[key]}
+                        参考建模手给出的解决方案{solutions.get(key, "")}
                         完成如下问题{value}
                     """,
             }
@@ -42,16 +43,15 @@ class Flows:
         }
         flows = {
             "eda": {
-                # TODO ： 获取当前路径下的所有数据集
                 "coder_prompt": f"""
-                        参考建模手给出的解决方案{modeler_response.questions_solution["eda"]}
+                        参考建模手给出的解决方案{solutions.get("eda", "对数据进行探索性分析")}
                         对当前目录下数据进行EDA分析(数据清洗,可视化),清洗后的数据保存当前目录下,**不需要复杂的模型**
                     """,
             },
             **ques_flow,
             "sensitivity_analysis": {
                 "coder_prompt": f"""
-                        参考建模手给出的解决方案{modeler_response.questions_solution["sensitivity_analysis"]}
+                        参考建模手给出的解决方案{solutions.get("sensitivity_analysis", "对模型进行灵敏度分析")}
                         完成敏感性分析
                     """,
             },

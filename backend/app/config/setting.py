@@ -21,18 +21,22 @@ class Settings(BaseSettings):
     COORDINATOR_API_KEY: Optional[str] = None
     COORDINATOR_MODEL: Optional[str] = None
     COORDINATOR_BASE_URL: Optional[str] = None
+    COORDINATOR_MAX_TOKENS: Optional[int] = None
 
     MODELER_API_KEY: Optional[str] = None
     MODELER_MODEL: Optional[str] = None
     MODELER_BASE_URL: Optional[str] = None
+    MODELER_MAX_TOKENS: Optional[int] = None
 
     CODER_API_KEY: Optional[str] = None
     CODER_MODEL: Optional[str] = None
     CODER_BASE_URL: Optional[str] = None
+    CODER_MAX_TOKENS: Optional[int] = None
 
     WRITER_API_KEY: Optional[str] = None
     WRITER_MODEL: Optional[str] = None
     WRITER_BASE_URL: Optional[str] = None
+    WRITER_MAX_TOKENS: Optional[int] = None
 
     MAX_CHAT_TURNS: int = 60
     MAX_RETRIES: int = 5

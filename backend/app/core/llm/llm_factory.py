@@ -14,6 +14,7 @@ class LLMFactory:
             model=settings.COORDINATOR_MODEL,
             base_url=settings.COORDINATOR_BASE_URL,
             task_id=self.task_id,
+            max_tokens=settings.COORDINATOR_MAX_TOKENS,
         )
 
         modeler_llm = LLM(
@@ -21,6 +22,7 @@ class LLMFactory:
             model=settings.MODELER_MODEL,
             base_url=settings.MODELER_BASE_URL,
             task_id=self.task_id,
+            max_tokens=settings.MODELER_MAX_TOKENS,
         )
 
         coder_llm = LLM(
@@ -28,6 +30,7 @@ class LLMFactory:
             model=settings.CODER_MODEL,
             base_url=settings.CODER_BASE_URL,
             task_id=self.task_id,
+            max_tokens=settings.CODER_MAX_TOKENS,
         )
 
         writer_llm = LLM(
@@ -35,6 +38,7 @@ class LLMFactory:
             model=settings.WRITER_MODEL,
             base_url=settings.WRITER_BASE_URL,
             task_id=self.task_id,
+            max_tokens=settings.WRITER_MAX_TOKENS,
         )
 
         return coordinator_llm, modeler_llm, coder_llm, writer_llm
