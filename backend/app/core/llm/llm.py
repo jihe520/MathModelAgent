@@ -24,12 +24,13 @@ class LLM:
         model: str,
         base_url: str,
         task_id: str,
+        max_tokens: int | None = None,
     ):
         self.api_key = api_key
         self.model = model
         self.base_url = base_url
         self.chat_count = 0
-        self.max_tokens: int | None = None  # 添加最大token数限制
+        self.max_tokens = max_tokens
         self.task_id = task_id
 
     async def chat(
