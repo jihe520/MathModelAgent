@@ -58,9 +58,15 @@ class WriterAgent(Agent):  # 同样继承自Agent类
 
         if available_images:
             self.available_images = available_images
-            # 拼接成完整URL
-            image_list = ",".join(available_images)
-            image_prompt = f"\n可用的图片链接列表：\n{image_list}\n请在写作时适当引用这些图片链接。"
+            image_lines = "\n".join(
+                [f"- ![{img}]({img})" for img in available_images]
+            )
+            image_prompt = (
+                f"\n\n【必须插入的图片列表】\n"
+                f"以下图片是代码手生成的，你必须在论文相关段落后用 Markdown 格式逐一插入：\n"
+                f"{image_lines}\n"
+                f"插入格式为独占一行的 ![描述](文件名)，每张图片后需配3行以上的分析解读。\n"
+            )
             logger.info(f"image_prompt是:{image_prompt}")
             prompt = prompt + image_prompt
 
