@@ -130,6 +130,7 @@ source .venv/bin/activate # MacOS or Linux
 venv\Scripts\activate.bat # Windows
 # MacOS or Linux 运行这条命令
 ENV=DEV uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
+ENV=DEV REDIS_URL=redis://localhost:6379/0 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
 # Windows 运行这条命令
 set ENV=DEV ; uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120
 ```

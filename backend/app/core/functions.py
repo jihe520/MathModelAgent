@@ -43,9 +43,9 @@ writer_tools = [
                 "properties": {
                     "query": {"type": "string", "description": "The query string"}
                 },
+                "required": ["query"],
+                "additionalProperties": False,
             },
-            "required": ["query"],
-            "additionalProperties": False,
         },
     },
 ]

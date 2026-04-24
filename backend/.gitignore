@@ -12,3 +12,5 @@ project/work_dir/*
 config/config.toml
 config/latex-template/
 logs/
+
+.env.dev

@@ -5,14 +5,16 @@ from app.schemas.response import ScholarMessage
 
 
 class OpenAlexScholar:
-    def __init__(self, task_id: str, email: str = None):
+    def __init__(self, task_id: str, email: str = None, api_key: str = None):
         """Initialize OpenAlex client.
 
         Args:
             email: Optional email for better API service
+            api_key: Optional OpenAlex API key
         """
         self.base_url = "https://api.openalex.org"
         self.email = email
+        self.api_key = api_key
         self.task_id = task_id
 
     def _get_request_url(self, endpoint: str) -> str:
@@ -74,6 +76,8 @@ class OpenAlexScholar:
             params["mailto"] = self.email
         else:
             raise ValueError("配置OpenAlex邮箱获取访问文献权利")
+        if self.api_key:
+            params["api_key"] = self.api_key
 
         # 设置请求头，包含User-Agent和邮箱信息
         headers = {

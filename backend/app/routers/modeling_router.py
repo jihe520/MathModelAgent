@@ -136,9 +136,11 @@ async def validate_openalex_email(request: ValidateOpenalexEmailRequest):
     验证 OpenAlex Email 的有效性
     """
     try:
-        response = requests.get(
-            f"https://api.openalex.org/works?mailto={request.email}"
-        )
+        params = {"mailto": request.email}
+        if settings.OPENALEX_API_KEY:
+            params["api_key"] = settings.OPENALEX_API_KEY
+
+        response = requests.get("https://api.openalex.org/works", params=params)
         logger.debug(f"OpenAlex Email 验证响应: {response}")
         response.raise_for_status()
         return ValidateOpenalexEmailResponse(

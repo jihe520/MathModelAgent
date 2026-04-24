@@ -82,7 +82,11 @@ class MathModelWorkFlow(WorkFlow):
             timeout=3000,
         )
         
-        scholar = OpenAlexScholar(task_id=self.task_id, email=settings.OPENALEX_EMAIL)
+        scholar = OpenAlexScholar(
+            task_id=self.task_id,
+            email=settings.OPENALEX_EMAIL,
+            api_key=settings.OPENALEX_API_KEY,
+        )
 
         await redis_manager.publish_message(
             self.task_id,

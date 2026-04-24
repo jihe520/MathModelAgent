@@ -33,6 +33,12 @@ class LLM:
         self.max_tokens = max_tokens
         self.task_id = task_id
 
+    def _validate_config(self, agent_name: AgentType) -> None:
+        if not self.model or not str(self.model).strip():
+            raise ValueError(f"{agent_name} 未配置模型 ID，请设置对应的 *_MODEL")
+        if not self.api_key or not str(self.api_key).strip():
+            raise ValueError(f"{agent_name} 未配置 API Key，请设置对应的 *_API_KEY")
+
     async def chat(
         self,
         history: list = None,
@@ -45,6 +51,7 @@ class LLM:
         sub_title: str | None = None,
     ) -> str:
         logger.info(f"subtitle是:{sub_title}")
+        self._validate_config(agent_name)
 
         # 验证和修复工具调用完整性
         if history:
