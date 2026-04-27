@@ -1,66 +1,119 @@
-from fastapi import WebSocket, WebSocketDisconnect, APIRouter
-from app.services.redis_manager import redis_manager
-from app.schemas.response import SystemMessage
 import asyncio
-from app.services.ws_manager import ws_manager
 import json
+
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from starlette.websockets import WebSocketState
+
+from app.schemas.response import SystemMessage
+from app.services.redis_manager import redis_manager
+from app.services.ws_manager import ws_manager
+from app.utils.common_utils import ensure_safe_task_id
+from app.utils.log_util import logger
 
 router = APIRouter()
 
 
+def _is_websocket_closed(websocket: WebSocket) -> bool:
+    return (
+        websocket.client_state == WebSocketState.DISCONNECTED
+        or websocket.application_state == WebSocketState.DISCONNECTED
+    )
+
+
+def _is_closed_send_error(error: Exception) -> bool:
+    text = str(error)
+    return (
+        "Cannot call \"send\" once a close message has been sent" in text
+        or "Unexpected ASGI message 'websocket.send'" in text
+    )
+
+
 @router.websocket("/task/{task_id}")
 async def websocket_endpoint(websocket: WebSocket, task_id: str):
-    print(f"WebSocket 尝试连接 task_id: {task_id}")
+    try:
+        safe_task_id = ensure_safe_task_id(task_id)
+    except ValueError:
+        logger.warning(f"WebSocket task_id 非法: {task_id}")
+        await websocket.close(code=1008, reason="Invalid task id")
+        return
+
+    logger.info(f"WebSocket 尝试连接 task_id: {safe_task_id}")
 
     redis_async_client = await redis_manager.get_client()
-    if not await redis_async_client.exists(f"task_id:{task_id}"):
-        print(f"Task not found: {task_id}")
+    if not await redis_async_client.exists(f"task_id:{safe_task_id}"):
+        logger.warning(f"Task not found: {safe_task_id}")
         await websocket.close(code=1008, reason="Task not found")
         return
-    print(f"WebSocket connected for task: {task_id}")
+    logger.info(f"WebSocket connected for task: {safe_task_id}")
 
     # 建立 WebSocket 连接
     await ws_manager.connect(websocket)
     websocket.timeout = 500
-    print(f"WebSocket connection status: {websocket.client}")
+    logger.debug(f"WebSocket connection status: {websocket.client}")
 
     # 订阅 Redis 频道
-    pubsub = await redis_manager.subscribe_to_task(task_id)
-    print(f"Subscribed to Redis channel: task:{task_id}:messages")
-
-    await redis_manager.publish_message(
-        task_id,
-        SystemMessage(content="任务开始处理"),
-    )
+    pubsub = await redis_manager.subscribe_to_task(safe_task_id)
+    logger.debug(f"Subscribed to Redis channel: task:{safe_task_id}:messages")
 
     try:
         while True:
+            if _is_websocket_closed(websocket):
+                logger.info(f"WebSocket 已关闭，停止转发 task_id: {safe_task_id}")
+                break
             try:
                 msg = await pubsub.get_message(ignore_subscribe_messages=True)
                 if msg:
-                    print(f"Received message: {msg}")
                     try:
                         msg_dict = json.loads(msg["data"])
-                        await ws_manager.send_personal_message_json(msg_dict, websocket)
-                        print(f"Sent message to WebSocket: {msg_dict}")
                     except Exception as e:
-                        print(f"Error parsing message: {e}")
-                        await ws_manager.send_personal_message_json(
-                            {"error": str(e)}, websocket
-                        )
+                        logger.error(f"Error parsing websocket payload: {e}")
+                        if _is_websocket_closed(websocket):
+                            break
+                        try:
+                            await ws_manager.send_personal_message_json(
+                                SystemMessage(
+                                    content="实时消息解析失败，已忽略异常数据。",
+                                    type="error",
+                                ).model_dump(),
+                                websocket,
+                            )
+                        except WebSocketDisconnect:
+                            logger.info("WebSocket disconnected while sending parse error notice")
+                            break
+                        except RuntimeError as send_error:
+                            if _is_closed_send_error(send_error):
+                                logger.info("WebSocket 已关闭，跳过解析失败提示发送")
+                                break
+                            raise
+                    else:
+                        try:
+                            await ws_manager.send_personal_message_json(msg_dict, websocket)
+                        except WebSocketDisconnect:
+                            logger.info("WebSocket disconnected while sending message")
+                            break
+                        except RuntimeError as send_error:
+                            if _is_closed_send_error(send_error):
+                                logger.info(
+                                    f"WebSocket 已关闭，停止发送后续消息 task_id: {safe_task_id}"
+                                )
+                                break
+                            raise
                 await asyncio.sleep(0.1)
 
             except WebSocketDisconnect:
-                print("WebSocket disconnected")
+                logger.info("WebSocket disconnected")
                 break
             except Exception as e:
-                print(f"Error in websocket loop: {e}")
+                if _is_closed_send_error(e) or _is_websocket_closed(websocket):
+                    logger.info(f"WebSocket 发送通道已关闭，结束循环 task_id: {safe_task_id}")
+                    break
+                logger.error(f"Error in websocket loop: {e}")
                 await asyncio.sleep(1)
                 continue
 
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        logger.error(f"WebSocket error: {e}")
     finally:
-        await pubsub.unsubscribe(f"task:{task_id}:messages")
+        await pubsub.unsubscribe(f"task:{safe_task_id}:messages")
         ws_manager.disconnect(websocket)
-        print(f"WebSocket connection closed for task: {task_id}")
+        logger.info(f"WebSocket connection closed for task: {safe_task_id}")

@@ -18,9 +18,7 @@ import { onMounted, onBeforeUnmount, ref } from 'vue'
 import { useTaskStore } from '@/stores/task'
 import { getWriterSeque } from '@/apis/commonApi';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/toast/use-toast'
 import FilesSheet from '@/pages/task/components/FileSheet.vue'
-const { toast } = useToast()
 
 
 const props = defineProps<{ task_id: string }>()
@@ -59,6 +57,7 @@ const updateDuration = () => {
 console.log('Task ID:', props.task_id)
 
 onMounted(async () => {
+  await taskStore.loadTaskMessages(props.task_id)
   taskStore.connectWebSocket(props.task_id)
   const res = await getWriterSeque();
   writerSequence.value = Array.isArray(res.data) ? res.data : [];

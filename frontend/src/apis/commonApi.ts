@@ -1,4 +1,5 @@
 import request from "@/utils/request";
+import type { Message } from "@/utils/response";
 
 export function getHelloWorld() {
 	return request.get<{ message: string }>("/");
@@ -7,6 +8,14 @@ export function getHelloWorld() {
 // 获取论文顺序
 export function getWriterSeque() {
 	return request.get<{ writer_seque: string[] }>("/writer_seque");
+}
+
+export function getTaskMessages(task_id: string) {
+	return request.get<Message[]>("/messages", {
+		params: {
+			task_id,
+		},
+	});
 }
 
 

@@ -9,6 +9,8 @@ import pypandoc
 from app.config.setting import settings
 from icecream import ic
 
+TASK_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+
 
 def create_task_id() -> str:
     """生成任务ID"""
@@ -16,6 +18,13 @@ def create_task_id() -> str:
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     random_hash = hashlib.md5(str(datetime.datetime.now()).encode()).hexdigest()[:8]
     return f"{timestamp}-{random_hash}"
+
+
+def ensure_safe_task_id(task_id: str) -> str:
+    normalized = (task_id or "").strip()
+    if not normalized or not TASK_ID_PATTERN.fullmatch(normalized):
+        raise ValueError("非法 task_id")
+    return normalized
 
 
 def create_work_dir(task_id: str) -> str:

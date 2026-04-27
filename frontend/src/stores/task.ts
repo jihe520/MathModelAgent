@@ -4,34 +4,154 @@ import { TaskWebSocket } from '@/utils/websocket'
 import type { Message, CoderMessage, WriterMessage, UserMessage, ModelerMessage, CoordinatorMessage, InterpreterMessage } from '@/utils/response'
 // import messageData from '@/test/20250524-115938-d4c84576.json'
 import { AgentType } from '@/utils/enum'
+import { getTaskMessages } from '@/apis/commonApi'
 
 export const useTaskStore = defineStore('task', () => {
   // 初始化时直接加载测试数据，确保页面首次渲染时有数据
   // const messages = ref<Message[]>(messageData as Message[])
-  const messages = ref<Message[]>([])
+  const messagesByTask = ref<Record<string, Message[]>>({})
+  const currentTaskId = ref<string | null>(null)
+  const messages = computed<Message[]>(() => {
+    if (!currentTaskId.value) {
+      return []
+    }
+    return messagesByTask.value[currentTaskId.value] ?? []
+  })
+  const seenMessageIdsByTask = new Map<string, Set<string>>()
   let ws: TaskWebSocket | null = null
+
+  function getMessageTimestamp(message: Message): number | null {
+    if (!message.created_at) {
+      return null
+    }
+    const timestamp = Date.parse(message.created_at)
+    return Number.isNaN(timestamp) ? null : timestamp
+  }
+
+  function sortMessages(items: Message[]) {
+    return [...items].sort((left, right) => {
+      const leftTs = getMessageTimestamp(left)
+      const rightTs = getMessageTimestamp(right)
+      if (leftTs == null || rightTs == null || leftTs === rightTs) {
+        return 0
+      }
+      return leftTs - rightTs
+    })
+  }
+
+  function isMessagePayload(payload: unknown): payload is Message {
+    if (!payload || typeof payload !== 'object') {
+      return false
+    }
+    const msgType = Reflect.get(payload, 'msg_type')
+    return (
+      typeof Reflect.get(payload, 'id') === 'string' &&
+      typeof msgType === 'string' &&
+      ['system', 'agent', 'user', 'tool'].includes(msgType)
+    )
+  }
+
+  function setCurrentTask(taskId: string) {
+    currentTaskId.value = taskId
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('currentTaskId', taskId)
+    }
+  }
+
+  function ensureTaskBucket(taskId: string) {
+    if (!messagesByTask.value[taskId]) {
+      messagesByTask.value[taskId] = []
+    }
+    if (!seenMessageIdsByTask.has(taskId)) {
+      seenMessageIdsByTask.set(taskId, new Set())
+    }
+  }
+
+  function appendMessage(taskId: string, message: Message) {
+    ensureTaskBucket(taskId)
+    const seenIds = seenMessageIdsByTask.get(taskId)
+    if (message.id && seenIds?.has(message.id)) {
+      messagesByTask.value[taskId] = sortMessages(
+        messagesByTask.value[taskId].map((existing) =>
+          existing.id === message.id ? message : existing,
+        ),
+      )
+      return
+    }
+    if (message.id) {
+      seenIds?.add(message.id)
+    }
+    messagesByTask.value[taskId] = sortMessages([
+      ...messagesByTask.value[taskId],
+      message,
+    ])
+  }
+
+  function mergeMessages(taskId: string, incomingMessages: Message[]) {
+    ensureTaskBucket(taskId)
+    const existingMessages = messagesByTask.value[taskId]
+    const mergedById = new Map<string, Message>()
+
+    for (const message of [...existingMessages, ...incomingMessages]) {
+      if (!message.id) {
+        continue
+      }
+      mergedById.set(message.id, message)
+    }
+
+    const mergedMessages = Array.from(mergedById.values())
+    messagesByTask.value[taskId] = sortMessages(mergedMessages)
+    seenMessageIdsByTask.set(
+      taskId,
+      new Set(mergedMessages.map((message) => message.id)),
+    )
+  }
 
   // 连接 WebSocket
   function connectWebSocket(taskId: string) {
+    if (ws) {
+      ws.close()
+      ws = null
+    }
+    setCurrentTask(taskId)
+    ensureTaskBucket(taskId)
+
     const baseUrl = import.meta.env.VITE_WS_URL
     const wsUrl = `${baseUrl}/task/${taskId}`
 
     ws = new TaskWebSocket(wsUrl, (data) => {
-      console.log(data)
-      messages.value.push(data)
+      if (!isMessagePayload(data)) {
+        console.warn('忽略非标准任务消息:', data)
+        return
+      }
+      appendMessage(taskId, data)
     })
     // 初始化测试数据（已在上面初始化，这里可以注释掉）
     // messages.value = messageData as Message[]
     ws.connect()
   }
 
+  async function loadTaskMessages(taskId: string) {
+    setCurrentTask(taskId)
+    ensureTaskBucket(taskId)
+    try {
+      const response = await getTaskMessages(taskId)
+      const validMessages = (response.data ?? []).filter(isMessagePayload)
+      mergeMessages(taskId, validMessages)
+    } catch (error) {
+      console.error('加载任务历史消息失败:', error)
+    }
+  }
+
   // 关闭 WebSocket
   function closeWebSocket() {
     ws?.close()
+    ws = null
   }
 
   function addUserMessage(content: string) {
-    messages.value.push({
+    const taskId = currentTaskId.value ?? 'local'
+    appendMessage(taskId, {
       id: Date.now().toString(),
       msg_type: 'user',
       content: content,
@@ -43,7 +163,7 @@ export const useTaskStore = defineStore('task', () => {
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(messages.value, null, 2))
     const downloadAnchorNode = document.createElement('a')
     downloadAnchorNode.setAttribute("href", dataStr)
-    downloadAnchorNode.setAttribute("download", "message.json")
+    downloadAnchorNode.setAttribute("download", `${currentTaskId.value ?? 'task'}-messages.json`)
     document.body.appendChild(downloadAnchorNode)
     downloadAnchorNode.click()
     downloadAnchorNode.remove()
@@ -143,6 +263,7 @@ export const useTaskStore = defineStore('task', () => {
     writerMessages,
     interpreterMessage,
     files,
+    loadTaskMessages,
     connectWebSocket,
     closeWebSocket,
     downloadMessages,
