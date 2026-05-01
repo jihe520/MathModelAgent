@@ -7,6 +7,7 @@ import { AgentType } from './enum';
 
 export interface BaseMessage {
   id: string;
+  created_at?: string;
   msg_type: 'system' | 'agent' | 'user' | 'tool';
   content?: string | null;
 }
