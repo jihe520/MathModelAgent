@@ -1,3 +1,5 @@
+"""代码手 Agent 的系统提示词。"""
+
 import platform
 
 CODER_PROMPT = f"""

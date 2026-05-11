@@ -1,82 +1,82 @@
 <script setup lang="ts">
+import { getWriterSeque } from "@/apis/commonApi";
+import CoderEditor from "@/components/AgentEditor/CoderEditor.vue";
+import ModelerEditor from "@/components/AgentEditor/ModelerEditor.vue";
+import WriterEditor from "@/components/AgentEditor/WriterEditor.vue";
+import ChatArea from "@/components/ChatArea.vue";
+import { Button } from "@/components/ui/button";
 import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/ui/resizable'
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs'
-import CoderEditor from '@/components/AgentEditor/CoderEditor.vue'
-import WriterEditor from '@/components/AgentEditor/WriterEditor.vue'
-import ModelerEditor from '@/components/AgentEditor/ModelerEditor.vue'
-import ChatArea from '@/components/ChatArea.vue'
-import { onMounted, onBeforeUnmount, ref } from 'vue'
-import { useTaskStore } from '@/stores/task'
-import { getWriterSeque } from '@/apis/commonApi';
-import { Button } from '@/components/ui/button';
-import FilesSheet from '@/pages/task/components/FileSheet.vue'
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import FilesSheet from "@/pages/task/components/FileSheet.vue";
+import { useTaskStore } from "@/stores/task";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 
+// ---- Props ----
 
-const props = defineProps<{ task_id: string }>()
-const taskStore = useTaskStore()
+const props = defineProps<{ task_id: string }>();
 
+// ---- Reactive State ----
+
+const taskStore = useTaskStore();
+
+/** 论文写作顺序 */
 const writerSequence = ref<string[]>([]);
 
-// 项目运行时长相关
-const startTime = ref<number>(Date.now())
-const currentTime = ref<number>(Date.now())
-let timer: ReturnType<typeof setInterval> | null = null
+/** 运行时长相关状态 */
+const startTime = ref<number>(Date.now());
+const currentTime = ref<number>(Date.now());
+let timer: ReturnType<typeof setInterval> | null = null;
 
-// 格式化运行时长
+/** 格式化运行时长为可读字符串 */
 const formatDuration = (ms: number): string => {
-  const seconds = Math.floor(ms / 1000)
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const remainingSeconds = seconds % 60
+	const seconds = Math.floor(ms / 1000);
+	const hours = Math.floor(seconds / 3600);
+	const minutes = Math.floor((seconds % 3600) / 60);
+	const remainingSeconds = seconds % 60;
 
-  if (hours > 0) {
-    return `${hours}h ${minutes}m ${remainingSeconds}s`
-  } else if (minutes > 0) {
-    return `${minutes}m ${remainingSeconds}s`
-  } else {
-    return `${remainingSeconds}s`
-  }
-}
+	if (hours > 0) {
+		return `${hours}h ${minutes}m ${remainingSeconds}s`;
+	}
+	if (minutes > 0) {
+		return `${minutes}m ${remainingSeconds}s`;
+	}
+	return `${remainingSeconds}s`;
+};
 
-// 计算运行时长
-const runningDuration = ref<string>('0s')
+/** 运行时长显示值 */
+const runningDuration = ref<string>("0s");
+
+/** 更新运行时长 */
 const updateDuration = () => {
-  currentTime.value = Date.now()
-  runningDuration.value = formatDuration(currentTime.value - startTime.value)
-}
+	currentTime.value = Date.now();
+	runningDuration.value = formatDuration(currentTime.value - startTime.value);
+};
 
-console.log('Task ID:', props.task_id)
+// ---- Lifecycle Hooks ----
 
 onMounted(async () => {
-  await taskStore.loadTaskMessages(props.task_id)
-  taskStore.connectWebSocket(props.task_id)
-  const res = await getWriterSeque();
-  writerSequence.value = Array.isArray(res.data) ? res.data : [];
+	await taskStore.loadTaskMessages(props.task_id);
+	taskStore.connectWebSocket(props.task_id);
+	const res = await getWriterSeque();
+	writerSequence.value = Array.isArray(res.data) ? res.data : [];
 
-  // 开始计时
-  timer = setInterval(updateDuration, 1000)
-  updateDuration() // 立即更新一次
-})
-
+	// 开始计时
+	timer = setInterval(updateDuration, 1000);
+	updateDuration(); // 立即更新一次
+});
 
 onBeforeUnmount(() => {
-  taskStore.closeWebSocket()
-  // 清理计时器
-  if (timer) {
-    clearInterval(timer)
-    timer = null
-  }
-})
-
+	taskStore.closeWebSocket();
+	// 清理计时器
+	if (timer) {
+		clearInterval(timer);
+		timer = null;
+	}
+});
 </script>
 
 <template>

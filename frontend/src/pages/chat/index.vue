@@ -1,29 +1,30 @@
 <script setup lang="ts">
-
-
-import AppSidebar from '@/components/AppSidebar.vue'
-import UserStepper from '@/components/UserStepper.vue'
-import ModelingExamples from '@/components/ModelingExamples.vue'
-import { onMounted, ref } from 'vue'
+import { getHelloWorld } from "@/apis/commonApi";
+import AppSidebar from "@/components/AppSidebar.vue";
+import ModelingExamples from "@/components/ModelingExamples.vue";
+import ServiceStatus from "@/components/ServiceStatus.vue";
+import UserStepper from "@/components/UserStepper.vue";
+import Button from "@/components/ui/button/Button.vue";
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar'
-import { getHelloWorld } from '@/apis/commonApi'
-import MoreDetail from '@/pages/chat/components/MoreDetail.vue'
-import Button from '@/components/ui/button/Button.vue'
-import ServiceStatus from '@/components/ServiceStatus.vue'
-import { AppWindow, CircleEllipsis } from 'lucide-vue-next'
+	SidebarInset,
+	SidebarProvider,
+	SidebarTrigger,
+} from "@/components/ui/sidebar";
+import MoreDetail from "@/pages/chat/components/MoreDetail.vue";
+import { AppWindow, CircleEllipsis } from "lucide-vue-next";
+import { onMounted, ref } from "vue";
+
+// ---- Reactive State ----
+
+const isMoreDetailOpen = ref(false);
+
+// ---- Lifecycle Hooks ----
+
 onMounted(() => {
-  getHelloWorld().then((res) => {
-    console.log(res.data)
-  })
-})
-
-
-const isMoreDetailOpen = ref(false)
-
+	getHelloWorld().then((res) => {
+		console.log(res.data);
+	});
+});
 </script>
 
 <template>

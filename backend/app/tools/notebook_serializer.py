@@ -1,10 +1,13 @@
+"""Jupyter Notebook 序列化模块，管理 notebook 的创建和内容追加。"""
+
 import nbformat
 from nbformat import v4 as nbf
-import ansi2html
+import ansi2html  # type: ignore[import-unresolved]
 import os
 
 
 class NotebookSerializer:
+    """Jupyter Notebook 序列化器，负责创建和维护 .ipynb 文件。"""
     def __init__(self, work_dir=None, notebook_name="notebook.ipynb"):
         self.nb = nbf.new_notebook()
         self.notebook_path = None

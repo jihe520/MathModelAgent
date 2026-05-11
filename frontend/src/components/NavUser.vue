@@ -1,56 +1,56 @@
 <script setup lang="ts">
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar'
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	useSidebar,
+} from "@/components/ui/sidebar";
+import ApiKeyDialog from "@/pages/chat/components/ApiDialog.vue";
 import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  LogOut,
-  KeyRound,
-} from 'lucide-vue-next'
-import { ref } from 'vue'
-import ApiKeyDialog from '@/pages/chat/components/ApiDialog.vue'
+	BadgeCheck,
+	Bell,
+	ChevronsUpDown,
+	KeyRound,
+	LogOut,
+} from "lucide-vue-next";
+import { ref } from "vue";
+
+// ---- Props ----
 
 const props = defineProps({
-  user: {
-    type: Object,
-    default: () => ({
-      name: 'San Jin',
-      email: 'mathmodel@mathmodel.com',
-      avatar: 'https://github.com/jihe520.png'
-    })
-  }
-})
+	user: {
+		type: Object,
+		default: () => ({
+			name: "San Jin",
+			email: "mathmodel@mathmodel.com",
+			avatar: "https://github.com/jihe520.png",
+		}),
+	},
+});
 
-const { isMobile } = useSidebar()
+// ---- Reactive State ----
 
+const { isMobile } = useSidebar();
 
-// API Key 对话框控制
-const isApiKeyDialogOpen = ref(false)
+/** API Key 对话框开关状态 */
+const isApiKeyDialogOpen = ref(false);
+
+// ---- Methods ----
 
 const openApiKeyDialog = () => {
-  isApiKeyDialogOpen.value = true
-}
-
+	isApiKeyDialogOpen.value = true;
+};
 </script>
 
 <template>

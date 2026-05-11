@@ -1,10 +1,13 @@
+"""日志初始化模块，配置 loguru 日志格式和输出。"""
+
 import os
 import sys
 import time
-from loguru import logger as _logger
+from loguru import logger as _logger  # type: ignore[import-unresolved]
 
 
 class LoggerInitializer:
+    """日志初始化器，配置控制台和文件日志输出。"""
     def __init__(self):
         self.log_path = os.path.join(os.getcwd(), "logs")
         self.__ensure_log_directory_exists()

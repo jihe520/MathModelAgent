@@ -1,3 +1,5 @@
+"""WebSocket 路由模块，提供实时任务消息推送。"""
+
 import asyncio
 import json
 
@@ -48,7 +50,7 @@ async def websocket_endpoint(websocket: WebSocket, task_id: str):
 
     # 建立 WebSocket 连接
     await ws_manager.connect(websocket)
-    websocket.timeout = 500
+    # websocket.timeout 在 Starlette WebSocket 中不可用，已移除
     logger.debug(f"WebSocket connection status: {websocket.client}")
 
     # 订阅 Redis 频道

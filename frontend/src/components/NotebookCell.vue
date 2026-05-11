@@ -1,65 +1,72 @@
 <script setup lang="ts">
-import type { CodeExecutionResult } from '@/utils/response'
-import { renderMarkdown } from '@/utils/markdown'
-import type { NoteCell, CodeCell, ResultCell } from '@/utils/interface'
+import type { CodeCell, NoteCell, ResultCell } from "@/utils/interface";
+import { renderMarkdown } from "@/utils/markdown";
+import type { CodeExecutionResult } from "@/utils/response";
+
+// ---- Props ----
 
 defineProps<{
-  cell: NoteCell
-}>()
+	cell: NoteCell;
+}>();
 
-// 获取结果格式的CSS类
+// ---- Methods ----
+
+/** 获取结果格式对应的 CSS 类 */
 const getResultClass = (result: CodeExecutionResult) => {
-  switch (result.res_type) {
-    case 'stdout':
-      return 'text-gray-600'
-    case 'stderr':
-      return 'text-orange-600'
-    case 'error':
-      return 'text-red-600'
-    default:
-      return 'text-gray-800'
-  }
-}
+	switch (result.res_type) {
+		case "stdout":
+			return "text-gray-600";
+		case "stderr":
+			return "text-orange-600";
+		case "error":
+			return "text-red-600";
+		default:
+			return "text-gray-800";
+	}
+};
 
-// 判断结果是否为图片
+/** 判断结果是否为图片格式 */
 const isImageResult = (result: CodeExecutionResult) => {
-  return result.res_type === 'result' && 
-    ['png', 'jpeg', 'svg'].includes(result.format as string)
-}
+	return (
+		result.res_type === "result" &&
+		["png", "jpeg", "svg"].includes(result.format as string)
+	);
+};
 
-// 判断结果是否为LaTeX
+/** 判断结果是否为 LaTeX 格式 */
 const isLatexResult = (result: CodeExecutionResult) => {
-  return result.res_type === 'result' && result.format === 'latex'
-}
+	return result.res_type === "result" && result.format === "latex";
+};
 
-// 判断结果是否为JSON
+/** 判断结果是否为 JSON 格式 */
 const isJsonResult = (result: CodeExecutionResult) => {
-  return result.res_type === 'result' && result.format === 'json'
-}
+	return result.res_type === "result" && result.format === "json";
+};
 
-// 格式化JSON显示
+/** 格式化 JSON 显示 */
 const formatJson = (jsonString: string) => {
-  try {
-    const parsed = JSON.parse(jsonString)
-    return JSON.stringify(parsed, null, 2)
-  } catch (e) {
-    return jsonString
-  }
-}
+	try {
+		const parsed = JSON.parse(jsonString);
+		return JSON.stringify(parsed, null, 2);
+	} catch (e) {
+		return jsonString;
+	}
+};
 
-// 渲染Markdown内容
+/** 渲染 Markdown 内容 */
 const renderMarkdownContent = (content: string) => {
-  return renderMarkdown(content)
-}
+	return renderMarkdown(content);
+};
 
-// 类型守卫函数，用于区分单元格类型
+/** 类型守卫：判断是否为代码单元格 */
 const isCodeCell = (cell: NoteCell): cell is CodeCell => {
-  return cell.type === 'code'
-}
+	return cell.type === "code";
+};
 
+/** 类型守卫：判断是否为结果单元格 */
 const isResultCell = (cell: NoteCell): cell is ResultCell => {
-  return cell.type === 'result'
-}
+	return cell.type === "result";
+};
 </script>
 
 <template>

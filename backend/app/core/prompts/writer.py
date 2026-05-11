@@ -1,9 +1,19 @@
+"""写作手 Agent 的系统提示词。"""
+
 from app.schemas.enums import FormatOutPut
 
 
 def get_writer_prompt(
     format_output: FormatOutPut = FormatOutPut.Markdown,
 ):
+    """根据输出格式生成写作手的系统提示词。
+
+    Args:
+        format_output: 输出格式（Markdown 或 LaTeX）。
+
+    Returns:
+        写作手系统提示词字符串。
+    """
     return f"""
 # Role
 你是一名数学建模竞赛论文写作专家，擅长技术文档撰写和学术文献综合。

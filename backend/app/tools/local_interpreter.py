@@ -1,3 +1,5 @@
+"""本地代码解释器模块，通过本地 Jupyter 内核执行 Python 代码。"""
+
 from app.tools.base_interpreter import BaseCodeInterpreter
 from app.tools.notebook_serializer import NotebookSerializer
 import jupyter_client
@@ -13,6 +15,7 @@ from app.schemas.response import (
 
 
 class LocalCodeInterpreter(BaseCodeInterpreter):
+    """基于本地 Jupyter 内核的代码解释器。"""
     def __init__(
         self,
         task_id: str,
@@ -32,7 +35,7 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
         )
         self._pre_execute_code()
 
-    def _pre_execute_code(self):
+    def _pre_execute_code(self):  # type: ignore[reportIncompatibleMethodOverride]
         init_code = (
             f"import os\n"
             f"work_dir = r'{self.work_dir}'\n"
@@ -82,7 +85,7 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
                 text_to_gpt.append(self._truncate_text(f"[{mark}]\n{out_str}"))
                 #  添加text到notebook
                 content_to_display.append(
-                    ResultModel(type="result", format="text", msg=out_str)
+                    ResultModel(res_type="result", format="text", msg=out_str)
                 )
                 self.notebook_serializer.add_code_cell_output_to_notebook(out_str)
 
@@ -99,14 +102,14 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
                 if "png" in mark:
                     self.notebook_serializer.add_image_to_notebook(out_str, "image/png")
                     content_to_display.append(
-                        ResultModel(type="result", format="png", msg=out_str)
+                        ResultModel(res_type="result", format="png", msg=out_str)
                     )
                 else:
                     self.notebook_serializer.add_image_to_notebook(
                         out_str, "image/jpeg"
                     )
                     content_to_display.append(
-                        ResultModel(type="result", format="jpeg", msg=out_str)
+                        ResultModel(res_type="result", format="jpeg", msg=out_str)
                     )
 
             elif mark == "error":
@@ -131,7 +134,9 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
         )
 
     def execute_code_(self, code) -> list[tuple[str, str]]:
-        msg_id = self.kc.execute(code)
+        assert self.kc is not None
+        assert self.km is not None
+        self.kc.execute(code)
         logger.info(f"执行代码: {code}")
         # Get the output of the code
         msg_list = []
@@ -144,7 +149,7 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
                     and iopub_msg["content"].get("execution_state") == "idle"
                 ):
                     break
-            except:
+            except Exception:
                 if self.interrupt_signal:
                     self.km.interrupt_kernel()
                     self.interrupt_signal = False
@@ -211,6 +216,8 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
 
     async def cleanup(self):
         # 关闭内核
+        assert self.kc is not None
+        assert self.km is not None
         self.kc.shutdown()
         logger.info("关闭内核")
         self.km.shutdown_kernel()
@@ -220,6 +227,7 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
 
     def restart_jupyter_kernel(self):
         """Restart the Jupyter kernel and recreate the work directory."""
+        assert self.kc is not None
         self.kc.shutdown()
         self.km, self.kc = jupyter_client.manager.start_new_kernel(
             kernel_name="python3"

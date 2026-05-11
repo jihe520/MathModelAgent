@@ -1,3 +1,5 @@
+"""用户输出管理模块，负责论文结果的拼接、引用处理和保存。"""
+
 import os
 import re
 from app.utils.data_recorder import DataRecorder
@@ -7,6 +9,7 @@ import uuid
 
 
 class UserOutput:
+    """管理建模任务的输出结果，处理引用编号、脚注和最终论文拼接。"""
     def __init__(
         self, work_dir: str, ques_count: int, data_recorder: DataRecorder | None = None
     ):
@@ -46,16 +49,23 @@ class UserOutput:
         ]
 
     def set_res(self, key: str, writer_response: WriterResponse):
+        """设置指定章节的写作结果。
+
+        Args:
+            key: 章节标识（如 eda、ques1）。
+            writer_response: 写作手的响应对象。
+        """
         self.res[key] = {
             "response_content": writer_response.response_content,
             "footnotes": writer_response.footnotes,
         }
 
     def get_res(self):
+        """获取所有章节的写作结果。"""
         return self.res
 
     def get_model_build_solve(self) -> str:
-        """获取模型求解"""
+        """获取模型求解结果的摘要字符串。"""
         model_build_solve = ",".join(
             f"{key}-{value}"
             for key, value in self.res.items()
@@ -65,6 +75,14 @@ class UserOutput:
         return model_build_solve
 
     def replace_references_with_uuid(self, text: str) -> str:
+        """将文本中的引用标记替换为 UUID，用于去重和排序。
+
+        Args:
+            text: 包含引用标记的文本。
+
+        Returns:
+            替换引用为 UUID 后的文本。
+        """
         # 匹配引用内容，格式为 {[^数字]: 引用内容}
         # 修改正则表达式，匹配大括号包裹的引用格式
         references = re.findall(r"\{\[\^(\d+)\]:\s*(.*?)\}", text, re.DOTALL)
@@ -104,6 +122,14 @@ class UserOutput:
         return text
 
     def sort_text_with_footnotes(self, replace_res: dict) -> dict:
+        """按章节顺序排列文本并将 UUID 替换为连续编号。
+
+        Args:
+            replace_res: 已替换 UUID 的结果字典。
+
+        Returns:
+            按顺序编号后的结果字典。
+        """
         sort_res = {}
         ref_index = 1
 
@@ -124,6 +150,14 @@ class UserOutput:
         return sort_res
 
     def append_footnotes_to_text(self, text: str) -> str:
+        """在文本末尾追加参考文献列表。
+
+        Args:
+            text: 论文正文。
+
+        Returns:
+            附带参考文献的完整文本。
+        """
         text += "\n\n ## 参考文献"
         # 将脚注转换为列表并按 number 排序
         sorted_footnotes = sorted(self.footnotes.items(), key=lambda x: x[1]["number"])
@@ -132,6 +166,7 @@ class UserOutput:
         return text
 
     def get_result_to_save(self) -> str:
+        """获取最终拼接的论文全文，包含引用处理和参考文献。"""
         replace_res = {}
 
         for key, value in self.res.items():
@@ -149,9 +184,8 @@ class UserOutput:
         full_res = self.append_footnotes_to_text(full_res_1)
         return full_res
 
-    def save_result(
-        self,
-    ):
+    def save_result(self):
+        """将结果保存为 res.json 和 res.md 文件。"""
         with open(os.path.join(self.work_dir, "res.json"), "w", encoding="utf-8") as f:
             json.dump(self.res, f, ensure_ascii=False, indent=4)
 

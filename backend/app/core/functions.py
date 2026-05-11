@@ -1,3 +1,5 @@
+"""工具函数定义模块，为各 Agent 提供可用的工具 schema。"""
+
 coder_tools = [
     {
         "type": "function",

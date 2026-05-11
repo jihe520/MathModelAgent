@@ -1,25 +1,29 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import type { HTMLAttributes } from 'vue'
-import { marked } from 'marked'
-import { computed } from 'vue'
-import { AgentType } from '@/utils/enum'
+import { cn } from "@/lib/utils";
+import type { AgentType } from "@/utils/enum";
+import { marked } from "marked";
+import type { HTMLAttributes } from "vue";
+import { computed } from "vue";
 
+// ---- Props ----
 
 interface BubbleProps {
-  type: 'agent' | 'user'
-  agentType?: AgentType
-  class?: HTMLAttributes['class']
-  content: string
+	type: "agent" | "user";
+	agentType?: AgentType;
+	class?: HTMLAttributes["class"];
+	content: string;
 }
 
 const props = withDefaults(defineProps<BubbleProps>(), {
-  type: 'user'
-})
+	type: "user",
+});
 
+// ---- Computed ----
+
+/** 渲染 Markdown 内容 */
 const renderedContent = computed(() => {
-  return marked.parse(props.content)
-})
+	return marked.parse(props.content);
+});
 </script>
 
 <template>

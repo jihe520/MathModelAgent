@@ -1,7 +1,10 @@
+"""WebSocket 连接管理模块。"""
+
 from fastapi import WebSocket
 
 
 class WebSocketManager:
+    """WebSocket 连接管理器，维护活跃连接并提供消息广播功能。"""
     def __init__(self):
         self.active_connections: list[WebSocket] = []
 

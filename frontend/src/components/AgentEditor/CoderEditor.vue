@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import NotebookArea from '@/components/NotebookArea.vue'
+import NotebookArea from "@/components/NotebookArea.vue";
 </script>
 
 <template>

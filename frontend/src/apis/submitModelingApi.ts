@@ -1,6 +1,10 @@
-// ... existing code ...
 import request from "@/utils/request";
 
+/**
+ * 提交数学建模任务
+ * @param problem 问题描述
+ * @param files 上传的数据文件
+ */
 export function submitModelingTask(
 	problem: {
 		ques_all: string;
@@ -12,7 +16,7 @@ export function submitModelingTask(
 	const formData = new FormData();
 	// 添加问题数据
 	formData.append("ques_all", problem.ques_all);
-	formData.append("comp_template", 'CHINA');
+	formData.append("comp_template", "CHINA");
 	formData.append("format_output", problem.format_output || "Markdown");
 
 	if (files) {

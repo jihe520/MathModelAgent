@@ -1,40 +1,44 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+	Dialog,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { ref } from "vue";
 
-// 控制弹窗显示
-const showConfirmDialog = ref(false)
-let resolvePromise: (value: boolean) => void
+// ---- Reactive State ----
 
-// 打开确认弹窗（返回Promise）
+/** 控制弹窗显示 */
+const showConfirmDialog = ref(false);
+let resolvePromise: (value: boolean) => void;
+
+// ---- Methods ----
+
+/** 打开确认弹窗（返回 Promise） */
 const openConfirmDialog = () => {
-  showConfirmDialog.value = true
-  return new Promise((resolve) => {
-    resolvePromise = resolve
-  })
-}
+	showConfirmDialog.value = true;
+	return new Promise((resolve) => {
+		resolvePromise = resolve;
+	});
+};
 
-// 处理确认操作
+/** 处理确认操作 */
 const handleConfirm = () => {
-  showConfirmDialog.value = false
-  resolvePromise(true) // 继续执行
-}
+	showConfirmDialog.value = false;
+	resolvePromise(true); // 继续执行
+};
 
-// 处理取消操作
+/** 处理取消操作 */
 const handleCancel = () => {
-  showConfirmDialog.value = false
-  resolvePromise(false) // 返回上传文件
-}
+	showConfirmDialog.value = false;
+	resolvePromise(false); // 返回上传文件
+};
 
-// 暴露方法给父组件
-defineExpose({ openConfirmDialog })
+/** 暴露方法给父组件 */
+defineExpose({ openConfirmDialog });
 </script>
 <template>
   <!-- 确认弹窗 -->

@@ -1,14 +1,22 @@
+"""工作流程定义模块，管理建模任务的求解和写作流程。"""
+
 from app.models.user_output import UserOutput
 from app.tools.base_interpreter import BaseCodeInterpreter
 from app.core.agents.modeler_agent import ModelerToCoder
 
 
 class Flows:
+    """管理数学建模任务的求解流程和写作流程。"""
     def __init__(self, questions: dict[str, str | int]):
         self.flows: dict[str, dict] = {}
         self.questions: dict[str, str | int] = questions
 
     def set_flows(self, ques_count: int):
+        """根据问题数量设置流程节点。
+
+        Args:
+            ques_count: 问题数量。
+        """
         ques_str = [f"ques{i}" for i in range(1, ques_count + 1)]
         seq = [
             "firstPage",
@@ -26,6 +34,15 @@ class Flows:
     def get_solution_flows(
         self, questions: dict[str, str | int], modeler_response: ModelerToCoder
     ):
+        """生成求解阶段的流程配置。
+
+        Args:
+            questions: 包含各问题描述的字典。
+            modeler_response: 建模手的响应，包含各问题的解决方案。
+
+        Returns:
+            求解流程配置字典，键为任务名，值包含 coder_prompt 等信息。
+        """
         questions_quesx = {
             key: value
             for key, value in questions.items()
@@ -61,6 +78,16 @@ class Flows:
     def get_write_flows(
         self, user_output: UserOutput, config_template: dict, bg_ques_all: str
     ):
+        """生成写作阶段的流程配置。
+
+        Args:
+            user_output: 用户输出对象，包含已求解的结果。
+            config_template: 论文模板配置。
+            bg_ques_all: 问题背景和题目信息。
+
+        Returns:
+            写作流程配置字典，键为章节名，值为写作提示。
+        """
         model_build_solve = user_output.get_model_build_solve()
         flows = {
             "firstPage": f"""问题背景{bg_ques_all},不需要编写代码,根据模型的求解的信息{model_build_solve}，按照如下模板撰写：{config_template["firstPage"]}，撰写标题，摘要，关键词""",
@@ -118,7 +145,7 @@ class Flows:
         """获取问题1,2...的键"""
         return list(self.get_questions_quesx().keys())
 
-    def get_questions_quesx(self) -> dict[str, str]:
+    def get_questions_quesx(self) -> dict[str, str | int]:
         """获取问题1,2,3...的键值对"""
         # 获取所有以 "ques" 开头的键值对
         questions_quesx = {
@@ -129,6 +156,14 @@ class Flows:
         return questions_quesx
 
     def get_seq(self, ques_count: int) -> dict[str, str]:
+        """获取论文章节顺序。
+
+        Args:
+            ques_count: 问题数量。
+
+        Returns:
+            以章节名为键的有序字典。
+        """
         ques_str = [f"ques{i}" for i in range(1, ques_count + 1)]
         seq = [
             "firstPage",

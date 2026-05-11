@@ -1,20 +1,18 @@
 <script setup lang="ts">
+import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 
 const modelValue = defineModel({
-  type: Boolean,
-  default: false,
-})
-
-
+	type: Boolean,
+	default: false,
+});
 </script>
 
 <template>

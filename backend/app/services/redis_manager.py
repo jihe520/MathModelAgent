@@ -1,3 +1,5 @@
+"""Redis 管理模块，提供消息发布/订阅和持久化存储。"""
+
 import redis.asyncio as aioredis
 from typing import Optional
 import json
@@ -8,6 +10,7 @@ from app.utils.log_util import logger
 
 
 class RedisManager:
+    """Redis 连接管理器，负责消息发布/订阅和任务消息持久化。"""
     def __init__(self):
         self.redis_url = settings.REDIS_URL
         self._client: Optional[aioredis.Redis] = None
@@ -23,7 +26,7 @@ class RedisManager:
                 max_connections=settings.REDIS_MAX_CONNECTIONS,
             )
         try:
-            await self._client.ping()
+            await self._client.ping()  # type: ignore[reportGeneralTypeIssues]
             logger.info(f"Redis 连接建立成功: {self.redis_url}")
             return self._client
         except Exception as e:

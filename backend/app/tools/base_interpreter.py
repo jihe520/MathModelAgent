@@ -1,4 +1,5 @@
-# base_interpreter.py
+"""代码解释器抽象基类模块。"""
+
 import abc
 import re
 from app.tools.notebook_serializer import NotebookSerializer
@@ -11,6 +12,7 @@ from app.schemas.response import (
 
 
 class BaseCodeInterpreter(abc.ABC):
+    """代码解释器抽象基类，定义代码执行、输出管理和资源清理的接口。"""
     def __init__(
         self,
         task_id: str,

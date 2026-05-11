@@ -1,10 +1,11 @@
+"""MathModelAgent 应用入口，配置 FastAPI 应用和中间件。"""
+
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from app.routers import modeling_router, ws_router, common_router, files_router
 from app.utils.log_util import logger
-from app.config.setting import settings
 from fastapi.staticfiles import StaticFiles
 from app.utils.cli import get_ascii_banner, center_cli_str
 

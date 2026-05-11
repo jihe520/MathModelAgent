@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import { X } from 'lucide-vue-next'
-import { ToastClose, type ToastCloseProps } from 'reka-ui'
-import { computed, type HTMLAttributes } from 'vue'
+import { cn } from "@/lib/utils";
+import { X } from "lucide-vue-next";
+import { ToastClose, type ToastCloseProps } from "reka-ui";
+import { type HTMLAttributes, computed } from "vue";
 
-const props = defineProps<ToastCloseProps & {
-  class?: HTMLAttributes['class']
-}>()
+const props = defineProps<
+	ToastCloseProps & {
+		class?: HTMLAttributes["class"];
+	}
+>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+	const { class: _, ...delegated } = props;
 
-  return delegated
-})
+	return delegated;
+});
 </script>
 
 <template>

@@ -1,288 +1,321 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+	saveApiConfig,
+	validateApiKey,
+	validateOpenalexEmail,
+} from "@/apis/apiKeyApi";
+import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { useApiKeyStore } from '@/stores/apiKeys'
-import { CheckCircle, XCircle } from 'lucide-vue-next'
-import { validateApiKey, saveApiConfig, validateOpenalexEmail } from '@/apis/apiKeyApi'
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { useApiKeyStore } from "@/stores/apiKeys";
+import { CheckCircle, XCircle } from "lucide-vue-next";
+import { computed, onMounted, ref } from "vue";
 
-const apiKeyStore = useApiKeyStore()
+// ---- Props & Emits ----
 
-// 本地表单数据
+const props = defineProps<{ open: boolean }>();
+const emit = defineEmits<(e: "update:open", value: boolean) => void>();
+
+// ---- Reactive State ----
+
+const apiKeyStore = useApiKeyStore();
+
+/** 本地表单数据 */
 const form = ref<{
-  coordinator: { apiKey: string; baseUrl: string; modelId: string; provider: string };
-  modeler: { apiKey: string; baseUrl: string; modelId: string; provider: string };
-  coder: { apiKey: string; baseUrl: string; modelId: string; provider: string };
-  writer: { apiKey: string; baseUrl: string; modelId: string; provider: string };
-  openalex_email: string;
+	coordinator: {
+		apiKey: string;
+		baseUrl: string;
+		modelId: string;
+		provider: string;
+	};
+	modeler: {
+		apiKey: string;
+		baseUrl: string;
+		modelId: string;
+		provider: string;
+	};
+	coder: { apiKey: string; baseUrl: string; modelId: string; provider: string };
+	writer: {
+		apiKey: string;
+		baseUrl: string;
+		modelId: string;
+		provider: string;
+	};
+	openalex_email: string;
 }>({
-  coordinator: {
-    apiKey: '',
-    baseUrl: '',
-    modelId: '',
-    provider: ''
-  },
-  modeler: {
-    apiKey: '',
-    baseUrl: '',
-    modelId: '',
-    provider: ''
-  },
-  coder: {
-    apiKey: '',
-    baseUrl: '',
-    modelId: '',
-    provider: ''
-  },
-  writer: {
-    apiKey: '',
-    baseUrl: '',
-    modelId: '',
-    provider: ''
-  },
-  openalex_email: ''
-})
+	coordinator: {
+		apiKey: "",
+		baseUrl: "",
+		modelId: "",
+		provider: "",
+	},
+	modeler: {
+		apiKey: "",
+		baseUrl: "",
+		modelId: "",
+		provider: "",
+	},
+	coder: {
+		apiKey: "",
+		baseUrl: "",
+		modelId: "",
+		provider: "",
+	},
+	writer: {
+		apiKey: "",
+		baseUrl: "",
+		modelId: "",
+		provider: "",
+	},
+	openalex_email: "",
+});
 
-// 验证状态
-const validating = ref(false)
+/** 验证加载状态 */
+const validating = ref(false);
+
+/** 各配置项的验证结果 */
 const validationResults = ref({
-  coordinator: { valid: false, message: '' },
-  modeler: { valid: false, message: '' },
-  coder: { valid: false, message: '' },
-  writer: { valid: false, message: '' },
-  openalex_email: { valid: false, message: '' }
-})
+	coordinator: { valid: false, message: "" },
+	modeler: { valid: false, message: "" },
+	coder: { valid: false, message: "" },
+	writer: { valid: false, message: "" },
+	openalex_email: { valid: false, message: "" },
+});
 
-// 计算所有验证是否都通过
+// ---- Computed ----
+
+/** 判断所有验证是否都通过 */
 const allValid = computed(() => {
-  return Object.values(validationResults.value).every(result => result.valid)
-})
+	return Object.values(validationResults.value).every((result) => result.valid);
+});
 
-// 模型配置列表
+/** 模型配置列表 */
 const modelConfigs = computed(() => [
-  { key: 'coordinator', label: '协调者模型配置' },
-  { key: 'modeler', label: '建模手模型配置' },
-  { key: 'coder', label: '代码手模型配置' },
-  { key: 'writer', label: '论文手模型配置' }
-])
+	{ key: "coordinator", label: "协调者模型配置" },
+	{ key: "modeler", label: "建模手模型配置" },
+	{ key: "coder", label: "代码手模型配置" },
+	{ key: "writer", label: "论文手模型配置" },
+]);
 
-// 从 store 加载数据到表单
+// ---- Methods ----
+
+/** 从 store 加载数据到表单 */
 const loadFromStore = () => {
-  form.value.coordinator = { ...apiKeyStore.coordinatorConfig }
-  form.value.modeler = { ...apiKeyStore.modelerConfig }
-  form.value.coder = { ...apiKeyStore.coderConfig }
-  form.value.writer = { ...apiKeyStore.writerConfig }
-  form.value.openalex_email = apiKeyStore.openalexEmail
-}
+	form.value.coordinator = { ...apiKeyStore.coordinatorConfig };
+	form.value.modeler = { ...apiKeyStore.modelerConfig };
+	form.value.coder = { ...apiKeyStore.coderConfig };
+	form.value.writer = { ...apiKeyStore.writerConfig };
+	form.value.openalex_email = apiKeyStore.openalexEmail;
+};
 
-// 保存表单数据到 store
+/** 保存表单数据到 store 和后端 */
 const saveToStore = async () => {
-  // 先保存到前端 store
-  apiKeyStore.setCoordinatorConfig(form.value.coordinator)
-  apiKeyStore.setModelerConfig(form.value.modeler)
-  apiKeyStore.setCoderConfig(form.value.coder)
-  apiKeyStore.setWriterConfig(form.value.writer)
-  apiKeyStore.setOpenalexEmail(form.value.openalex_email)
-  // 如果验证成功，也保存到后端设置
-  if (allValid.value) {
-    try {
-      await saveApiConfig({
-        coordinator: form.value.coordinator,
-        modeler: form.value.modeler,
-        coder: form.value.coder,
-        writer: form.value.writer,
-        openalex_email: form.value.openalex_email
-      })
-    } catch (error) {
-      console.error('保存配置到后端失败:', error)
-    }
-  }
-}
+	apiKeyStore.setCoordinatorConfig(form.value.coordinator);
+	apiKeyStore.setModelerConfig(form.value.modeler);
+	apiKeyStore.setCoderConfig(form.value.coder);
+	apiKeyStore.setWriterConfig(form.value.writer);
+	apiKeyStore.setOpenalexEmail(form.value.openalex_email);
+	if (allValid.value) {
+		try {
+			await saveApiConfig({
+				coordinator: form.value.coordinator,
+				modeler: form.value.modeler,
+				coder: form.value.coder,
+				writer: form.value.writer,
+				openalex_email: form.value.openalex_email,
+			});
+		} catch (error) {
+			console.error("保存配置到后端失败:", error);
+		}
+	}
+};
 
-// 组件挂载时加载数据
+// ---- Lifecycle Hooks ----
+
 onMounted(() => {
-  loadFromStore()
-})
+	loadFromStore();
+});
 
-// 定义 emits
-const emit = defineEmits<{ (e: 'update:open', value: boolean): void }>()
+// ---- Methods (continued) ----
 
-// 定义 props
-const props = defineProps<{ open: boolean }>()
-
-// 更新 open 状态
+/** 更新弹窗开关状态 */
 const updateOpen = (value: boolean) => {
-  emit('update:open', value)
-}
+	emit("update:open", value);
+};
 
-// 保存并关闭
+/** 保存并关闭弹窗 */
 const saveAndClose = async () => {
-  await saveToStore()
-  updateOpen(false)
-}
+	await saveToStore();
+	updateOpen(false);
+};
 
-// 验证大模型 API Key
-const validateModelApiKey = async (config: { apiKey: string, baseUrl: string, modelId: string }) => {
-  if (!config.apiKey) {
-    return { valid: false, message: 'API Key 为空' }
-  }
+/** 验证大模型 API Key */
+const validateModelApiKey = async (config: {
+	apiKey: string;
+	baseUrl: string;
+	modelId: string;
+}) => {
+	if (!config.apiKey) {
+		return { valid: false, message: "API Key 为空" };
+	}
 
-  if (!config.modelId) {
-    return { valid: false, message: 'Model ID 为空' }
-  }
+	if (!config.modelId) {
+		return { valid: false, message: "Model ID 为空" };
+	}
 
-  try {
-    // 调用后端验证接口
-    const result = await validateApiKey({
-      api_key: config.apiKey,
-      base_url: config.baseUrl || 'https://api.openai.com/v1',
-      model_id: config.modelId
-    })
+	try {
+		const result = await validateApiKey({
+			api_key: config.apiKey,
+			base_url: config.baseUrl || "https://api.openai.com/v1",
+			model_id: config.modelId,
+		});
 
-    return {
-      valid: result.data.valid,
-      message: result.data.message
-    }
-  } catch (error) {
-    return {
-      valid: false,
-      message: '✗ 验证失败: 无法连接到验证服务'
-    }
-  }
-}
+		return {
+			valid: result.data.valid,
+			message: result.data.message,
+		};
+	} catch (error) {
+		return {
+			valid: false,
+			message: "✗ 验证失败: 无法连接到验证服务",
+		};
+	}
+};
 
-// 一键验证所有 API Keys
+/** 一键验证所有 API Keys */
 const validateAllApiKeys = async () => {
-  validating.value = true
+	validating.value = true;
 
-  // 只清空验证结果，保留用户输入的数据
-  validationResults.value = {
-    coordinator: { valid: false, message: '' },
-    modeler: { valid: false, message: '' },
-    coder: { valid: false, message: '' },
-    writer: { valid: false, message: '' },
-    openalex_email: { valid: false, message: '' }
-  }
+	validationResults.value = {
+		coordinator: { valid: false, message: "" },
+		modeler: { valid: false, message: "" },
+		coder: { valid: false, message: "" },
+		writer: { valid: false, message: "" },
+		openalex_email: { valid: false, message: "" },
+	};
 
-  try {
-    // 逐个验证各模型 API Keys，避免并发请求
-    for (const config of modelConfigs.value) {
-      const key = config.key as keyof typeof validationResults.value
-      const formKey = config.key as keyof typeof form.value
+	try {
+		for (const config of modelConfigs.value) {
+			const key = config.key as keyof typeof validationResults.value;
+			const formKey = config.key as keyof typeof form.value;
 
-      // 设置当前验证中状态
-      validationResults.value[key] = { valid: false, message: '验证中...' }
+			validationResults.value[key] = { valid: false, message: "验证中..." };
+			validationResults.value[key] = await validateModelApiKey(
+				form.value[formKey] as {
+					apiKey: string;
+					baseUrl: string;
+					modelId: string;
+				},
+			);
 
-      // 验证当前配置
-      validationResults.value[key] = await validateModelApiKey(form.value[formKey] as { apiKey: string, baseUrl: string, modelId: string })
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+		}
 
-      // 每次验证后等待 1 秒，避免触发速率限制
-      await new Promise(resolve => setTimeout(resolve, 1000))
-    }
+		validationResults.value.openalex_email = await validateOpenalexEmail({
+			email: form.value.openalex_email,
+		}).then((res) => res.data);
+	} catch (error) {
+		console.error("验证过程中发生错误:", error);
+		for (const key of Object.keys(validationResults.value)) {
+			if (
+				!validationResults.value[key as keyof typeof validationResults.value]
+					.message
+			) {
+				validationResults.value[key as keyof typeof validationResults.value] = {
+					valid: false,
+					message: "验证过程中发生未知错误",
+				};
+			}
+		}
+	} finally {
+		validating.value = false;
+	}
+};
 
-    // 验证 OpenAlex Email
-    validationResults.value.openalex_email = await validateOpenalexEmail({ email: form.value.openalex_email }).then(res => res.data)
-
-  } catch (error) {
-    console.error('验证过程中发生错误:', error)
-    // 显示全局错误
-    for (const key of Object.keys(validationResults.value)) {
-      if (!validationResults.value[key as keyof typeof validationResults.value].message) {
-        validationResults.value[key as keyof typeof validationResults.value] = {
-          valid: false,
-          message: '验证过程中发生未知错误'
-        }
-      }
-    }
-  } finally {
-    validating.value = false
-  }
-}
-
+/** 重置所有表单数据 */
 const resetAll = () => {
-  form.value = {
-    coordinator: { apiKey: '', baseUrl: '', modelId: '', provider: '' },
-    modeler: { apiKey: '', baseUrl: '', modelId: '', provider: '' },
-    coder: { apiKey: '', baseUrl: '', modelId: '', provider: '' },
-    writer: { apiKey: '', baseUrl: '', modelId: '', provider: '' },
-    openalex_email: ''
-  }
-}
+	form.value = {
+		coordinator: { apiKey: "", baseUrl: "", modelId: "", provider: "" },
+		modeler: { apiKey: "", baseUrl: "", modelId: "", provider: "" },
+		coder: { apiKey: "", baseUrl: "", modelId: "", provider: "" },
+		writer: { apiKey: "", baseUrl: "", modelId: "", provider: "" },
+		openalex_email: "",
+	};
+};
 
-
+/** 预设的模型提供商配置 */
 const providers = {
-  "DeepSeek": {
-    "url": "https://platform.deepseek.com/api_keys",
-    "key": "DeepSeek",
-    "baseUrl": "https://api.deepseek.com",
-    "modelId": "deepseek/deepseek-chat"
-  },
-  "硅基流动": {
-    "url": "https://cloud.siliconflow.cn/i/UIb4Enf4",
-    "key": "硅基流动",
-    "baseUrl": "https://api.siliconflow.cn",
-    "modelId": "openai/deepseek-ai/DeepSeek-V3"
-  },
-  "Sophnet": {
-    "url": "https://www.sophnet.com/#?code=AZBSFG",
-    "key": "Sophnet",
-    "baseUrl": "https://www.sophnet.com/api/open-apis",
-    "modelId": "openai/DeepSeek-V3-Fast"
-  },
-  "OpenAI": {
-    "url": "https://platform.openai.com/api-keys",
-    "key": "OpenAI",
-    "baseUrl": "https://api.openai.com",
-    "modelId": "openai/gpt-5"
-  },
-  "302.AI": {
-    "url": "https://share.302.ai/UoTruU",
-    "key": "302.AI",
-    "baseUrl": "https://api.302.ai",
-    "modelId": "openai/deepseek-chat"
-  },
-  "OpenAI 兼容": {
-    "url": "/",
-    "key": "OpenAI 兼容",
-    "baseUrl": "basurl",
-    "modelId": "provider/model_id"
-  }
-}
+	DeepSeek: {
+		url: "https://platform.deepseek.com/api_keys",
+		key: "DeepSeek",
+		baseUrl: "https://api.deepseek.com",
+		modelId: "deepseek/deepseek-chat",
+	},
+	硅基流动: {
+		url: "https://cloud.siliconflow.cn/i/UIb4Enf4",
+		key: "硅基流动",
+		baseUrl: "https://api.siliconflow.cn",
+		modelId: "openai/deepseek-ai/DeepSeek-V3",
+	},
+	Sophnet: {
+		url: "https://www.sophnet.com/#?code=AZBSFG",
+		key: "Sophnet",
+		baseUrl: "https://www.sophnet.com/api/open-apis",
+		modelId: "openai/DeepSeek-V3-Fast",
+	},
+	OpenAI: {
+		url: "https://platform.openai.com/api-keys",
+		key: "OpenAI",
+		baseUrl: "https://api.openai.com",
+		modelId: "openai/gpt-5",
+	},
+	"302.AI": {
+		url: "https://share.302.ai/UoTruU",
+		key: "302.AI",
+		baseUrl: "https://api.302.ai",
+		modelId: "openai/deepseek-chat",
+	},
+	"OpenAI 兼容": {
+		url: "/",
+		key: "OpenAI 兼容",
+		baseUrl: "basurl",
+		modelId: "provider/model_id",
+	},
+};
 
-// 当供应商选择改变时，自动填写配置
+/** 当供应商选择改变时，自动填写配置 */
 const onProviderChange = (configKey: string, providerKey: string) => {
-  const provider = providers[providerKey as keyof typeof providers]
-  if (provider) {
-    const formConfig = (form.value as any)[configKey]
-    formConfig.provider = providerKey
-    formConfig.baseUrl = provider.baseUrl
-    formConfig.modelId = provider.modelId
+	const provider = providers[providerKey as keyof typeof providers];
+	if (provider) {
+		// biome-ignore lint/suspicious/noExplicitAny: 动态访问表单配置
+		const formConfig = (form.value as any)[configKey];
+		formConfig.provider = providerKey;
+		formConfig.baseUrl = provider.baseUrl;
+		formConfig.modelId = provider.modelId;
 
-    // 清除之前的验证结果
-    validationResults.value[configKey as keyof typeof validationResults.value] = {
-      valid: false,
-      message: ''
-    }
-  }
-}
-
+		validationResults.value[configKey as keyof typeof validationResults.value] =
+			{
+				valid: false,
+				message: "",
+			};
+	}
+};
 </script>
 
 <template>

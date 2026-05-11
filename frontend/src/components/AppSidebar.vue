@@ -1,83 +1,89 @@
 <script setup lang="ts">
-import { QQ_GROUP, TWITTER, GITHUB_LINK, BILLBILL, XHS, DISCORD } from '@/utils/const'
-import NavUser from './NavUser.vue'
+import {
+	BILLBILL,
+	DISCORD,
+	GITHUB_LINK,
+	QQ_GROUP,
+	TWITTER,
+	XHS,
+} from "@/utils/const";
+import NavUser from "./NavUser.vue";
 
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  type SidebarProps,
-  SidebarRail,
-} from '@/components/ui/sidebar'
+	Sidebar,
+	SidebarContent,
+	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
+	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	type SidebarProps,
+	SidebarRail,
+} from "@/components/ui/sidebar";
 
-const props = defineProps<SidebarProps>()
+// ---- Props ----
 
-// This is sample data.
+const props = defineProps<SidebarProps>();
+
+// ---- Reactive State ----
+
+/** 导航菜单数据 */
 const data = {
-  navMain: [
-    {
-      title: '开始',
-      url: '#',
-      items: [
-        {
-          title: '开始新任务',
-          url: '#',
-          isActive: false,
-        },
-      ],
-    },
-    {
-      title: '历史任务',
-      url: '#',
-      items: [
-
-      ],
-    },
-
-  ],
-}
-
+	navMain: [
+		{
+			title: "开始",
+			url: "#",
+			items: [
+				{
+					title: "开始新任务",
+					url: "#",
+					isActive: false,
+				},
+			],
+		},
+		{
+			title: "历史任务",
+			url: "#",
+			items: [],
+		},
+	],
+};
 
 const socialMedia = [
-  {
-    name: 'QQ',
-    url: QQ_GROUP,
-    icon: '/qq.svg',
-  },
-  {
-    name: 'Twitter',
-    url: TWITTER,
-    icon: '/twitter.svg',
-  },
-  {
-    name: 'GitHub',
-    url: GITHUB_LINK,
-    icon: '/github.svg',
-  },
-  {
-    name: '哔哩哔哩',
-    url: BILLBILL,
-    icon: '/bilibili.svg',
-  },
-  {
-    name: '小红书',
-    url: XHS,
-    icon: '/xiaohongshu.svg',
-  },
-  {
-    name: 'Discord',
-    url: DISCORD,
-    icon: '/discord.svg',
-  },
-]
-
+	{
+		name: "QQ",
+		url: QQ_GROUP,
+		icon: "/qq.svg",
+	},
+	{
+		name: "Twitter",
+		url: TWITTER,
+		icon: "/twitter.svg",
+	},
+	{
+		name: "GitHub",
+		url: GITHUB_LINK,
+		icon: "/github.svg",
+	},
+	{
+		name: "哔哩哔哩",
+		url: BILLBILL,
+		icon: "/bilibili.svg",
+	},
+	{
+		name: "小红书",
+		url: XHS,
+		icon: "/xiaohongshu.svg",
+	},
+	{
+		name: "Discord",
+		url: DISCORD,
+		icon: "/discord.svg",
+	},
+];
 </script>
 
 <template>

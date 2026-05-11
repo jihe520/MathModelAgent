@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-} from '@/components/ui/sidebar'
-import { ChevronRight, File, Folder } from 'lucide-vue-next'
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarMenuSub,
+} from "@/components/ui/sidebar";
+import { ChevronRight, File, Folder } from "lucide-vue-next";
 const props = defineProps<{
-  item: string | any[]
-}>()
-const [name, ...items] = Array.isArray(props.item) ? props.item : [props.item]
+	item: string | unknown[];
+}>();
+const [name, ...items] = Array.isArray(props.item) ? props.item : [props.item];
 </script>
 
 <template>

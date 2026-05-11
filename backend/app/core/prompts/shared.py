@@ -1,4 +1,16 @@
+"""共享的提示词工具函数。"""
+
+
 def get_reflection_prompt(error_message, code) -> str:
+    """生成代码错误反思提示词。
+
+    Args:
+        error_message: 错误信息。
+        code: 出错的代码。
+
+    Returns:
+        反思提示词字符串。
+    """
     return f"""The code execution encountered an error:
 {error_message}
 
@@ -20,6 +32,15 @@ Please provide an explanation of what went wrong and Remenber call the function 
 
 
 def get_completion_check_prompt(prompt, text_to_gpt) -> str:
+    """生成任务完成检查提示词。
+
+    Args:
+        prompt: 原始任务描述。
+        text_to_gpt: 最新执行结果。
+
+    Returns:
+        完成检查提示词字符串。
+    """
     return f"""
 Please analyze the current state and determine if the task is fully completed:
 

@@ -1,3 +1,5 @@
+"""响应数据模型定义，包括消息类型和代码执行结果。"""
+
 from typing import Literal, Union
 from app.schemas.enums import AgentType
 from pydantic import BaseModel, Field
@@ -5,6 +7,7 @@ from uuid import uuid4
 
 
 class Message(BaseModel):
+    """消息基类。"""
     id: str = Field(default_factory=lambda: str(uuid4()))
     msg_type: Literal[
         "system", "agent", "user", "tool"
@@ -13,23 +16,23 @@ class Message(BaseModel):
 
 
 class ToolMessage(Message):
-    msg_type: str = "tool"
+    msg_type: Literal["system", "agent", "user", "tool"] = "tool"
     tool_name: Literal["execute_code", "search_scholar"]
-    input: dict
-    output: list
+    input: dict | None = None
+    output: list | None = None
 
 
 class SystemMessage(Message):
-    msg_type: str = "system"
+    msg_type: Literal["system", "agent", "user", "tool"] = "system"
     type: Literal["info", "warning", "success", "error"] = "info"
 
 
 class UserMessage(Message):
-    msg_type: str = "user"
+    msg_type: Literal["system", "agent", "user", "tool"] = "user"
 
 
 class AgentMessage(Message):
-    msg_type: str = "agent"
+    msg_type: Literal["system", "agent", "user", "tool"] = "agent"
     agent_type: AgentType  # CoordinatorAgent | ModelerAgent | CoderAgent | WriterAgent
 
 
@@ -42,20 +45,21 @@ class CoordinatorMessage(AgentMessage):
 
 
 class CodeExecution(BaseModel):
+    """代码执行结果基类。"""
     res_type: Literal["stdout", "stderr", "result", "error"]
     msg: str | None = None
 
 
 class StdOutModel(CodeExecution):
-    res_type: str = "stdout"
+    res_type: Literal["stdout", "stderr", "result", "error"] = "stdout"
 
 
 class StdErrModel(CodeExecution):
-    res_type: str = "stderr"
+    res_type: Literal["stdout", "stderr", "result", "error"] = "stderr"
 
 
 class ResultModel(CodeExecution):
-    res_type: str = "result"
+    res_type: Literal["stdout", "stderr", "result", "error"] = "result"
     format: Literal[
         "text",
         "html",
@@ -71,7 +75,7 @@ class ResultModel(CodeExecution):
 
 
 class ErrorModel(CodeExecution):
-    res_type: str = "error"
+    res_type: Literal["stdout", "stderr", "result", "error"] = "error"
     name: str
     value: str
     traceback: str
@@ -82,13 +86,13 @@ OutputItem = Union[StdOutModel, StdErrModel, ResultModel, ErrorModel]
 
 
 class ScholarMessage(ToolMessage):
-    tool_name: str = "search_scholar"
+    tool_name: Literal["execute_code", "search_scholar"] = "search_scholar"
     input: dict | None = None  # query
     output: list[str] | None = None  # cites
 
 
 class InterpreterMessage(ToolMessage):
-    tool_name: str = "execute_code"
+    tool_name: Literal["execute_code", "search_scholar"] = "execute_code"
     input: dict | None = None  # code
     output: list[OutputItem] | None = None  # code_results
 

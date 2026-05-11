@@ -1,1 +1,1 @@
-export { default as Tetris } from './Tetris.vue';
+export { default as Tetris } from "./Tetris.vue";

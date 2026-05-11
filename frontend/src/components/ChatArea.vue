@@ -1,25 +1,30 @@
 <script setup lang="ts">
-import Bubble from './Bubble.vue'
-import SystemMessage from './SystemMessage.vue'
-import { ref } from 'vue'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Send } from 'lucide-vue-next'
-import type { Message } from '@/utils/response'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { Message } from "@/utils/response";
+import { Send } from "lucide-vue-next";
+import { ref } from "vue";
+import Bubble from "./Bubble.vue";
+import SystemMessage from "./SystemMessage.vue";
 
-const props = defineProps<{ messages: Message[] }>()
+// ---- Props ----
 
-const inputValue = ref('')
-const inputRef = ref<HTMLInputElement | null>(null)
-const scrollRef = ref<HTMLDivElement | null>(null)
+const props = defineProps<{ messages: Message[] }>();
 
+// ---- Reactive State ----
+
+const inputValue = ref("");
+const inputRef = ref<HTMLInputElement | null>(null);
+const scrollRef = ref<HTMLDivElement | null>(null);
+
+// ---- Methods ----
+
+/** 发送消息（本地处理） */
 const sendMessage = () => {
-  // 这里只处理本地 user 消息输入，如需和后端交互请在父组件处理
-  if (!inputValue.value.trim()) return
-  // 可以通过 emit 事件让父组件处理 user 消息
-  inputValue.value = ''
-  inputRef.value?.focus()
-}
+	if (!inputValue.value.trim()) return;
+	inputValue.value = "";
+	inputRef.value?.focus();
+};
 </script>
 
 <template>

@@ -1,8 +1,6 @@
-// 封转路由
 import { createRouter, createWebHistory } from "vue-router";
-// 路由配置
-// meau 需要登录后才能访问
 
+/** 路由配置 */
 const routes = [
 	{
 		path: "/",
@@ -23,13 +21,10 @@ const routes = [
 	},
 ];
 
-// 创建路由
+/** 创建路由实例 */
 const router = createRouter({
 	history: createWebHistory(),
 	routes,
 });
-
-// 路由守卫
-// router.beforeEach((to, from, next) => {})
 
 export default router;

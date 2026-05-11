@@ -27,19 +27,19 @@
 </template>
 
 <script setup lang="ts">
-import { useElementSize } from '@vueuse/core';
-import { cn } from '@/lib/utils';
-import { getColors } from 'theme-colors';
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { cn } from "@/lib/utils";
+import { useElementSize } from "@vueuse/core";
+import { getColors } from "theme-colors";
+import { onMounted, onUnmounted, ref, watch } from "vue";
 
 interface Props {
-  class?: string;
-  squareColor: string;
-  base: number;
+	class?: string;
+	squareColor: string;
+	base: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  base: 10,
+	base: 10,
 });
 
 const theme = getColors(props.squareColor);
@@ -52,61 +52,63 @@ const cols = ref(0);
 const { width, height } = useElementSize(el);
 
 function createGrid() {
-  grid.value = [];
+	grid.value = [];
 
-  for (let i = 0; i < rows.value; i++) {
-    grid.value.push(new Array(cols.value).fill(null));
-  }
+	for (let i = 0; i < rows.value; i++) {
+		grid.value.push(new Array(cols.value).fill(null));
+	}
 }
 
 function createNewCell() {
-  const x = Math.floor(Math.random() * cols.value);
+	const x = Math.floor(Math.random() * cols.value);
 
-  grid.value[0][x] = true;
+	grid.value[0][x] = true;
 }
 
 function moveCellsDown() {
-  for (let row = rows.value - 1; row >= 0; row--) {
-    for (let col = 0; col < cols.value; col++) {
-      const cell = grid.value[row][col];
-      const nextCell = Array.isArray(grid.value[row + 1]) ? grid.value[row + 1][col] : cell;
-      if (cell !== null && nextCell === null) {
-        grid.value[row + 1][col] = grid.value[row][col];
-        grid.value[row][col] = null;
-      }
-    }
-  }
+	for (let row = rows.value - 1; row >= 0; row--) {
+		for (let col = 0; col < cols.value; col++) {
+			const cell = grid.value[row][col];
+			const nextCell = Array.isArray(grid.value[row + 1])
+				? grid.value[row + 1][col]
+				: cell;
+			if (cell !== null && nextCell === null) {
+				grid.value[row + 1][col] = grid.value[row][col];
+				grid.value[row][col] = null;
+			}
+		}
+	}
 
-  setTimeout(() => {
-    const isFilled = grid.value[rows.value - 1].every((cell) => cell !== null);
-    if (Array.isArray(grid.value[rows.value]) && isFilled) {
-      for (let col = 0; col < cols.value; col++) {
-        grid.value[rows.value][col] = null;
-      }
-    }
-  }, 500);
+	setTimeout(() => {
+		const isFilled = grid.value[rows.value - 1].every((cell) => cell !== null);
+		if (Array.isArray(grid.value[rows.value]) && isFilled) {
+			for (let col = 0; col < cols.value; col++) {
+				grid.value[rows.value][col] = null;
+			}
+		}
+	}, 500);
 }
 
 function clearColumn() {
-  const isFilled = grid.value[rows.value - 1].every((cell) => cell === true);
-  if (!isFilled) return;
+	const isFilled = grid.value[rows.value - 1].every((cell) => cell === true);
+	if (!isFilled) return;
 
-  for (let col = 0; col < cols.value; col++) {
-    grid.value[rows.value - 1][col] = null;
-  }
+	for (let col = 0; col < cols.value; col++) {
+		grid.value[rows.value - 1][col] = null;
+	}
 }
 
 function removeCell(row: number, col: number) {
-  grid.value[row][col] = null;
+	grid.value[row][col] = null;
 }
 
 function calcGrid() {
-  const cell = width.value / props.base;
+	const cell = width.value / props.base;
 
-  rows.value = Math.floor(height.value / cell);
-  cols.value = Math.floor(width.value / cell);
+	rows.value = Math.floor(height.value / cell);
+	cols.value = Math.floor(width.value / cell);
 
-  createGrid();
+	createGrid();
 }
 
 watch(width, calcGrid);
@@ -117,18 +119,18 @@ let intervalId: NodeJS.Timeout | undefined;
 let timeoutId: NodeJS.Timeout | undefined;
 
 onMounted(() => {
-  timeoutId = setTimeout(calcGrid, 50);
+	timeoutId = setTimeout(calcGrid, 50);
 
-  intervalId = setInterval(() => {
-    clearColumn();
-    moveCellsDown();
-    createNewCell();
-  }, 1000);
+	intervalId = setInterval(() => {
+		clearColumn();
+		moveCellsDown();
+		createNewCell();
+	}, 1000);
 });
 
 onUnmounted(() => {
-  clearInterval(intervalId);
-  clearTimeout(timeoutId);
+	clearInterval(intervalId);
+	clearTimeout(timeoutId);
 });
 </script>
 

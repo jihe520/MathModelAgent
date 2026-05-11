@@ -1,3 +1,5 @@
+"""建模手 Agent 模块，负责分析问题并制定数学建模方案。"""
+
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import MODELER_PROMPT
@@ -5,11 +7,18 @@ from app.schemas.A2A import CoordinatorToModeler, ModelerToCoder
 from app.utils.log_util import logger
 import json
 import re
-from icecream import ic
+from icecream import ic  # type: ignore[import-unresolved]
 
 
 def repair_json(json_str: str) -> dict | None:
-    """Try to repair malformed JSON from LLM output."""
+    """尝试修复 LLM 输出的格式错误的 JSON。
+
+    Args:
+        json_str: 可能包含格式错误的 JSON 字符串。
+
+    Returns:
+        修复后的字典，无法修复时返回 None。
+    """
     json_str = json_str.replace("```json", "").replace("```", "").strip()
 
     # Try direct parse first
@@ -43,6 +52,7 @@ def repair_json(json_str: str) -> dict | None:
 
 
 class ModelerAgent(Agent):
+    """建模手 Agent，分析问题类型并制定建模方案、求解方法和可视化策略。"""
     def __init__(
         self,
         task_id: str,
@@ -52,7 +62,15 @@ class ModelerAgent(Agent):
         super().__init__(task_id, model, max_chat_turns)
         self.system_prompt = MODELER_PROMPT
 
-    async def run(self, coordinator_to_modeler: CoordinatorToModeler) -> ModelerToCoder:
+    async def run(self, coordinator_to_modeler: CoordinatorToModeler) -> ModelerToCoder:  # type: ignore[reportIncompatibleMethodOverride]
+        """根据协调者拆解的问题生成建模方案。
+
+        Args:
+            coordinator_to_modeler: 协调者传递的结构化问题信息。
+
+        Returns:
+            ModelerToCoder 对象，包含各问题的建模解决方案。
+        """
         await self.append_chat_history(
             {"role": "system", "content": self.system_prompt}
         )
@@ -63,8 +81,8 @@ class ModelerAgent(Agent):
             }
         )
 
-        max_parse_retries = 3
-        for attempt in range(max_parse_retries):
+        attempt = 0
+        while True:
             response = await self.model.chat(
                 history=self.chat_history,
                 agent_name=self.__class__.__name__,
@@ -79,8 +97,9 @@ class ModelerAgent(Agent):
                 ic(questions_solution)
                 return ModelerToCoder(questions_solution=questions_solution)
 
+            attempt += 1
             logger.warning(
-                f"JSON 解析失败 (第{attempt + 1}次)，请求模型重新生成"
+                f"JSON 解析失败 (第{attempt}次)，请求模型重新生成"
             )
             await self.append_chat_history(
                 {"role": "assistant", "content": json_str}
@@ -91,7 +110,3 @@ class ModelerAgent(Agent):
                     "content": "你返回的JSON格式有误，请严格按照JSON格式重新输出，注意字符串值内的双引号必须转义为\\\"，不要包含未转义的特殊字符。",
                 }
             )
-
-        raise ValueError(
-            f"经过{max_parse_retries}次尝试仍无法解析JSON，请检查模型输出"
-        )
