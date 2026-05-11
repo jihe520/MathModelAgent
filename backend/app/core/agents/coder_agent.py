@@ -1,3 +1,5 @@
+"""代码手 Agent 模块，负责生成和执行 Python 代码完成建模任务。"""
+
 from app.core.agents.agent import Agent
 from app.config.setting import settings
 from app.utils.log_util import logger
@@ -17,16 +19,16 @@ from app.core.functions import coder_tools
 # TODO: 引入创新方案：
 
 
-# 代码强
-class CoderAgent(Agent):  # 同样继承自Agent类
+class CoderAgent(Agent):
+    """代码手 Agent，通过 LLM 生成代码并在解释器中执行，支持错误反思和重试。"""
     def __init__(
         self,
         task_id: str,
         model: LLM,
         work_dir: str,  # 工作目录
-        max_chat_turns: int = settings.MAX_CHAT_TURNS,  # 最大聊天次数
-        max_retries: int = settings.MAX_RETRIES,  # 最大反思次数
-        code_interpreter: BaseCodeInterpreter = None,
+        max_chat_turns: int | None = settings.MAX_CHAT_TURNS,  # 最大聊天次数，None表示无限制
+        max_retries: int | None = settings.MAX_RETRIES,  # 最大反思次数，None表示无限制
+        code_interpreter: BaseCodeInterpreter | None = None,
     ) -> None:
         super().__init__(task_id, model, max_chat_turns)
         self.work_dir = work_dir
@@ -35,8 +37,18 @@ class CoderAgent(Agent):  # 同样继承自Agent类
         self.system_prompt = CODER_PROMPT
         self.code_interpreter = code_interpreter
 
-    async def run(self, prompt: str, subtask_title: str) -> CoderToWriter:
+    async def run(self, prompt: str, subtask_title: str) -> CoderToWriter:  # type: ignore[reportIncompatibleMethodOverride]
+        """执行代码手子任务，生成并运行代码。
+
+        Args:
+            prompt: 子任务描述。
+            subtask_title: 子任务标题，用于分段输出。
+
+        Returns:
+            CoderToWriter 对象，包含代码执行结果和生成的图片列表。
+        """
         logger.info(f"{self.__class__.__name__}:开始:执行子任务: {subtask_title}")
+        assert self.code_interpreter is not None, "code_interpreter 未初始化"
         self.code_interpreter.add_section(subtask_title)
 
         # 如果是第一次运行，则添加系统提示
@@ -62,7 +74,7 @@ class CoderAgent(Agent):  # 同样继承自Agent类
         last_error_message = ""
 
         while True:
-            if retry_count >= self.max_retries:
+            if self.max_retries is not None and retry_count >= self.max_retries:
                 logger.error(f"超过最大尝试次数: {self.max_retries}")
                 await redis_manager.publish_message(
                     self.task_id,
@@ -70,11 +82,11 @@ class CoderAgent(Agent):  # 同样继承自Agent类
                 )
                 logger.warning(f"任务失败，超过最大尝试次数{self.max_retries}, 最后错误信息: {last_error_message}")
                 return CoderToWriter(
-                    coder_response=f"任务失败，超过最大尝试次数{self.max_retries}, 最后错误信息: {last_error_message}",
+                    code_response=f"任务失败，超过最大尝试次数{self.max_retries}, 最后错误信息: {last_error_message}",
                     created_images=[])
-                
 
-            if self.current_chat_turns >= self.max_chat_turns:
+
+            if self.max_chat_turns is not None and self.current_chat_turns >= self.max_chat_turns:
                 logger.error(f"超过最大聊天次数: {self.max_chat_turns}")
                 await redis_manager.publish_message(
                     self.task_id,
@@ -179,7 +191,7 @@ class CoderAgent(Agent):  # 同样继承自Agent类
                     # 没有工具调用，表示任务完成
                     logger.info("没有工具调用，任务完成")
                     return CoderToWriter(
-                        coder_response=response.choices[0].message.content,
+                        code_response=response.choices[0].message.content,
                         created_images=await self.code_interpreter.get_created_images(
                             subtask_title
                         ),

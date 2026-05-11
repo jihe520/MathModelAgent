@@ -1,41 +1,44 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useTaskStore } from '@/stores/task'
-import NotebookCell from '@/components/NotebookCell.vue'
-import type { NoteCell, CodeCell, ResultCell } from '@/utils/interface'
+import NotebookCell from "@/components/NotebookCell.vue";
+import { useTaskStore } from "@/stores/task";
+import type { CodeCell, NoteCell, ResultCell } from "@/utils/interface";
+import { computed } from "vue";
 
-// 使用任务存储
-const taskStore = useTaskStore()
-console.log('interpreterMessage:', taskStore.interpreterMessage)
-// 将代码消息转换为Notebook单元格
+// ---- Reactive State ----
+
+const taskStore = useTaskStore();
+
+// ---- Computed ----
+
+/** 将代码执行消息转换为 Notebook 单元格列表 */
 const cells = computed<NoteCell[]>(() => {
-  const notebookCells: NoteCell[] = []
+	const notebookCells: NoteCell[] = [];
 
-  // 获取代码执行工具消息，按顺序处理
-  for (const toolMsg of taskStore.interpreterMessage) {
-    console.log('Code execute message:', toolMsg)
+	// 获取代码执行工具消息，按顺序处理
+	for (const toolMsg of taskStore.interpreterMessage) {
+		console.log("Code execute message:", toolMsg);
 
-    // 处理代码输入消息
-    if (toolMsg.input && toolMsg.input.code) {
-      const codeCell: CodeCell = {
-        type: 'code',
-        content: toolMsg.input.code
-      }
-      notebookCells.push(codeCell)
-    }
+		// 处理代码输入消息
+		if (toolMsg.input?.code) {
+			const codeCell: CodeCell = {
+				type: "code",
+				content: toolMsg.input.code,
+			};
+			notebookCells.push(codeCell);
+		}
 
-    // 处理执行结果消息
-    if (toolMsg.output && toolMsg.output.length > 0) {
-      const resultCell: ResultCell = {
-        type: 'result',
-        code_results: toolMsg.output
-      }
-      notebookCells.push(resultCell)
-    }
-  }
+		// 处理执行结果消息
+		if (toolMsg.output && toolMsg.output.length > 0) {
+			const resultCell: ResultCell = {
+				type: "result",
+				code_results: toolMsg.output,
+			};
+			notebookCells.push(resultCell);
+		}
+	}
 
-  return notebookCells
-})
+	return notebookCells;
+});
 </script>
 
 <template>

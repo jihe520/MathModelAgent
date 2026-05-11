@@ -1,12 +1,19 @@
-from pydantic import AnyUrl, BeforeValidator, computed_field, field_validator, Field
+"""应用配置模块，基于 pydantic-settings 管理环境变量和全局配置。"""
+
+from pydantic import BeforeValidator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 from typing import Annotated, Optional
 
 
 def parse_cors(value: str) -> list[str]:
-    """
-    Parses the CORS settings from a string to a list of URLs.
+    """将 CORS 配置字符串解析为 URL 列表。
+
+    Args:
+        value: 逗号分隔的 URL 字符串，或 "*" 表示允许所有来源。
+
+    Returns:
+        解析后的 URL 列表。
     """
     if value == "*":
         return ["*"]
@@ -16,7 +23,8 @@ def parse_cors(value: str) -> list[str]:
 
 
 class Settings(BaseSettings):
-    ENV: str
+    """全局应用配置，从环境变量和 .env 文件加载。"""
+    ENV: str = "dev"
 
     COORDINATOR_API_KEY: Optional[str] = None
     COORDINATOR_MODEL: Optional[str] = None
@@ -38,8 +46,8 @@ class Settings(BaseSettings):
     WRITER_BASE_URL: Optional[str] = None
     WRITER_MAX_TOKENS: Optional[int] = None
 
-    MAX_CHAT_TURNS: int = 150
-    MAX_RETRIES: int = 5
+    MAX_CHAT_TURNS: Optional[int] = None
+    MAX_RETRIES: Optional[int] = None
     E2B_API_KEY: Optional[str] = None
     LOG_LEVEL: str = "DEBUG"
     DEBUG: bool = True
@@ -47,6 +55,8 @@ class Settings(BaseSettings):
     REDIS_MAX_CONNECTIONS: int = 10
     CORS_ALLOW_ORIGINS: Annotated[list[str] | str, BeforeValidator(parse_cors)] = "*"
     SERVER_HOST: str = "http://localhost:8000"
+    DEEPSEEK_MODEL: Optional[str] = None
+    DEEPSEEK_BASE_URL: Optional[str] = None
     OPENALEX_EMAIL: Optional[str] = None
     OPENALEX_API_KEY: Optional[str] = None
 
@@ -57,10 +67,15 @@ class Settings(BaseSettings):
     )
 
     @classmethod
-    def from_env(cls, env: str = None):
+    def from_env(cls, env: str | None = None):
+        """根据环境名称加载对应配置。
+
+        Args:
+            env: 环境名称（如 dev、prod），默认从 ENV 环境变量获取。
+        """
         env = env or os.getenv("ENV", "dev")
         env_file = f".env.{env.lower()}"
-        return cls(_env_file=env_file, _env_file_encoding="utf-8")
+        return cls(_env_file=env_file, _env_file_encoding="utf-8")  # type: ignore[call-arg]
 
 
 settings = Settings()

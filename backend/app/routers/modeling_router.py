@@ -1,3 +1,5 @@
+"""建模任务路由模块，提供任务创建、API 验证和配置管理等接口。"""
+
 from fastapi import APIRouter, BackgroundTasks, File, Form, UploadFile
 from app.core.workflow import MathModelWorkFlow
 from app.schemas.enums import CompTemplate, FormatOutPut
@@ -14,10 +16,10 @@ from app.utils.common_utils import (
 import os
 import asyncio
 from fastapi import HTTPException
-from icecream import ic
+from icecream import ic  # type: ignore[import-unresolved]
 from app.schemas.request import ExampleRequest
 from pydantic import BaseModel
-import litellm
+import litellm  # type: ignore[import-unresolved]
 from app.config.setting import settings
 import requests
 
@@ -201,6 +203,7 @@ async def modeling(
         logger.info(f"开始处理上传的文件，工作目录: {work_dir}")
         for file in files:
             try:
+                assert file.filename is not None
                 data_file_path = os.path.join(work_dir, file.filename)
                 logger.info(f"保存文件: {file.filename} -> {data_file_path}")
 
@@ -243,6 +246,14 @@ async def run_modeling_task_async(
     comp_template: CompTemplate,
     format_output: FormatOutPut,
 ):
+    """异步执行建模任务。
+
+    Args:
+        task_id: 任务 ID。
+        ques_all: 完整题目信息。
+        comp_template: 竞赛模板类型。
+        format_output: 输出格式。
+    """
     logger.info(f"run modeling task for task_id: {task_id}")
 
     problem = Problem(

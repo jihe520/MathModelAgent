@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import { ToastRoot, type ToastRootEmits, useForwardPropsEmits } from 'reka-ui'
-import { computed } from 'vue'
-import { type ToastProps, toastVariants } from '.'
+import { cn } from "@/lib/utils";
+import { ToastRoot, type ToastRootEmits, useForwardPropsEmits } from "reka-ui";
+import { computed } from "vue";
+import { type ToastProps, toastVariants } from ".";
 
-const props = defineProps<ToastProps>()
+const props = defineProps<ToastProps>();
 
-const emits = defineEmits<ToastRootEmits>()
+const emits = defineEmits<ToastRootEmits>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+	const { class: _, ...delegated } = props;
 
-  return delegated
-})
+	return delegated;
+});
 
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
+const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>

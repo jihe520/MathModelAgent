@@ -1,3 +1,5 @@
+"""通用路由模块，提供配置查询、消息获取和健康检查等接口。"""
+
 import json
 from pathlib import Path
 
@@ -12,6 +14,17 @@ router = APIRouter()
 
 
 def _require_safe_task_id(task_id: str) -> str:
+    """验证并返回安全的任务 ID。
+
+    Args:
+        task_id: 待验证的任务 ID。
+
+    Returns:
+        验证通过的任务 ID。
+
+    Raises:
+        HTTPException: 任务 ID 非法时返回 400。
+    """
     try:
         return ensure_safe_task_id(task_id)
     except ValueError as exc:
@@ -19,6 +32,14 @@ def _require_safe_task_id(task_id: str) -> str:
 
 
 def _load_task_messages_from_file(task_id: str) -> list[dict]:
+    """从文件加载指定任务的历史消息。
+
+    Args:
+        task_id: 任务 ID。
+
+    Returns:
+        消息列表，文件不存在时返回空列表。
+    """
     safe_task_id = _require_safe_task_id(task_id)
     message_file = Path("logs/messages") / f"{safe_task_id}.json"
     if not message_file.exists():
@@ -71,7 +92,7 @@ async def track(task_id: str):
 
 @router.get("/status")
 async def get_service_status():
-    """获取各个服务的状态"""
+    """获取后端和 Redis 的运行状态。"""
     status = {
         "backend": {"status": "running", "message": "Backend service is running"},
         "redis": {"status": "unknown", "message": "Redis connection status unknown"}
@@ -80,7 +101,7 @@ async def get_service_status():
     # 检查Redis连接状态
     try:
         redis_client = await redis_manager.get_client()
-        await redis_client.ping()
+        await redis_client.ping()  # type: ignore[reportGeneralTypeIssues]
         status["redis"] = {"status": "running", "message": "Redis connection is healthy"}
     except Exception as e:
         logger.error(f"Redis connection failed: {str(e)}")

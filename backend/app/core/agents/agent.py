@@ -1,17 +1,21 @@
+"""Agent 基类模块，提供对话管理和记忆压缩功能。"""
+
+from typing import Any
 from app.core.llm.llm import LLM, simple_chat
 from app.utils.log_util import logger
-from icecream import ic
+from icecream import ic  # type: ignore[import-unresolved]
 
 # TODO: Memory 的管理
 # TODO: 评估任务完成情况，rethinking
 
 
 class Agent:
+    """Agent 基类，管理对话历史、轮次控制和记忆压缩。"""
     def __init__(
         self,
         task_id: str,
         model: LLM,
-        max_chat_turns: int = 30,  # 单个agent最大对话轮次
+        max_chat_turns: int | None = None,  # 单个agent最大对话轮次，None表示无限制
         max_memory: int = 12,  # 最大记忆轮次
     ) -> None:
         self.task_id = task_id
@@ -21,15 +25,16 @@ class Agent:
         self.current_chat_turns = 0  # 当前对话轮次计数器
         self.max_memory = max_memory  # 最大记忆轮次
 
-    async def run(self, prompt: str, system_prompt: str, sub_title: str) -> str:
-        """
-        执行agent的对话并返回结果和总结
+    async def run(self, prompt: str, system_prompt: str, sub_title: str) -> Any:
+        """执行 Agent 对话并返回模型响应。
 
         Args:
-            prompt: 输入的提示
+            prompt: 用户输入的提示。
+            system_prompt: 系统提示词。
+            sub_title: 子任务标题。
 
         Returns:
-            str: 模型的响应
+            模型的响应文本。
         """
         try:
             logger.info(f"{self.__class__.__name__}:开始:执行对话")
@@ -55,6 +60,11 @@ class Agent:
             return error_msg
 
     async def append_chat_history(self, msg: dict) -> None:
+        """向对话历史追加消息，并在必要时触发记忆清理。
+
+        Args:
+            msg: 消息字典，需包含 role 和 content 字段。
+        """
         ic(f"添加消息: role={msg.get('role')}, 当前历史长度={len(self.chat_history)}")
         self.chat_history.append(msg)
         ic(f"添加后历史长度={len(self.chat_history)}")
@@ -67,7 +77,7 @@ class Agent:
             ic("跳过内存清理(tool消息)")
 
     async def clear_memory(self):
-        """当聊天历史超过最大记忆轮次时，使用 simple_chat 进行总结压缩"""
+        """当聊天历史超过最大记忆轮次时，使用 simple_chat 进行总结压缩。"""
         ic(f"检查内存清理: 当前={len(self.chat_history)}, 最大={self.max_memory}")
 
         if len(self.chat_history) <= self.max_memory:

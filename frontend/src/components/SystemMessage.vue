@@ -1,23 +1,28 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import type { HTMLAttributes } from 'vue'
+import { cn } from "@/lib/utils";
+import type { HTMLAttributes } from "vue";
+
+// ---- Props ----
 
 interface SystemMessageProps {
-  class?: HTMLAttributes['class']
-  content: string
-  type?: 'info' | 'warning' | 'success' | 'error'
+	class?: HTMLAttributes["class"];
+	content: string;
+	type?: "info" | "warning" | "success" | "error";
 }
 
 const props = withDefaults(defineProps<SystemMessageProps>(), {
-  type: 'info'
-})
+	type: "info",
+});
 
+/** 不同消息类型的样式映射 */
 const typeStyles = {
-  info: 'text-blue-500 dark:text-blue-400 bg-blue-500/5 border-blue-500/10',
-  warning: 'text-yellow-500 dark:text-yellow-400 bg-yellow-500/5 border-yellow-500/10',
-  success: 'text-green-500 dark:text-green-400 bg-green-500/5 border-green-500/10',
-  error: 'text-red-500 dark:text-red-400 bg-red-500/5 border-red-500/10'
-}
+	info: "text-blue-500 dark:text-blue-400 bg-blue-500/5 border-blue-500/10",
+	warning:
+		"text-yellow-500 dark:text-yellow-400 bg-yellow-500/5 border-yellow-500/10",
+	success:
+		"text-green-500 dark:text-green-400 bg-green-500/5 border-green-500/10",
+	error: "text-red-500 dark:text-red-400 bg-red-500/5 border-red-500/10",
+};
 </script>
 
 <template>

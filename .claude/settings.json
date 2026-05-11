@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"\\(Get-ChildItem -Path 'frontend\\\\src' -Recurse -Filter '*.vue'\\).Count\")",
+      "Bash(powershell -Command \"\\(Get-ChildItem -Path 'frontend\\\\src' -Recurse -Filter '*.ts'\\).Count\")",
+      "Bash(powershell *)",
+      "Bash(.\\\\backend\\\\.venv\\\\Scripts\\\\python.exe -m ruff check backend/app/)",
+      "Bash(npx biome *)",
+      "Bash(git checkout *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "bash \"$(git rev-parse --show-toplevel)/.claude/hook_lint.sh\"",
+            "timeout": 180,
+            "statusMessage": "Running lint checks..."
+          }
+        ]
+      }
+    ]
+  }
+}

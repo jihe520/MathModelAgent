@@ -1,3 +1,5 @@
+"""OpenAlex 学术文献搜索模块。"""
+
 import requests
 from typing import List, Dict, Any
 from app.services.redis_manager import redis_manager
@@ -5,12 +7,15 @@ from app.schemas.response import ScholarMessage
 
 
 class OpenAlexScholar:
-    def __init__(self, task_id: str, email: str = None, api_key: str = None):
-        """Initialize OpenAlex client.
+    """OpenAlex 学术文献搜索客户端。"""
+
+    def __init__(self, task_id: str, email: str | None = None, api_key: str | None = None):
+        """初始化 OpenAlex 客户端。
 
         Args:
-            email: Optional email for better API service
-            api_key: Optional OpenAlex API key
+            task_id: 任务 ID。
+            email: 可选的邮箱地址，用于获取更好的 API 服务。
+            api_key: 可选的 OpenAlex API Key。
         """
         self.base_url = "https://api.openalex.org"
         self.email = email
@@ -18,7 +23,11 @@ class OpenAlexScholar:
         self.task_id = task_id
 
     def _get_request_url(self, endpoint: str) -> str:
-        """Construct request URL with email parameter if provided."""
+        """构建请求 URL。
+
+        Args:
+            endpoint: API 端点路径。
+        """
         if endpoint.startswith("/"):
             endpoint = endpoint[1:]
         return f"{self.base_url}/{endpoint}"
@@ -52,14 +61,14 @@ class OpenAlexScholar:
         return " ".join(words).strip()
 
     async def search_papers(self, query: str, limit: int = 8) -> List[Dict[str, Any]]:
-        """Search for papers using OpenAlex API.
+        """使用 OpenAlex API 搜索学术论文。
 
         Args:
-            query: Search query string
-            limit: Maximum number of results to return
+            query: 搜索关键词。
+            limit: 最大返回结果数。
 
         Returns:
-            List of papers with their details
+            包含论文详细信息的字典列表。
         """
         # 构建基础 URL
         base_url = self._get_request_url("works")
@@ -87,6 +96,7 @@ class OpenAlexScholar:
         }
 
         # 让 requests 处理参数编码和 URL 构建
+        response: requests.Response | None = None
         try:
             print(f"请求 URL: {base_url} 参数: {params}")
             response = requests.get(base_url, params=params, headers=headers)
@@ -96,11 +106,11 @@ class OpenAlexScholar:
             results = response.json()
         except requests.exceptions.HTTPError as e:
             print(f"HTTP 错误: {e}")
-            if response.status_code == 403:
+            if response is not None and response.status_code == 403:
                 print(
                     "提示: 403错误通常意味着您需要提供有效的邮箱地址或者遵循礼貌池（polite pool）规则"
                 )
-            if hasattr(response, "text"):
+            if response is not None and hasattr(response, "text"):
                 print(f"响应内容: {response.text}")
             raise
         except Exception as e:
@@ -165,7 +175,7 @@ class OpenAlexScholar:
         return papers
 
     def papers_to_str(self, papers: List[Dict[str, Any]]) -> str:
-        """将文献列表转换为字符串"""
+        """将文献列表转换为可读字符串。"""
         result = ""
         for paper in papers:
             result += "\n" + "=" * 80
@@ -181,7 +191,7 @@ class OpenAlexScholar:
         return result
 
     def _format_citation(self, work: Dict[str, Any]) -> str:
-        """Format citation in a readable format."""
+        """将论文数据格式化为引用字符串。"""
         # 获取所有作者
         authors = [
             authorship.get("author", {}).get("display_name")

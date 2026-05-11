@@ -1,3 +1,5 @@
+"""写作手 Agent 模块，负责基于建模结果撰写学术论文。"""
+
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import get_writer_prompt
@@ -8,23 +10,25 @@ from app.services.redis_manager import redis_manager
 from app.schemas.response import SystemMessage, WriterMessage
 import json
 from app.core.functions import writer_tools
-from icecream import ic
+from icecream import ic  # type: ignore[import-unresolved]
 from app.schemas.A2A import WriterResponse
 
 
-# 长文本
 # TODO: 并行 parallel
 # TODO: 获取当前文件下的文件
 # TODO: 引用cites tool
-class WriterAgent(Agent):  # 同样继承自Agent类
+
+
+class WriterAgent(Agent):
+    """写作手 Agent，基于建模和代码执行结果撰写竞赛论文。"""
     def __init__(
         self,
         task_id: str,
         model: LLM,
-        max_chat_turns: int = 10,  # 添加最大对话轮次限制
-        comp_template: CompTemplate = CompTemplate,
+        max_chat_turns: int | None = None,  # 最大对话轮次，None表示无限制
+        comp_template: CompTemplate = CompTemplate.CHINA,
         format_output: FormatOutPut = FormatOutPut.Markdown,
-        scholar: OpenAlexScholar = None,
+        scholar: OpenAlexScholar | None = None,
         max_memory: int = 25,  # 添加最大记忆轮次
     ) -> None:
         super().__init__(task_id, model, max_chat_turns, max_memory)
@@ -35,11 +39,11 @@ class WriterAgent(Agent):  # 同样继承自Agent类
         self.system_prompt = get_writer_prompt(format_output)
         self.available_images: list[str] = []
 
-    async def run(
+    async def run(  # type: ignore[reportIncompatibleMethodOverride]
         self,
         prompt: str,
-        available_images: list[str] = None,
-        sub_title: str = None,
+        available_images: list[str] | None = None,
+        sub_title: str | None = None,
     ) -> WriterResponse:
         """
         执行写作任务
@@ -85,6 +89,7 @@ class WriterAgent(Agent):  # 同样继承自Agent类
         )
 
         footnotes = []
+        response_content: str = ""
 
         if (
             hasattr(response.choices[0].message, "tool_calls")
@@ -105,7 +110,7 @@ class WriterAgent(Agent):  # 同样继承自Agent类
                 await redis_manager.publish_message(
                     self.task_id,
                     WriterMessage(
-                        input={"query": query},
+                        content=query,
                     ),
                 )
 
@@ -114,6 +119,7 @@ class WriterAgent(Agent):  # 同样继承自Agent类
                 ic(response.choices[0].message.model_dump())
 
                 try:
+                    assert self.scholar is not None, "scholar 未初始化"
                     papers = await self.scholar.search_papers(query)
                 except Exception as e:
                     error_msg = f"搜索文献失败: {str(e)}"
@@ -122,6 +128,7 @@ class WriterAgent(Agent):  # 同样继承自Agent类
                         response_content=error_msg, footnotes=footnotes
                     )
                 # TODO: pass to frontend
+                assert self.scholar is not None, "scholar 未初始化"
                 papers_str = self.scholar.papers_to_str(papers)
                 logger.info(f"搜索文献结果\n{papers_str}")
                 await self.append_chat_history(
@@ -147,9 +154,7 @@ class WriterAgent(Agent):  # 同样继承自Agent类
         return WriterResponse(response_content=response_content, footnotes=footnotes)
 
     async def summarize(self) -> str:
-        """
-        总结对话内容
-        """
+        """总结对话内容，生成任务执行摘要。"""
         try:
             await self.append_chat_history(
                 {"role": "user", "content": "请简单总结以上完成什么任务取得什么结果:"}

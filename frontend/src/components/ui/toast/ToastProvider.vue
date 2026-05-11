@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ToastProvider, type ToastProviderProps } from 'reka-ui'
+import { ToastProvider, type ToastProviderProps } from "reka-ui";
 
-const props = defineProps<ToastProviderProps>()
+const props = defineProps<ToastProviderProps>();
 </script>
 
 <template>

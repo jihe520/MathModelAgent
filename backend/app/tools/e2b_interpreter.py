@@ -1,5 +1,7 @@
+"""E2B 云端代码解释器模块，通过 E2B 沙箱执行 Python 代码。"""
+
 import os
-from e2b_code_interpreter import AsyncSandbox
+from e2b_code_interpreter import AsyncSandbox  # type: ignore[import-unresolved]
 from app.schemas.response import (
     ErrorModel,
     OutputItem,
@@ -17,6 +19,7 @@ from app.tools.base_interpreter import BaseCodeInterpreter
 
 
 class E2BCodeInterpreter(BaseCodeInterpreter):
+    """基于 E2B 沙箱的云端代码解释器。"""
     def __init__(
         self,
         task_id: str,
@@ -70,6 +73,7 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
                         with open(file_path, "rb") as f:
                             content = f.read()
                             # 使用官方推荐的 files.write 方法
+                            assert self.sbx is not None
                             await self.sbx.files.write(f"/home/user/{file}", content)
                             logger.info(f"成功上传文件到沙箱: {file}")
                     except Exception as e:
@@ -159,20 +163,20 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
                 # 1. 文本格式
                 if str(result):
                     content_to_display.append(
-                        ResultModel(type="result", format="text", msg=str(result))
+                        ResultModel(res_type="result", format="text", msg=str(result))
                     )
                 # 2. HTML格式
                 if result._repr_html_():
                     content_to_display.append(
                         ResultModel(
-                            type="result", format="html", msg=result._repr_html_()
+                            res_type="result", format="html", msg=result._repr_html_()
                         )
                     )
                 # 3. Markdown格式
                 if result._repr_markdown_():
                     content_to_display.append(
                         ResultModel(
-                            type="result",
+                            res_type="result",
                             format="markdown",
                             msg=result._repr_markdown_(),
                         )
@@ -181,42 +185,42 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
                 if result._repr_png_():
                     content_to_display.append(
                         ResultModel(
-                            type="result", format="png", msg=result._repr_png_()
+                            res_type="result", format="png", msg=result._repr_png_()
                         )
                     )
                 # 5. JPEG图片
                 if result._repr_jpeg_():
                     content_to_display.append(
                         ResultModel(
-                            type="result", format="jpeg", msg=result._repr_jpeg_()
+                            res_type="result", format="jpeg", msg=result._repr_jpeg_()
                         )
                     )
                 # 6. SVG
                 if result._repr_svg_():
                     content_to_display.append(
                         ResultModel(
-                            type="result", format="svg", msg=result._repr_svg_()
+                            res_type="result", format="svg", msg=result._repr_svg_()
                         )
                     )
                 # 7. PDF
                 if result._repr_pdf_():
                     content_to_display.append(
                         ResultModel(
-                            type="result", format="pdf", msg=result._repr_pdf_()
+                            res_type="result", format="pdf", msg=result._repr_pdf_()
                         )
                     )
                 # 8. LaTeX
                 if result._repr_latex_():
                     content_to_display.append(
                         ResultModel(
-                            type="result", format="latex", msg=result._repr_latex_()
+                            res_type="result", format="latex", msg=result._repr_latex_()
                         )
                     )
                 # 9. JSON
                 if result._repr_json_():
                     content_to_display.append(
                         ResultModel(
-                            type="result",
+                            res_type="result",
                             format="json",
                             msg=json.dumps(result._repr_json_()),
                         )
@@ -225,7 +229,7 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
                 if result._repr_javascript_():
                     content_to_display.append(
                         ResultModel(
-                            type="result",
+                            res_type="result",
                             format="javascript",
                             msg=result._repr_javascript_(),
                         )
@@ -324,9 +328,10 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
     async def download_all_files_from_sandbox(self) -> None:
         """从沙箱中下载所有文件并与本地同步"""
         try:
+            assert self.sbx is not None
             # 获取沙箱中的文件列表
             sandbox_files = await self.sbx.files.list("/home/user")
-            sandbox_files_dict = {f.name: f for f in sandbox_files}
+            sandbox_files_dict = {f.name: f for f in sandbox_files}  # noqa: F841
 
             # 获取本地文件列表
             local_files = set()

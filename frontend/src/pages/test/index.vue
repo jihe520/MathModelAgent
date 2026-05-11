@@ -4,5 +4,5 @@
 </template>
 
 <script lang="ts" setup>
-import Tetris from '@/components/ui/tetris/Tetris.vue'
+import Tetris from "@/components/ui/tetris/Tetris.vue";
 </script>

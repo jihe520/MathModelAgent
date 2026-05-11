@@ -1,17 +1,20 @@
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue'
-import { cn } from '@/lib/utils'
-import { AvatarRoot } from 'reka-ui'
-import { avatarVariant, type AvatarVariants } from '.'
+import { cn } from "@/lib/utils";
+import { AvatarRoot } from "reka-ui";
+import type { HTMLAttributes } from "vue";
+import { type AvatarVariants, avatarVariant } from ".";
 
-const props = withDefaults(defineProps<{
-  class?: HTMLAttributes['class']
-  size?: AvatarVariants['size']
-  shape?: AvatarVariants['shape']
-}>(), {
-  size: 'sm',
-  shape: 'circle',
-})
+const props = withDefaults(
+	defineProps<{
+		class?: HTMLAttributes["class"];
+		size?: AvatarVariants["size"];
+		shape?: AvatarVariants["shape"];
+	}>(),
+	{
+		size: "sm",
+		shape: "circle",
+	},
+);
 </script>
 
 <template>

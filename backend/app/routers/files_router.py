@@ -1,8 +1,10 @@
+"""文件管理路由模块，提供文件下载、列表和目录打开等接口。"""
+
 from fastapi import APIRouter
 from app.utils.common_utils import get_current_files, get_work_dir
 import os
 import subprocess
-from icecream import ic
+from icecream import ic  # type: ignore[import-unresolved]
 from fastapi import HTTPException
 
 router = APIRouter()

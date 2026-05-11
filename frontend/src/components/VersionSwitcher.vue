@@ -1,26 +1,30 @@
 <script setup lang="ts">
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from '@/components/ui/sidebar'
-import { Check, ChevronsUpDown, GalleryVerticalEnd } from 'lucide-vue-next'
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+} from "@/components/ui/sidebar";
+import { Check, ChevronsUpDown, GalleryVerticalEnd } from "lucide-vue-next";
 
-import { ref } from 'vue'
+import { ref } from "vue";
+
+// ---- Props ----
 
 const props = defineProps<{
-  versions: string[]
-  defaultVersion: string
-}>()
+	versions: string[];
+	defaultVersion: string;
+}>();
 
-const selectedVersion = ref(props.defaultVersion)
+// ---- Reactive State ----
+
+const selectedVersion = ref(props.defaultVersion);
 </script>
 
 <template>

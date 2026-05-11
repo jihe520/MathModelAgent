@@ -1,63 +1,68 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Button } from '@/components/ui/button'
-import { useRouter } from 'vue-router'
+import { Button } from "@/components/ui/button";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 
-// 导入图片资源
-import huashuCupC from '@/assets/example/华数杯2023年C题.png'
-import wuyiCupC from '@/assets/example/2025五一杯C题.png'
-import mcmCupC from '@/assets/example/2024高教杯C题.png'
-import { exampleAPI } from '@/apis/commonApi'
+import { exampleAPI } from "@/apis/commonApi";
+import mcmCupC from "@/assets/example/2024高教杯C题.png";
+import wuyiCupC from "@/assets/example/2025五一杯C题.png";
+import huashuCupC from "@/assets/example/华数杯2023年C题.png";
 
-// 定义样例类型
+// ---- Types ----
+
+/** 建模样例数据结构 */
 interface ModelingExample {
-  id: number
-  title: string
-  source: string
-  description: string
-  tags: string[]
-  problemText: string
-  image: string
+	id: number;
+	title: string;
+	source: string;
+	description: string;
+	tags: string[];
+	problemText: string;
+	image: string;
 }
 
-const router = useRouter()
+// ---- Reactive State ----
+
+const router = useRouter();
+
+/** 样例列表 */
 const examples = ref<ModelingExample[]>([
-  {
-    id: 1,
-    title: "母亲身心健康对婴儿成长的影响",
-    source: "2023华数杯C题",
-    description: "研究母亲身心健康对婴儿成长的影响",
-    tags: ["分类问题", "成长", "健康"],
-    problemText: "给定母亲身心健康数据，建立一个预测模型，预测婴儿成长情况。",
-    image: huashuCupC
-  },
-  {
-    id: 2,
-    title: "社交媒体平台用户分析问题",
-    source: "2025五一杯C题",
-    description: "分析社交媒体平台用户行为特征",
-    tags: ["社交媒体", "用户行为"],
-    problemText: "分析社交媒体平台用户行为特征，构建用户画像模型。",
-    image: wuyiCupC
-  },
-  {
-    id: 3,
-    title: "农作物的种植策略",
-    source: "2024高教杯C题",
-    description: "研究农作物的种植策略",
-    tags: ["种植策略", "农作物", "生长"],
-    problemText: "研究农作物的种植策略，建立一个优化模型，使得农作物产量最大化。",
-    image: mcmCupC
-  }
-])
+	{
+		id: 1,
+		title: "母亲身心健康对婴儿成长的影响",
+		source: "2023华数杯C题",
+		description: "研究母亲身心健康对婴儿成长的影响",
+		tags: ["分类问题", "成长", "健康"],
+		problemText: "给定母亲身心健康数据，建立一个预测模型，预测婴儿成长情况。",
+		image: huashuCupC,
+	},
+	{
+		id: 2,
+		title: "社交媒体平台用户分析问题",
+		source: "2025五一杯C题",
+		description: "分析社交媒体平台用户行为特征",
+		tags: ["社交媒体", "用户行为"],
+		problemText: "分析社交媒体平台用户行为特征，构建用户画像模型。",
+		image: wuyiCupC,
+	},
+	{
+		id: 3,
+		title: "农作物的种植策略",
+		source: "2024高教杯C题",
+		description: "研究农作物的种植策略",
+		tags: ["种植策略", "农作物", "生长"],
+		problemText:
+			"研究农作物的种植策略，建立一个优化模型，使得农作物产量最大化。",
+		image: mcmCupC,
+	},
+]);
 
-// 选择样例并跳转到任务创建步骤
+/** 选择样例并跳转到任务创建步骤 */
 const selectExample = async (example: ModelingExample) => {
-  const res = await exampleAPI(example.id.toString(), example.source)
-  const task_id = res?.data?.task_id
-  router.push(`/task/${task_id}`)
-}
-
+	const res = await exampleAPI(example.id.toString(), example.source);
+	const task_id = res?.data?.task_id;
+	router.push(`/task/${task_id}`);
+};
 </script>
 
 <template>

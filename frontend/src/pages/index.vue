@@ -167,74 +167,80 @@
 
 <script setup>
 import {
-  Clock,
-  Award,
-  FileText,
-  Sparkles,
-  Search,
-  Code,
-  File,
-  Users,
-  Layers,
-  Wallet,
-  Cpu,
-  CheckCircle,
-  BarChart2,
-  Calendar,
-  Check,
-  Mail,
-  Github,
-  Twitter
-} from 'lucide-vue-next'
+	Award,
+	BarChart2,
+	Calendar,
+	Check,
+	CheckCircle,
+	Clock,
+	Code,
+	Cpu,
+	File,
+	FileText,
+	Github,
+	Layers,
+	Mail,
+	Search,
+	Sparkles,
+	Twitter,
+	Users,
+	Wallet,
+} from "lucide-vue-next";
 
+import { GITHUB_LINK, QQ_GROUP, TWITTER } from "@/utils/const";
+import { useRouter } from "vue-router";
 
-import { useRouter } from 'vue-router'
-import { QQ_GROUP, GITHUB_LINK, TWITTER } from '@/utils/const'
-
-const router = useRouter()
+const router = useRouter();
 
 const mainPoints = [
-  {
-    icon: Clock,
-    title: '3天 → 1小时',
-    desc: '将传统3天的比赛时间缩短至1小时，极大提升工作效率'
-  },
-  {
-    icon: Award,
-    title: '获奖级建模论文',
-    desc: '自动完成一份可以获奖级别的数学建模论文，无需人工干预'
-  },
-  {
-    icon: FileText,
-    title: '完整解决方案',
-    desc: '从问题分析到论文提交，一站式解决数学建模全流程'
-  }
-]
+	{
+		icon: Clock,
+		title: "3天 → 1小时",
+		desc: "将传统3天的比赛时间缩短至1小时，极大提升工作效率",
+	},
+	{
+		icon: Award,
+		title: "获奖级建模论文",
+		desc: "自动完成一份可以获奖级别的数学建模论文，无需人工干预",
+	},
+	{
+		icon: FileText,
+		title: "完整解决方案",
+		desc: "从问题分析到论文提交，一站式解决数学建模全流程",
+	},
+];
 
 const coreFeatures = [
-  { icon: Search, text: '自动分析问题与数学建模' },
-  { icon: Code, text: '本地代码解释器' },
-  { icon: File, text: '排版完整的论文生成' },
-  { icon: Users, text: '多智能体协作系统' },
-  { icon: Layers, text: '多种LLM模型支持' },
-  { icon: Wallet, text: '低成本Agentless架构' }
-]
+	{ icon: Search, text: "自动分析问题与数学建模" },
+	{ icon: Code, text: "本地代码解释器" },
+	{ icon: File, text: "排版完整的论文生成" },
+	{ icon: Users, text: "多智能体协作系统" },
+	{ icon: Layers, text: "多种LLM模型支持" },
+	{ icon: Wallet, text: "低成本Agentless架构" },
+];
 
 const agents = [
-  { role: '建模手', desc: '负责数学建模与分析' },
-  { role: '代码手', desc: '编写代码与反思优化' },
-  { role: '论文手', desc: '生成符合规范的论文' }
-]
+	{ role: "建模手", desc: "负责数学建模与分析" },
+	{ role: "代码手", desc: "编写代码与反思优化" },
+	{ role: "论文手", desc: "生成符合规范的论文" },
+];
 
 const techs = [
-  'R语言', 'MATLAB', 'LaTeX模板', '视觉模型', '文献引用', '流程图绘制', '英文支持', '美赛适配'
-]
+	"R语言",
+	"MATLAB",
+	"LaTeX模板",
+	"视觉模型",
+	"文献引用",
+	"流程图绘制",
+	"英文支持",
+	"美赛适配",
+];
 
 const plans = [
-  '更多数学建模测试案例支持',
-  '引入用户交互（选择模型，重写等）',
-  '代码解释器接入云端（e2b等供应商）'
-]
+	"更多数学建模测试案例支持",
+	"引入用户交互（选择模型，重写等）",
+	"代码解释器接入云端（e2b等供应商）",
+];
 </script>
 
 <style scoped>

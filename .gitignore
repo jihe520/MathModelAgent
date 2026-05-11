@@ -7,3 +7,4 @@ backend/app/.DS_Store
 .Spotlight-V100
 .Trashes
 .idea/
+settings.local.json

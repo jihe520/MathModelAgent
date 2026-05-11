@@ -1,3 +1,5 @@
+"""数据记录模块，记录 Agent 的对话历史和 Token 使用情况。"""
+
 import json
 import os
 from app.utils.log_util import logger
@@ -5,9 +7,8 @@ from typing import Any, Dict
 
 
 # TODO: 记录数据
-# data analysis : save all data and result
-# agent-histroy, token usgae, , cost , workflow cost , res
 class DataRecorder:
+    """记录 Agent 对话历史、Token 使用量和 API 调用费用。"""
     def __init__(self, log_work_dir: str = ""):
         self.total_cost = 0.0
         self.agents_chat_history = {}

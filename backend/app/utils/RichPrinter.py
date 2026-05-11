@@ -1,3 +1,5 @@
+"""Rich 终端美化输出模块。"""
+
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -8,6 +10,7 @@ from app.utils.log_util import logger
 
 
 class RichPrinter:
+    """Rich 终端美化打印工具，提供面板、表格和 Agent 消息的格式化输出。"""
     # 类属性：全局样式配置
     _styles = {
         "success": {"emoji": "✅", "color": "green", "prefix": "成功"},

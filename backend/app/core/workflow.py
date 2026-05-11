@@ -1,3 +1,5 @@
+"""工作流模块，编排多 Agent 协作完成数学建模任务。"""
+
 from app.core.agents import WriterAgent, CoderAgent, CoordinatorAgent, ModelerAgent
 from app.schemas.request import Problem
 from app.schemas.response import SystemMessage
@@ -14,22 +16,31 @@ from app.core.llm.llm_factory import LLMFactory
 
 
 class WorkFlow:
+    """工作流基类。"""
+
     def __init__(self):
         pass
 
-    def execute(self) -> str:
+    def execute(self) -> None:
+        """执行工作流。"""
         # RichPrinter.workflow_start()
         # RichPrinter.workflow_end()
         pass
 
 
 class MathModelWorkFlow(WorkFlow):
+    """数学建模工作流，协调协调者、建模手、代码手和写作手完成完整建模任务。"""
     task_id: str  #
     work_dir: str  # worklow work dir
     ques_count: int = 0  # 问题数量
     questions: dict[str, str | int] = {}  # 问题
 
-    async def execute(self, problem: Problem):
+    async def execute(self, problem: Problem):  # type: ignore[reportIncompatibleMethodOverride]
+        """执行数学建模工作流。
+
+        Args:
+            problem: 包含题目信息、模板配置等的 Problem 对象。
+        """
         self.task_id = problem.task_id
         self.work_dir = create_work_dir(self.task_id)
 
@@ -82,6 +93,8 @@ class MathModelWorkFlow(WorkFlow):
             timeout=3000,
         )
         
+        assert settings.OPENALEX_EMAIL is not None, "OPENALEX_EMAIL 未配置"
+        assert settings.OPENALEX_API_KEY is not None, "OPENALEX_API_KEY 未配置"
         scholar = OpenAlexScholar(
             task_id=self.task_id,
             email=settings.OPENALEX_EMAIL,
@@ -138,7 +151,7 @@ class MathModelWorkFlow(WorkFlow):
             )
 
             writer_prompt = flows.get_writer_prompt(
-                key, coder_response.code_response, code_interpreter, config_template
+                key, coder_response.code_response or "", code_interpreter, config_template
             )
 
             await redis_manager.publish_message(

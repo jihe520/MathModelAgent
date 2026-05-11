@@ -1,64 +1,89 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, computed } from 'vue';
-import { renderMarkdown } from '@/utils/markdown';
-import type { WriterMessage } from '@/utils/response'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { renderMarkdown } from "@/utils/markdown";
+import type { WriterMessage } from "@/utils/response";
+import { computed, onMounted, ref, watch } from "vue";
 
+// ---- Types ----
+
+/** 内容段落数据结构 */
 interface ContentSection {
-  id: number;
-  content: string;
-  renderedContent: string;
-  sub_title?: string;
+	id: number;
+	content: string;
+	renderedContent: string;
+	sub_title?: string;
 }
 
+// ---- Props ----
+
 const props = defineProps<{
-  messages: WriterMessage[]
-  writerSequence: string[]
-}>()
+	messages: WriterMessage[];
+	writerSequence: string[];
+}>();
+
+// ---- Reactive State ----
 
 const sections = ref<ContentSection[]>([]);
 let nextId = 0;
 
-// 添加新的内容段落
+// ---- Methods ----
+
+/** 添加新的内容段落 */
 const appendContent = async (content: string, sub_title?: string) => {
-  const renderedContent = await renderMarkdown(content);
-  sections.value.push({
-    id: nextId++,
-    content,
-    renderedContent,
-    sub_title
-  });
+	const renderedContent = await renderMarkdown(content);
+	sections.value.push({
+		id: nextId++,
+		content,
+		renderedContent,
+		sub_title,
+	});
 };
 
-// 根据 writerSequence 排序内容
+// ---- Computed ----
+
+/** 根据 writerSequence 排序内容 */
 const sortedSections = computed(() => {
-  if (!props.writerSequence.length) return sections.value;
+	if (!props.writerSequence.length) return sections.value;
 
-  return [...sections.value].sort((a, b) => {
-    const aIndex = a.sub_title ? props.writerSequence.indexOf(a.sub_title) : Infinity;
-    const bIndex = b.sub_title ? props.writerSequence.indexOf(b.sub_title) : Infinity;
+	return [...sections.value].sort((a, b) => {
+		const aIndex = a.sub_title
+			? props.writerSequence.indexOf(a.sub_title)
+			: Number.POSITIVE_INFINITY;
+		const bIndex = b.sub_title
+			? props.writerSequence.indexOf(b.sub_title)
+			: Number.POSITIVE_INFINITY;
 
-    if (aIndex === Infinity && bIndex === Infinity) return 0;
-    if (aIndex === Infinity) return 1;
-    if (bIndex === Infinity) return -1;
+		if (
+			aIndex === Number.POSITIVE_INFINITY &&
+			bIndex === Number.POSITIVE_INFINITY
+		)
+			return 0;
+		if (aIndex === Number.POSITIVE_INFINITY) return 1;
+		if (bIndex === Number.POSITIVE_INFINITY) return -1;
 
-    return aIndex - bIndex;
-  });
+		return aIndex - bIndex;
+	});
 });
 
-// 监听消息变化
-watch(() => props.messages, async (messages) => {
-  // 清空现有内容
-  sections.value = [];
-  nextId = 0;
+// ---- Watch ----
 
-  // 按顺序添加每个消息的内容
-  for (const msg of messages) {
-    if (msg.content) {
-      await appendContent(msg.content, msg.sub_title);
-    }
-  }
-}, { immediate: true });
+/** 监听消息变化，重新渲染内容 */
+watch(
+	() => props.messages,
+	async (messages) => {
+		// 清空现有内容
+		sections.value = [];
+		nextId = 0;
+
+		// 按顺序添加每个消息的内容
+		for (const msg of messages) {
+			if (msg.content) {
+				await appendContent(msg.content, msg.sub_title);
+			}
+		}
+	},
+	{ immediate: true },
+);
 </script>
 
 <template>

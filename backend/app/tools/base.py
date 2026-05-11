@@ -1,3 +1,5 @@
+"""工具基类模块，提供工具注册和调用的基础设施。"""
+
 from typing import Dict, Any, List, Callable
 import inspect
 from app.schemas.tool_result import ToolResult
@@ -9,16 +11,16 @@ def tool(
     parameters: Dict[str, Dict[str, Any]],
     required: List[str],
 ) -> Callable:
-    """Tool registration decorator
+    """工具注册装饰器，为函数生成工具 schema。
 
     Args:
-        name: Tool name
-        description: Tool description
-        parameters: Tool parameter definitions
-        required: List of required parameters
+        name: 工具名称。
+        description: 工具描述。
+        parameters: 工具参数定义。
+        required: 必需参数列表。
 
     Returns:
-        Decorator function
+        装饰器函数。
     """
 
     def decorator(func):
@@ -47,66 +49,59 @@ def tool(
 
 
 class BaseTool:
-    """Base tool class, providing common tool calling methods"""
+    """工具基类，提供工具注册、查询和调用的通用方法。"""
 
     name: str = ""
 
     def __init__(self):
-        """Initialize base tool class"""
+        pass
         self._tools_cache = None
 
     def get_tools(self) -> List[Dict[str, Any]]:
-        """Get all registered tools
-
-        Returns:
-            List of tools
-        """
+        """获取所有已注册的工具 schema 列表。"""
         if self._tools_cache is not None:
             return self._tools_cache
 
         tools = []
         for _, method in inspect.getmembers(self, inspect.ismethod):
-            if hasattr(method, "_tool_schema"):
-                tools.append(method._tool_schema)
+            schema = getattr(method, "_tool_schema", None)
+            if schema is not None:
+                tools.append(schema)
 
         self._tools_cache = tools
         return tools
 
     def has_function(self, function_name: str) -> bool:
-        """Check if specified function exists
+        """检查指定名称的工具是否存在。
 
         Args:
-            function_name: Function name
+            function_name: 工具函数名称。
 
         Returns:
-            Whether the tool exists
+            工具是否存在。
         """
         for _, method in inspect.getmembers(self, inspect.ismethod):
-            if (
-                hasattr(method, "_function_name")
-                and method._function_name == function_name
-            ):
+            fn_name = getattr(method, "_function_name", None)
+            if fn_name == function_name:
                 return True
         return False
 
     async def invoke_function(self, function_name: str, **kwargs) -> ToolResult:
-        """Invoke specified tool
+        """调用指定的工具函数。
 
         Args:
-            function_name: Function name
-            **kwargs: Parameters
+            function_name: 工具函数名称。
+            **kwargs: 传递给工具的参数。
 
         Returns:
-            Invocation result
+            工具调用结果。
 
         Raises:
-            ValueError: Raised when tool doesn't exist
+            ValueError: 工具不存在时抛出。
         """
         for _, method in inspect.getmembers(self, inspect.ismethod):
-            if (
-                hasattr(method, "_function_name")
-                and method._function_name == function_name
-            ):
+            fn_name = getattr(method, "_function_name", None)
+            if fn_name == function_name:
                 return await method(**kwargs)
 
         raise ValueError(f"Tool '{function_name}' not found")

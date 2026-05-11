@@ -1,3 +1,5 @@
+"""通用工具函数模块，提供任务 ID 生成、文件操作和文档转换等功能。"""
+
 import os
 import datetime
 import hashlib
@@ -5,15 +7,14 @@ import tomllib
 from app.schemas.enums import CompTemplate
 from app.utils.log_util import logger
 import re
-import pypandoc
+import pypandoc  # type: ignore[import-unresolved]
 from app.config.setting import settings
-from icecream import ic
 
 TASK_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 
 
 def create_task_id() -> str:
-    """生成任务ID"""
+    """生成基于时间戳和随机哈希的唯一任务 ID。"""
     # 生成时间戳和随机hash
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     random_hash = hashlib.md5(str(datetime.datetime.now()).encode()).hexdigest()[:8]
@@ -21,6 +22,17 @@ def create_task_id() -> str:
 
 
 def ensure_safe_task_id(task_id: str) -> str:
+    """验证任务 ID 的合法性，防止路径遍历攻击。
+
+    Args:
+        task_id: 待验证的任务 ID。
+
+    Returns:
+        验证通过的任务 ID。
+
+    Raises:
+        ValueError: 任务 ID 不合法时抛出。
+    """
     normalized = (task_id or "").strip()
     if not normalized or not TASK_ID_PATTERN.fullmatch(normalized):
         raise ValueError("非法 task_id")
@@ -28,6 +40,14 @@ def ensure_safe_task_id(task_id: str) -> str:
 
 
 def create_work_dir(task_id: str) -> str:
+    """为指定任务创建工作目录。
+
+    Args:
+        task_id: 任务 ID。
+
+    Returns:
+        工作目录路径。
+    """
     # 设置主工作目录和子目录
     work_dir = os.path.join("project", "work_dir", task_id)
 
@@ -42,6 +62,17 @@ def create_work_dir(task_id: str) -> str:
 
 
 def get_work_dir(task_id: str) -> str:
+    """获取指定任务的工作目录路径。
+
+    Args:
+        task_id: 任务 ID。
+
+    Returns:
+        工作目录路径。
+
+    Raises:
+        FileNotFoundError: 工作目录不存在时抛出。
+    """
     work_dir = os.path.join("project", "work_dir", task_id)
     if os.path.exists(work_dir):
         return work_dir
@@ -50,23 +81,48 @@ def get_work_dir(task_id: str) -> str:
         raise FileNotFoundError(f"工作目录不存在: {work_dir}")
 
 
-#  TODO: 是不是应该将 Prompt 写成一个 class
+# TODO: 是不是应该将 Prompt 写成一个 class
 def get_config_template(comp_template: CompTemplate = CompTemplate.CHINA) -> dict:
+    """获取论文模板配置。
+
+    Args:
+        comp_template: 竞赛模板类型。
+
+    Returns:
+        模板配置字典。
+    """
     if comp_template == CompTemplate.CHINA:
         return load_toml(os.path.join("app", "config", "md_template.toml"))
+    return {}
 
 
 def load_toml(path: str) -> dict:
+    """加载 TOML 配置文件。
+
+    Args:
+        path: TOML 文件路径。
+    """
     with open(path, "rb") as f:
         return tomllib.load(f)
 
 
 def load_markdown(path: str) -> str:
+    """加载 Markdown 文件内容。
+
+    Args:
+        path: Markdown 文件路径。
+    """
     with open(path, "r", encoding="utf-8") as f:
         return f.read()
 
 
 def get_current_files(folder_path: str, type: str = "all") -> list[str]:
+    """获取指定目录下的文件列表。
+
+    Args:
+        folder_path: 目录路径。
+        type: 文件类型过滤（all/md/ipynb/data/image）。
+    """
     files = os.listdir(folder_path)
     if type == "all":
         return files
@@ -82,10 +138,16 @@ def get_current_files(folder_path: str, type: str = "all") -> list[str]:
         return [
             file for file in files if file.endswith(".png") or file.endswith(".jpg")
         ]
+    return []
 
 
-# 判断content是否包含图片 xx.png,对其处理为    ![filename](http://localhost:8000/static/20250428-200915-ebc154d4/filename.jpg)
 def transform_link(task_id: str, content: str):
+    """将 Markdown 中的图片链接转换为静态资源 URL。
+
+    Args:
+        task_id: 任务 ID，用于构建 URL 路径。
+        content: 包含图片链接的 Markdown 文本。
+    """
     content = re.sub(
         r"!\[(.*?)\]\((.*?\.(?:png|jpg|jpeg|gif|bmp|webp))\)",
         lambda match: f"![{match.group(1)}]({settings.SERVER_HOST}/static/{task_id}/{match.group(2)})",
@@ -94,8 +156,12 @@ def transform_link(task_id: str, content: str):
     return content
 
 
-# TODO: fix 公式显示
 def md_2_docx(task_id: str):
+    """将 Markdown 论文转换为 DOCX 格式。
+
+    Args:
+        task_id: 任务 ID。
+    """
     work_dir = get_work_dir(task_id)
     md_path = os.path.join(work_dir, "res.md")
     docx_path = os.path.join(work_dir, "res.docx")
@@ -119,6 +185,14 @@ def md_2_docx(task_id: str):
 
 
 def split_footnotes(text: str) -> tuple[str, list[tuple[str, str]]]:
+    """从文本中分离正文和脚注。
+
+    Args:
+        text: 包含脚注的完整文本。
+
+    Returns:
+        (正文, 脚注列表) 的元组，脚注格式为 (编号, 内容)。
+    """
     main_text = re.sub(
         r"\n\[\^\d+\]:.*?(?=\n\[\^|\n\n|\Z)", "", text, flags=re.DOTALL
     ).strip()

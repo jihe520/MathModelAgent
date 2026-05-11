@@ -1,166 +1,175 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Button } from '@/components/ui/button'
-import { FileUp } from 'lucide-vue-next'
-import { Textarea } from '@/components/ui/textarea'
+import { saveApiConfig } from "@/apis/apiKeyApi";
+import { submitModelingTask } from "@/apis/submitModelingApi";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import FileConfirmDialog from './FileConfirmDialog.vue'
-import { submitModelingTask } from '@/apis/submitModelingApi'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Rocket } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
-import { useTaskStore } from '@/stores/task'
-import { useToast } from '@/components/ui/toast'
-import { useApiKeyStore } from '@/stores/apiKeys'
-import { saveApiConfig } from '@/apis/apiKeyApi'
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
+import { useApiKeyStore } from "@/stores/apiKeys";
+import { useTaskStore } from "@/stores/task";
+import { FileUp } from "lucide-vue-next";
+import { Rocket } from "lucide-vue-next";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import type FileConfirmDialog from "./FileConfirmDialog.vue";
 
-const taskStore = useTaskStore()
-const { toast } = useToast()
-const apiKeyStore = useApiKeyStore()
-const currentStep = ref(1)
-const fileConfirmDialog = ref<InstanceType<typeof FileConfirmDialog> | null>(null)
-const fileUploaded = ref(true)
+// ---- Reactive State ----
 
-// 表单数据
-const uploadedFiles = ref<File[]>([])
-const question = ref('')
+const taskStore = useTaskStore();
+const { toast } = useToast();
+const apiKeyStore = useApiKeyStore();
+const currentStep = ref(1);
+const fileConfirmDialog = ref<InstanceType<typeof FileConfirmDialog> | null>(
+	null,
+);
+const fileUploaded = ref(true);
+
+/** 已上传的文件列表 */
+const uploadedFiles = ref<File[]>([]);
+
+/** 题目内容 */
+const question = ref("");
+
+/** 选项配置 */
 const selectedOptions = ref({
-  template: '国赛',
-  language: '中文',
-  format: 'Markdown',
-})
+	template: "国赛",
+	language: "中文",
+	format: "Markdown",
+});
 
+/** 选择器配置列表 */
 const selectConfig = [
-  {
-    key: '模板',
-    label: '选择模板',
-    options: ['国赛', '美赛'],
-  },
-  {
-    key: '语言',
-    label: '选择语言',
-    options: ['中文', '英文'],
-  },
-  {
-    key: '格式',
-    label: '选择格式',
-    options: ['Markdown', 'LaTeX'],
-  },
-]
+	{
+		key: "模板",
+		label: "选择模板",
+		options: ["国赛", "美赛"],
+	},
+	{
+		key: "语言",
+		label: "选择语言",
+		options: ["中文", "英文"],
+	},
+	{
+		key: "格式",
+		label: "选择格式",
+		options: ["Markdown", "LaTeX"],
+	},
+];
 
-// 添加状态控制
-const showUploadSuccess = ref(false)
+/** 上传成功提示显示状态 */
+const showUploadSuccess = ref(false);
 
-// 提交任务
-const showSubmitSuccess = ref(false)
+/** 提交成功提示显示状态 */
+const showSubmitSuccess = ref(false);
 
-const taskId = ref<string | null>(null)
+/** 任务ID */
+const taskId = ref<string | null>(null);
 
-// 添加 fileInput 的类型声明
-const fileInput = ref<HTMLInputElement | null>(null)
+/** 文件输入元素引用 */
+const fileInput = ref<HTMLInputElement | null>(null);
+
+// ---- Methods ----
 
 const nextStep = () => {
-  if (currentStep.value < 2)
-    currentStep.value++
-}
+	if (currentStep.value < 2) currentStep.value++;
+};
 
 const prevStep = () => {
-  if (currentStep.value > 1)
-    currentStep.value--
-}
+	if (currentStep.value > 1) currentStep.value--;
+};
 
-// 修改文件上传处理
+/** 处理文件上传事件 */
 const handleFileUpload = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  if (input.files && input.files.length > 0) {
-    uploadedFiles.value = Array.from(input.files)
-    fileUploaded.value = true
-    showUploadSuccess.value = true // 显示提示
-    setTimeout(() => {
-      showUploadSuccess.value = false // 3秒后自动隐藏
-    }, 1000)
-  }
-}
+	const input = event.target as HTMLInputElement;
+	if (input.files && input.files.length > 0) {
+		uploadedFiles.value = Array.from(input.files);
+		fileUploaded.value = true;
+		showUploadSuccess.value = true; // 显示提示
+		setTimeout(() => {
+			showUploadSuccess.value = false; // 3秒后自动隐藏
+		}, 1000);
+	}
+};
 
-const router = useRouter()
+const router = useRouter();
 
-
+/** 提交建模任务 */
 const handleSubmit = async () => {
-  try {
+	try {
+		if (apiKeyStore.isEmpty) {
+			toast({
+				title: "请先配置 API Key",
+				description: "在侧边栏 -> 头像 -> API Key 中配置 API Key",
+				variant: "destructive",
+			});
+			return;
+		}
 
-    if (apiKeyStore.isEmpty) {
-      toast({
-        title: '请先配置 API Key',
-        description: '在侧边栏 -> 头像 -> API Key 中配置 API Key',
-        variant: 'destructive',
-      })
-      return
-    }
+		// 保存 API Key
+		await saveApiConfig({
+			coordinator: apiKeyStore.coordinatorConfig,
+			modeler: apiKeyStore.modelerConfig,
+			coder: apiKeyStore.coderConfig,
+			writer: apiKeyStore.writerConfig,
+			openalex_email: apiKeyStore.openalexEmail,
+		});
 
-    // 保存 API Key
-    await saveApiConfig({
-      coordinator: apiKeyStore.coordinatorConfig,
-      modeler: apiKeyStore.modelerConfig,
-      coder: apiKeyStore.coderConfig,
-      writer: apiKeyStore.writerConfig,
-      openalex_email: apiKeyStore.openalexEmail
-    })
+		if (uploadedFiles.value.length === 0) {
+			if (!fileConfirmDialog.value) return;
 
-    if (uploadedFiles.value.length === 0) {
-      if (!fileConfirmDialog.value) return
-      
-      const shouldContinue = await fileConfirmDialog.value.openConfirmDialog()
-      
-      if (!shouldContinue) {
-        toast({
-          title: '请先上传文件',
-          description: '请先上传文件',
-          variant: 'destructive',
-        })
-        return
-      }
-    }
-    console.log(selectedOptions.value)
-    console.log(question.value)
-    console.log(uploadedFiles.value)
-    const response = await submitModelingTask(
-      {
-        ques_all: question.value,
-        comp_template: selectedOptions.value.template,
-        format_output: selectedOptions.value.format
-      },
-      uploadedFiles.value
-    )
+			const shouldContinue = await fileConfirmDialog.value.openConfirmDialog();
 
-    taskId.value = response?.data?.task_id ?? null
-    taskStore.addUserMessage(question.value)
+			if (!shouldContinue) {
+				toast({
+					title: "请先上传文件",
+					description: "请先上传文件",
+					variant: "destructive",
+				});
+				return;
+			}
+		}
+		console.log(selectedOptions.value);
+		console.log(question.value);
+		console.log(uploadedFiles.value);
+		const response = await submitModelingTask(
+			{
+				ques_all: question.value,
+				comp_template: selectedOptions.value.template,
+				format_output: selectedOptions.value.format,
+			},
+			uploadedFiles.value,
+		);
 
-    showSubmitSuccess.value = true
-    setTimeout(() => {
-      showSubmitSuccess.value = false // 3秒后自动隐藏
-    }, 3000)
-    router.push(`/task/${taskId.value}`)
-    toast({
-      title: '任务提交成功',
-      description: '任务提交成功，编号为：' + taskId.value,
-    })
-  } catch (error) {
-    console.error('任务提交失败:', error)
-    toast({
-      title: '任务提交失败',
-      description: '请检查 API Key 是否正确',
-      variant: 'destructive',
-    })
-  }
-}
+		taskId.value = response?.data?.task_id ?? null;
+		taskStore.addUserMessage(question.value);
+
+		showSubmitSuccess.value = true;
+		setTimeout(() => {
+			showSubmitSuccess.value = false; // 3秒后自动隐藏
+		}, 3000);
+		router.push(`/task/${taskId.value}`);
+		toast({
+			title: "任务提交成功",
+			description: `任务提交成功，编号为：${taskId.value}`,
+		});
+	} catch (error) {
+		console.error("任务提交失败:", error);
+		toast({
+			title: "任务提交失败",
+			description: "请检查 API Key 是否正确",
+			variant: "destructive",
+		});
+	}
+};
 </script>
 
 <template>

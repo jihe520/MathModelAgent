@@ -1,19 +1,21 @@
 <script lang="ts" setup>
-import type { StepperDescriptionProps } from 'reka-ui'
-import { cn } from '@/lib/utils'
-import { StepperDescription, useForwardProps } from 'reka-ui'
+import { cn } from "@/lib/utils";
+import type { StepperDescriptionProps } from "reka-ui";
+import { StepperDescription, useForwardProps } from "reka-ui";
 
-import { computed, type HTMLAttributes } from 'vue'
+import { type HTMLAttributes, computed } from "vue";
 
-const props = defineProps<StepperDescriptionProps & { class?: HTMLAttributes['class'] }>()
+const props = defineProps<
+	StepperDescriptionProps & { class?: HTMLAttributes["class"] }
+>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+	const { class: _, ...delegated } = props;
 
-  return delegated
-})
+	return delegated;
+});
 
-const forwarded = useForwardProps(delegatedProps)
+const forwarded = useForwardProps(delegatedProps);
 </script>
 
 <template>

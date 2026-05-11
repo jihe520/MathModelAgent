@@ -1,165 +1,183 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Folder, RefreshCw, File, FileText, Download, Archive, Files } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button';
-import { getFileDownloadUrl, getAllFilesDownloadUrl, getFiles } from '@/apis/filesApi';
-import { ScrollArea } from '@/components/ui/scroll-area'
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+	getAllFilesDownloadUrl,
+	getFileDownloadUrl,
+	getFiles,
+} from "@/apis/filesApi";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { useToast } from '@/components/ui/toast/use-toast'
-import { useRoute } from 'vue-router';
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetHeader,
+	SheetTitle,
+	SheetTrigger,
+} from "@/components/ui/sheet";
+import { useToast } from "@/components/ui/toast/use-toast";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+	Archive,
+	Download,
+	File,
+	FileText,
+	Files,
+	Folder,
+	RefreshCw,
+} from "lucide-vue-next";
+import { ref } from "vue";
+import { useRoute } from "vue-router";
 
-const route = useRoute()
+// ---- Reactive State ----
+
+const route = useRoute();
 const taskId = route.params.task_id;
+const { toast } = useToast();
 
+/** 文件列表弹窗显示状态 */
+const fileListVisible = ref(false);
 
-const { toast } = useToast()
+/** 文件列表数据 */
+const fileList = ref<Record<string, unknown>[]>([]);
 
+/** 加载状态 */
+const loadingFiles = ref(false);
 
-// 文件列表相关
-const fileListVisible = ref(false)
-const fileList = ref<any[]>([])
-const loadingFiles = ref(false)
-const downloadingFile = ref<string | null>(null)
-const downloadingAll = ref(false)
+/** 当前正在下载的文件名 */
+const downloadingFile = ref<string | null>(null);
 
+/** 是否正在下载全部文件 */
+const downloadingAll = ref(false);
 
+// ---- Methods ----
+
+/** 打开文件列表弹窗 */
 const openFolder = async () => {
-  console.log('openFolder', taskId)
-  try {
-    loadingFiles.value = true
-    const res = await getFiles(taskId as string);
-    console.log(res);
+	try {
+		loadingFiles.value = true;
+		const res = await getFiles(taskId as string);
 
-    if (res.data) {
-      fileList.value = Array.isArray(res.data) ? res.data : [res.data]
-      fileListVisible.value = true
-    } else {
-      toast({
-        title: "获取文件列表失败",
-        description: "无法获取工作区文件列表",
-        variant: "destructive"
-      })
-    }
-  } catch (error) {
-    console.error('获取文件列表失败:', error)
-    toast({
-      title: "错误",
-      description: "获取文件列表时出现错误",
-      variant: "destructive"
-    })
-  } finally {
-    loadingFiles.value = false
-  }
-}
+		if (res.data) {
+			fileList.value = Array.isArray(res.data) ? res.data : [res.data];
+			fileListVisible.value = true;
+		} else {
+			toast({
+				title: "获取文件列表失败",
+				description: "无法获取工作区文件列表",
+				variant: "destructive",
+			});
+		}
+	} catch (error) {
+		console.error("获取文件列表失败:", error);
+		toast({
+			title: "错误",
+			description: "获取文件列表时出现错误",
+			variant: "destructive",
+		});
+	} finally {
+		loadingFiles.value = false;
+	}
+};
 
-// 获取文件图标
+/** 根据文件名获取对应的图标组件 */
 const getFileIcon = (fileName: string) => {
-  const ext = fileName.split('.').pop()?.toLowerCase()
-  const textExts = ['txt', 'md', 'json', 'csv', 'xml', 'yml', 'yaml']
+	const ext = fileName.split(".").pop()?.toLowerCase();
+	const textExts = ["txt", "md", "json", "csv", "xml", "yml", "yaml"];
 
-  if (textExts.includes(ext || '')) {
-    return FileText
-  }
-  return File
-}
+	if (textExts.includes(ext || "")) {
+		return FileText;
+	}
+	return File;
+};
 
-// 获取文件大小格式化
+/** 格式化文件大小显示 */
 const formatFileSize = (size: number | undefined) => {
-  if (!size) return ''
+	if (!size) return "";
 
-  const units = ['B', 'KB', 'MB', 'GB']
-  let unitIndex = 0
-  let fileSize = size
+	const units = ["B", "KB", "MB", "GB"];
+	let unitIndex = 0;
+	let fileSize = size;
 
-  while (fileSize >= 1024 && unitIndex < units.length - 1) {
-    fileSize /= 1024
-    unitIndex++
-  }
+	while (fileSize >= 1024 && unitIndex < units.length - 1) {
+		fileSize /= 1024;
+		unitIndex++;
+	}
 
-  return `${fileSize.toFixed(1)} ${units[unitIndex]}`
-}
+	return `${fileSize.toFixed(1)} ${units[unitIndex]}`;
+};
 
-// 下载单个文件
+/** 下载单个文件 */
 const downloadSingleFile = async (filename: string) => {
-  try {
-    downloadingFile.value = filename
-    const res = await getFileDownloadUrl(taskId as string, filename)
-    if (res.data?.download_url) {
-      // 创建隐藏的链接元素并触发下载
-      const link = document.createElement('a')
-      link.href = res.data.download_url
-      link.download = filename
-      link.target = '_blank'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+	try {
+		downloadingFile.value = filename;
+		const res = await getFileDownloadUrl(taskId as string, filename);
+		if (res.data?.download_url) {
+			// 创建隐藏的链接元素并触发下载
+			const link = document.createElement("a");
+			link.href = res.data.download_url;
+			link.download = filename;
+			link.target = "_blank";
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
 
-      toast({
-        title: "下载成功",
-        description: `文件 ${filename} 开始下载`
-      })
-    } else {
-      throw new Error('获取下载链接失败')
-    }
-  } catch (error) {
-    console.error('下载文件失败:', error)
-    toast({
-      title: "下载失败",
-      description: `下载文件 ${filename} 时出现错误`,
-      variant: "destructive"
-    })
-  } finally {
-    downloadingFile.value = null
-  }
-}
+			toast({
+				title: "下载成功",
+				description: `文件 ${filename} 开始下载`,
+			});
+		} else {
+			throw new Error("获取下载链接失败");
+		}
+	} catch (error) {
+		console.error("下载文件失败:", error);
+		toast({
+			title: "下载失败",
+			description: `下载文件 ${filename} 时出现错误`,
+			variant: "destructive",
+		});
+	} finally {
+		downloadingFile.value = null;
+	}
+};
 
-// 下载所有文件
+/** 下载所有文件（压缩包） */
 const downloadAll = async () => {
-  try {
-    downloadingAll.value = true
-    const res = await getAllFilesDownloadUrl(taskId as string)
-    if (res.data?.download_url) {
-      // 创建隐藏的链接元素并触发下载
-      const link = document.createElement('a')
-      link.href = res.data.download_url
-      link.download = `task_${taskId}_files.zip`
-      link.target = '_blank'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
+	try {
+		downloadingAll.value = true;
+		const res = await getAllFilesDownloadUrl(taskId as string);
+		if (res.data?.download_url) {
+			// 创建隐藏的链接元素并触发下载
+			const link = document.createElement("a");
+			link.href = res.data.download_url;
+			link.download = `task_${taskId}_files.zip`;
+			link.target = "_blank";
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
 
-      toast({
-        title: "下载成功",
-        description: "所有文件压缩包开始下载"
-      })
-    } else {
-      throw new Error('获取下载链接失败')
-    }
-  } catch (error) {
-    console.error('下载所有文件失败:', error)
-    toast({
-      title: "下载失败",
-      description: "下载所有文件时出现错误",
-      variant: "destructive"
-    })
-  } finally {
-    downloadingAll.value = false
-  }
-}
-
+			toast({
+				title: "下载成功",
+				description: "所有文件压缩包开始下载",
+			});
+		} else {
+			throw new Error("获取下载链接失败");
+		}
+	} catch (error) {
+		console.error("下载所有文件失败:", error);
+		toast({
+			title: "下载失败",
+			description: "下载所有文件时出现错误",
+			variant: "destructive",
+		});
+	} finally {
+		downloadingAll.value = false;
+	}
+};
 </script>
 
 <template>
