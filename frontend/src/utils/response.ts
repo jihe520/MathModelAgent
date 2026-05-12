@@ -125,6 +125,15 @@ export interface WriterMessage extends AgentMessage {
 	sub_title?: string;
 }
 
+/** HIL 审批消息 */
+export interface ApprovalMessage extends BaseMessage {
+	msg_type: "approval";
+	checkpoint_id: string;
+	prompt: Record<string, unknown>;
+	options: string[];
+	timeout: number;
+}
+
 /** 所有消息类型的联合类型 */
 export type Message =
 	| SystemMessage
@@ -133,4 +142,5 @@ export type Message =
 	| WriterMessage
 	| ModelerMessage
 	| CoordinatorMessage
-	| ToolMessage;
+	| ToolMessage
+	| ApprovalMessage;

@@ -13,6 +13,7 @@ from app.utils.common_utils import get_current_files
 import json
 from app.core.prompts import get_reflection_prompt
 from app.core.functions import coder_tools
+from app.tools.tool_registry import tool_registry
 
 # TODO: 时间等待过久，stop 进程
 # TODO: 支持 cuda
@@ -21,12 +22,14 @@ from app.core.functions import coder_tools
 
 class CoderAgent(Agent):
     """代码手 Agent，通过 LLM 生成代码并在解释器中执行，支持错误反思和重试。"""
+
     def __init__(
         self,
         task_id: str,
         model: LLM,
         work_dir: str,  # 工作目录
-        max_chat_turns: int | None = settings.MAX_CHAT_TURNS,  # 最大聊天次数，None表示无限制
+        max_chat_turns: int
+        | None = settings.MAX_CHAT_TURNS,  # 最大聊天次数，None表示无限制
         max_retries: int | None = settings.MAX_RETRIES,  # 最大反思次数，None表示无限制
         code_interpreter: BaseCodeInterpreter | None = None,
     ) -> None:
@@ -36,6 +39,7 @@ class CoderAgent(Agent):
         self.is_first_run = True
         self.system_prompt = CODER_PROMPT
         self.code_interpreter = code_interpreter
+        self.available_tools = coder_tools  # 可被 workflow 动态更新
 
     async def run(self, prompt: str, subtask_title: str) -> CoderToWriter:  # type: ignore[reportIncompatibleMethodOverride]
         """执行代码手子任务，生成并运行代码。
@@ -80,13 +84,18 @@ class CoderAgent(Agent):
                     self.task_id,
                     SystemMessage(content="超过最大尝试次数", type="error"),
                 )
-                logger.warning(f"任务失败，超过最大尝试次数{self.max_retries}, 最后错误信息: {last_error_message}")
+                logger.warning(
+                    f"任务失败，超过最大尝试次数{self.max_retries}, 最后错误信息: {last_error_message}"
+                )
                 return CoderToWriter(
                     code_response=f"任务失败，超过最大尝试次数{self.max_retries}, 最后错误信息: {last_error_message}",
-                    created_images=[])
+                    created_images=[],
+                )
 
-
-            if self.max_chat_turns is not None and self.current_chat_turns >= self.max_chat_turns:
+            if (
+                self.max_chat_turns is not None
+                and self.current_chat_turns >= self.max_chat_turns
+            ):
                 logger.error(f"超过最大聊天次数: {self.max_chat_turns}")
                 await redis_manager.publish_message(
                     self.task_id,
@@ -98,11 +107,11 @@ class CoderAgent(Agent):
 
             self.current_chat_turns += 1
             logger.info(f"当前对话轮次: {self.current_chat_turns}")
-            
+
             try:
                 response = await self.model.chat(
                     history=self.chat_history,
-                    tools=coder_tools,
+                    tools=self.available_tools,
                     tool_choice="auto",
                     agent_name=self.__class__.__name__,
                 )
@@ -115,17 +124,24 @@ class CoderAgent(Agent):
                     logger.info("检测到工具调用")
                     tool_call = response.choices[0].message.tool_calls[0]
                     tool_id = tool_call.id
-                    
-                    if tool_call.function.name == "execute_code":
-                        logger.info(f"调用工具: {tool_call.function.name}")
-                        await redis_manager.publish_message(
-                            self.task_id,
-                            SystemMessage(
-                                content=f"代码手调用{tool_call.function.name}工具"
-                            ),
-                        )
 
-                        code = json.loads(tool_call.function.arguments)["code"]
+                    tool_name = tool_call.function.name
+                    tool_args = json.loads(tool_call.function.arguments)
+
+                    logger.info(f"调用工具: {tool_name}")
+                    await redis_manager.publish_message(
+                        self.task_id,
+                        SystemMessage(content=f"代码手调用{tool_name}工具"),
+                    )
+
+                    # 更新对话历史 - 添加助手的响应
+                    await self.append_chat_history(
+                        response.choices[0].message.model_dump()
+                    )
+                    logger.info(response.choices[0].message.model_dump())
+
+                    if tool_name == "execute_code":
+                        code = tool_args["code"]
 
                         await redis_manager.publish_message(
                             self.task_id,
@@ -134,14 +150,8 @@ class CoderAgent(Agent):
                             ),
                         )
 
-                        # 更新对话历史 - 添加助手的响应
-                        await self.append_chat_history(
-                            response.choices[0].message.model_dump()
-                        )
-                        logger.info(response.choices[0].message.model_dump())
-
-                        # 执行工具调用
-                        logger.info("执行工具调用")
+                        # 执行代码
+                        logger.info("执行代码工具调用")
                         (
                             text_to_gpt,
                             error_occurred,
@@ -150,7 +160,6 @@ class CoderAgent(Agent):
 
                         # 添加工具执行结果
                         if error_occurred:
-                            # 即使发生错误也要添加tool响应
                             await self.append_chat_history(
                                 {
                                     "role": "tool",
@@ -162,13 +171,19 @@ class CoderAgent(Agent):
 
                             logger.warning(f"代码执行错误: {error_message}")
                             retry_count += 1
-                            logger.info(f"当前尝试次:{retry_count} / {self.max_retries}")
+                            logger.info(
+                                f"当前尝试次:{retry_count} / {self.max_retries}"
+                            )
                             last_error_message = error_message
-                            reflection_prompt = get_reflection_prompt(error_message, code)
+                            reflection_prompt = get_reflection_prompt(
+                                error_message, code
+                            )
 
                             await redis_manager.publish_message(
                                 self.task_id,
-                                SystemMessage(content="代码手反思纠正错误", type="error"),
+                                SystemMessage(
+                                    content="代码手反思纠正错误", type="error"
+                                ),
                             )
 
                             await self.append_chat_history(
@@ -176,7 +191,6 @@ class CoderAgent(Agent):
                             )
                             continue
                         else:
-                            # 成功执行的tool响应
                             await self.append_chat_history(
                                 {
                                     "role": "tool",
@@ -185,8 +199,25 @@ class CoderAgent(Agent):
                                     "content": text_to_gpt,
                                 }
                             )
-                            # 成功执行后继续循环，等待下一步指令
                             continue
+                    else:
+                        # 通过 tool_registry 分发其他工具（如 search_web）
+                        try:
+                            result = await tool_registry.dispatch(
+                                tool_name, tool_args, self.task_id
+                            )
+                        except ValueError as e:
+                            result = f"工具调用失败: {e}"
+
+                        await self.append_chat_history(
+                            {
+                                "role": "tool",
+                                "tool_call_id": tool_id,
+                                "name": tool_name,
+                                "content": result,
+                            }
+                        )
+                        continue
                 else:
                     # 没有工具调用，表示任务完成
                     logger.info("没有工具调用，任务完成")
@@ -196,7 +227,7 @@ class CoderAgent(Agent):
                             subtask_title
                         ),
                     )
-                    
+
             except Exception as e:
                 logger.error(f"执行过程中发生异常: {str(e)}")
                 retry_count += 1
