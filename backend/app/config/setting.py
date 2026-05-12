@@ -24,6 +24,7 @@ def parse_cors(value: str) -> list[str]:
 
 class Settings(BaseSettings):
     """全局应用配置，从环境变量和 .env 文件加载。"""
+
     ENV: str = "dev"
 
     COORDINATOR_API_KEY: Optional[str] = None
@@ -46,8 +47,40 @@ class Settings(BaseSettings):
     WRITER_BASE_URL: Optional[str] = None
     WRITER_MAX_TOKENS: Optional[int] = None
 
+    # Fallback LLM 配置，用于主 LLM 失败时的 Hand Off
+    FALLBACK_COORDINATOR_API_KEY: Optional[str] = None
+    FALLBACK_COORDINATOR_MODEL: Optional[str] = None
+    FALLBACK_COORDINATOR_BASE_URL: Optional[str] = None
+    FALLBACK_COORDINATOR_MAX_TOKENS: Optional[int] = None
+
+    FALLBACK_MODELER_API_KEY: Optional[str] = None
+    FALLBACK_MODELER_MODEL: Optional[str] = None
+    FALLBACK_MODELER_BASE_URL: Optional[str] = None
+    FALLBACK_MODELER_MAX_TOKENS: Optional[int] = None
+
+    FALLBACK_CODER_API_KEY: Optional[str] = None
+    FALLBACK_CODER_MODEL: Optional[str] = None
+    FALLBACK_CODER_BASE_URL: Optional[str] = None
+    FALLBACK_CODER_MAX_TOKENS: Optional[int] = None
+
+    FALLBACK_WRITER_API_KEY: Optional[str] = None
+    FALLBACK_WRITER_MODEL: Optional[str] = None
+    FALLBACK_WRITER_BASE_URL: Optional[str] = None
+    FALLBACK_WRITER_MAX_TOKENS: Optional[int] = None
+
+    # 评估器配置（独立的便宜模型，不复用 writer LLM）
+    EVALUATOR_API_KEY: Optional[str] = None
+    EVALUATOR_MODEL: Optional[str] = None
+    EVALUATOR_BASE_URL: Optional[str] = None
+
+    # Feedback Rerun 配置
+    MAX_FEEDBACK_ROUNDS: int = 2
+    EVALUATION_THRESHOLD: float = 0.6
+
     MAX_CHAT_TURNS: Optional[int] = None
     MAX_RETRIES: Optional[int] = None
+    MAX_COORDINATOR_RETRIES: int = 5
+    MAX_MODELER_RETRIES: int = 5
     E2B_API_KEY: Optional[str] = None
     LOG_LEVEL: str = "DEBUG"
     DEBUG: bool = True
@@ -59,6 +92,28 @@ class Settings(BaseSettings):
     DEEPSEEK_BASE_URL: Optional[str] = None
     OPENALEX_EMAIL: Optional[str] = None
     OPENALEX_API_KEY: Optional[str] = None
+
+    # Web Search 配置（Tavily API）
+    TAVILY_API_KEY: Optional[str] = None
+    SEARCH_CACHE_TTL: int = 86400  # 搜索缓存过期时间（秒）
+    SEARCH_ENABLED: bool = True
+
+    # RAG 知识库配置
+    RAG_ENABLED: bool = False
+    RAG_DB_PATH: str = "data/chromadb"
+    RAG_TOP_K: int = 5
+    RAG_EMBEDDING_MODEL: str = "BAAI/bge-m3"
+    RAG_RERANKER_MODEL: str = "BAAI/bge-reranker-v2-m3"
+
+    # HIL 人机协作配置
+    HIL_ENABLED: bool = False
+    HIL_TIMEOUT: int = 300  # 审批超时时间（秒）
+    HIL_CHECKPOINTS: dict = {
+        "problem_split": True,
+        "model_selection": True,
+        "code_review": False,
+        "paper_review": True,
+    }
 
     model_config = SettingsConfigDict(
         env_file=".env.dev",

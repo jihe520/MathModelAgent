@@ -3,6 +3,7 @@
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import COORDINATOR_PROMPT
+from app.config.setting import settings
 import json
 import re
 from app.utils.log_util import logger
@@ -16,9 +17,11 @@ class CoordinatorAgent(Agent):
         task_id: str,
         model: LLM,
         max_chat_turns: int = 30,
+        max_retries: int = settings.MAX_COORDINATOR_RETRIES,
     ) -> None:
         super().__init__(task_id, model, max_chat_turns)
         self.system_prompt = COORDINATOR_PROMPT
+        self.max_retries = max_retries
 
     async def run(self, ques_all: str) -> CoordinatorToModeler:  # type: ignore[reportIncompatibleMethodOverride]
         """解析用户输入的问题并格式化为结构化 JSON。
@@ -28,13 +31,16 @@ class CoordinatorAgent(Agent):
 
         Returns:
             CoordinatorToModeler 对象，包含结构化问题和问题数量。
+
+        Raises:
+            ValueError: 超过最大重试次数仍无法解析 JSON 时抛出。
         """
         await self.append_chat_history(
             {"role": "system", "content": self.system_prompt}
         )
         await self.append_chat_history({"role": "user", "content": ques_all})
-        attempt = 0
-        while True:
+
+        for attempt in range(self.max_retries + 1):
             try:
                 response = await self.model.chat(
                     history=self.chat_history,
@@ -55,8 +61,7 @@ class CoordinatorAgent(Agent):
                 return CoordinatorToModeler(questions=questions, ques_count=ques_count)
 
             except (json.JSONDecodeError, ValueError, KeyError) as e:
-                attempt += 1
-                logger.warning(f"解析失败 (尝试 {attempt}): {str(e)}")
+                logger.warning(f"解析失败 (尝试 {attempt + 1}/{self.max_retries + 1}): {str(e)}")
 
                 # 添加错误反馈提示
                 error_prompt = f"⚠️ 上次响应格式错误: {str(e)}。请严格输出JSON格式"
@@ -64,3 +69,7 @@ class CoordinatorAgent(Agent):
                     "role": "system",
                     "content": self.system_prompt + "\n" + error_prompt
                 })
+
+        raise ValueError(
+            f"CoordinatorAgent 超过最大重试次数({self.max_retries})，无法解析 JSON 响应"
+        )

@@ -1,6 +1,7 @@
 import { getTaskMessages } from "@/apis/commonApi";
 import { AgentType } from "@/utils/enum";
 import type {
+	ApprovalMessage,
 	CoderMessage,
 	CoordinatorMessage,
 	InterpreterMessage,
@@ -36,6 +37,9 @@ export const useTaskStore = defineStore("task", () => {
 	/** WebSocket 实例 */
 	let ws: TaskWebSocket | null = null;
 
+	/** 审批消息回调（由 ApprovalDialog 注册） */
+	let onApprovalCallback: ((data: ApprovalMessage) => void) | null = null;
+
 	// ---- Helpers ----
 
 	/** 获取消息时间戳 */
@@ -68,8 +72,16 @@ export const useTaskStore = defineStore("task", () => {
 		return (
 			typeof Reflect.get(payload, "id") === "string" &&
 			typeof msgType === "string" &&
-			["system", "agent", "user", "tool"].includes(msgType)
+			["system", "agent", "user", "tool", "approval"].includes(msgType)
 		);
+	}
+
+	/** 类型守卫：判断是否为审批消息 */
+	function isApprovalMessage(payload: unknown): payload is ApprovalMessage {
+		if (!payload || typeof payload !== "object") {
+			return false;
+		}
+		return Reflect.get(payload, "msg_type") === "approval";
 	}
 
 	/** 设置当前活跃任务 */
@@ -147,6 +159,12 @@ export const useTaskStore = defineStore("task", () => {
 		const wsUrl = `${baseUrl}/task/${taskId}`;
 
 		ws = new TaskWebSocket(wsUrl, (data) => {
+			// 处理审批消息
+			if (isApprovalMessage(data)) {
+				appendMessage(taskId, data);
+				onApprovalCallback?.(data);
+				return;
+			}
 			if (!isMessagePayload(data)) {
 				console.warn("忽略非标准任务消息:", data);
 				return;
@@ -301,6 +319,22 @@ export const useTaskStore = defineStore("task", () => {
 	// 如果需要自动连接，可以在这里添加代码
 	// 例如：connectWebSocket('default')
 
+	/** 注册审批消息回调 */
+	function onApproval(callback: (data: ApprovalMessage) => void) {
+		onApprovalCallback = callback;
+	}
+
+	/** 通过 WebSocket 发送用户决策 */
+	function sendDecision(checkpointId: string, decision: { action: string; content?: unknown }) {
+		if (ws) {
+			ws.send({
+				type: "user_decision",
+				checkpoint_id: checkpointId,
+				decision,
+			});
+		}
+	}
+
 	return {
 		messages,
 		chatMessages,
@@ -315,5 +349,7 @@ export const useTaskStore = defineStore("task", () => {
 		closeWebSocket,
 		downloadMessages,
 		addUserMessage,
+		onApproval,
+		sendDecision,
 	};
 });
