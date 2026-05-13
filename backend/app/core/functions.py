@@ -32,6 +32,64 @@ coder_tools = [
 # TODO: get_cites
 
 
+# Web 搜索工具 schema
+search_web_tool = {
+    "type": "function",
+    "function": {
+        "name": "search_web",
+        "description": "Search the web for real-world data, statistics, and facts. Returns structured data evidence with source URLs, units, time ranges, and regions.",
+        "strict": True,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search query, be specific about what data you need",
+                },
+                "data_type": {
+                    "type": "string",
+                    "description": "Type of data expected: 'statistical', 'timeseries', 'categorical', or 'general'",
+                },
+                "max_results": {
+                    "type": "integer",
+                    "description": "Maximum number of results to return (1-10)",
+                },
+            },
+            "required": ["query", "data_type", "max_results"],
+            "additionalProperties": False,
+        },
+    },
+}
+
+# RAG 知识检索工具 schema
+search_knowledge_tool = {
+    "type": "function",
+    "function": {
+        "name": "search_knowledge",
+        "description": "Search the knowledge base for mathematical modeling methods, code templates, and paper writing references.",
+        "strict": True,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "description": "The search query describing what knowledge you need",
+                },
+                "scope": {
+                    "type": "string",
+                    "description": "Knowledge scope: 'method' for modeling methods, 'code' for code templates, 'paper' for writing references",
+                },
+                "method_name": {
+                    "type": "string",
+                    "description": "Specific method name to search for (e.g. 'TOPSIS', 'AHP'), or empty string for general search",
+                },
+            },
+            "required": ["query", "scope", "method_name"],
+            "additionalProperties": False,
+        },
+    },
+}
+
 ## writeragent tools
 writer_tools = [
     {

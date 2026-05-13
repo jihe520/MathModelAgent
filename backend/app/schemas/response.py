@@ -8,6 +8,7 @@ from uuid import uuid4
 
 class Message(BaseModel):
     """消息基类。"""
+
     id: str = Field(default_factory=lambda: str(uuid4()))
     msg_type: Literal[
         "system", "agent", "user", "tool"
@@ -46,6 +47,7 @@ class CoordinatorMessage(AgentMessage):
 
 class CodeExecution(BaseModel):
     """代码执行结果基类。"""
+
     res_type: Literal["stdout", "stderr", "result", "error"]
     msg: str | None = None
 
@@ -108,6 +110,25 @@ class WriterMessage(AgentMessage):
     sub_title: str | None = None
 
 
+class ApprovalMessage(Message):
+    """HIL 审批消息，发送到前端触发审批对话框。"""
+
+    msg_type: Literal["system", "agent", "user", "tool", "approval"] = "approval"
+    checkpoint_id: str = ""
+    prompt: dict = Field(default_factory=dict)
+    options: list[str] = Field(
+        default_factory=lambda: [
+            "confirm",
+            "edit",
+            "regenerate",
+            "ask",
+            "skip",
+            "abort",
+        ]
+    )
+    timeout: int = 300
+
+
 # 所有可能的消息类型
 MessageType = Union[
     SystemMessage,
@@ -116,4 +137,5 @@ MessageType = Union[
     CoderMessage,
     WriterMessage,
     CoordinatorMessage,
+    ApprovalMessage,
 ]
