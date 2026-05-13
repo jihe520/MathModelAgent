@@ -10,30 +10,28 @@ class Message(BaseModel):
     """消息基类。"""
 
     id: str = Field(default_factory=lambda: str(uuid4()))
-    msg_type: Literal[
-        "system", "agent", "user", "tool"
-    ]  # system msg | agent message | user message | tool message
+    msg_type: str  # system | agent | user | tool | approval
     content: str | None = None
 
 
 class ToolMessage(Message):
-    msg_type: Literal["system", "agent", "user", "tool"] = "tool"
+    msg_type: Literal["system", "agent", "user", "tool"] = "tool"  # type: ignore[assignment]
     tool_name: Literal["execute_code", "search_scholar"]
     input: dict | None = None
     output: list | None = None
 
 
 class SystemMessage(Message):
-    msg_type: Literal["system", "agent", "user", "tool"] = "system"
+    msg_type: Literal["system", "agent", "user", "tool"] = "system"  # type: ignore[assignment]
     type: Literal["info", "warning", "success", "error"] = "info"
 
 
 class UserMessage(Message):
-    msg_type: Literal["system", "agent", "user", "tool"] = "user"
+    msg_type: Literal["system", "agent", "user", "tool"] = "user"  # type: ignore[assignment]
 
 
 class AgentMessage(Message):
-    msg_type: Literal["system", "agent", "user", "tool"] = "agent"
+    msg_type: Literal["system", "agent", "user", "tool"] = "agent"  # type: ignore[assignment]
     agent_type: AgentType  # CoordinatorAgent | ModelerAgent | CoderAgent | WriterAgent
 
 
@@ -53,15 +51,15 @@ class CodeExecution(BaseModel):
 
 
 class StdOutModel(CodeExecution):
-    res_type: Literal["stdout", "stderr", "result", "error"] = "stdout"
+    res_type: Literal["stdout", "stderr", "result", "error"] = "stdout"  # type: ignore[assignment]
 
 
 class StdErrModel(CodeExecution):
-    res_type: Literal["stdout", "stderr", "result", "error"] = "stderr"
+    res_type: Literal["stdout", "stderr", "result", "error"] = "stderr"  # type: ignore[assignment]
 
 
 class ResultModel(CodeExecution):
-    res_type: Literal["stdout", "stderr", "result", "error"] = "result"
+    res_type: Literal["stdout", "stderr", "result", "error"] = "result"  # type: ignore[assignment]
     format: Literal[
         "text",
         "html",
@@ -77,7 +75,7 @@ class ResultModel(CodeExecution):
 
 
 class ErrorModel(CodeExecution):
-    res_type: Literal["stdout", "stderr", "result", "error"] = "error"
+    res_type: Literal["stdout", "stderr", "result", "error"] = "error"  # type: ignore[assignment]
     name: str
     value: str
     traceback: str
@@ -88,13 +86,13 @@ OutputItem = Union[StdOutModel, StdErrModel, ResultModel, ErrorModel]
 
 
 class ScholarMessage(ToolMessage):
-    tool_name: Literal["execute_code", "search_scholar"] = "search_scholar"
+    tool_name: Literal["execute_code", "search_scholar"] = "search_scholar"  # type: ignore[assignment]
     input: dict | None = None  # query
     output: list[str] | None = None  # cites
 
 
 class InterpreterMessage(ToolMessage):
-    tool_name: Literal["execute_code", "search_scholar"] = "execute_code"
+    tool_name: Literal["execute_code", "search_scholar"] = "execute_code"  # type: ignore[assignment]
     input: dict | None = None  # code
     output: list[OutputItem] | None = None  # code_results
 
@@ -113,7 +111,7 @@ class WriterMessage(AgentMessage):
 class ApprovalMessage(Message):
     """HIL 审批消息，发送到前端触发审批对话框。"""
 
-    msg_type: Literal["system", "agent", "user", "tool", "approval"] = "approval"
+    msg_type: Literal["system", "agent", "user", "tool", "approval"] = "approval"  # type: ignore[assignment]
     checkpoint_id: str = ""
     prompt: dict = Field(default_factory=dict)
     options: list[str] = Field(
@@ -133,9 +131,13 @@ class ApprovalMessage(Message):
 MessageType = Union[
     SystemMessage,
     UserMessage,
-    ModelerMessage,
+    AgentMessage,
+    ToolMessage,
+    ScholarMessage,
+    InterpreterMessage,
     CoderMessage,
     WriterMessage,
+    ModelerMessage,
     CoordinatorMessage,
     ApprovalMessage,
 ]

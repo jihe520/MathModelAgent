@@ -33,11 +33,15 @@
 - 🤖 支持所有模型: [litellm](https://docs.litellm.ai/docs/providers)
 - 💰 成本低：workflow agentless，不依赖 agent 框架
 - 🧩 自定义模板：prompt inject 为每个 subtask 单独设置需求
+- 🌐 Web Search: Agent 自主搜索互联网获取真实数据（Tavily API）
+- 📚 RAG 知识库: 从本地知识库检索建模方法、代码模板、论文写作参考（ChromaDB + Rerank）
+- 🤝 HIL 人机协作: 关键节点暂停等待用户审批，支持 6 种决策动作（confirm / edit / regenerate / ask / skip / abort）
+- 🛡️ 四层容错: 有限重试 → Fallback Hand Off → Evaluator Shadow Mode → Feedback Rerun
 
 ## 🚀 后期计划
 
 - [x] 添加并完成 webui、cli
-- [ ] 完善的教程、文档
+- [x] 完善的教程、文档
 - [ ] 提供 web 服务
 - [ ] 英文支持（美赛）
 - [ ] 集成 latex 模板
@@ -45,15 +49,15 @@
 - [x] 添加正确文献引用
 - [x] 更多测试案例
 - [x] docker 部署
-- [ ] human in loop ( HIL ): 引入用户的交互（选择模型，@agent重写，等等）
-- [ ] feedback: evaluate the result and modify
+- [x] human in loop ( HIL ): 关键节点暂停等待用户审批，支持 6 种决策动作（confirm/edit/regenerate/ask/skip/abort）
+- [x] feedback: 评估器评分 + 反馈注入重跑，先 Writer 后 Coder
 - [x] codeinterpreter 接入云端 如 e2b 等供应商..
 - [ ] 多语言: R 语言, matlab
 - [ ] 绘图 napki,draw.io,plantuml,svg, mermaid.js
 - [ ] 添加 benchmark
-- [ ] web search tool
-- [ ] RAG 知识库
-- [ ] A2A hand off: 代码手多次反思错误，hand off 更聪明模型 agent
+- [x] web search tool: Tavily API 搜索互联网获取真实数据
+- [x] RAG 知识库: ChromaDB + Rerank 检索建模方法、代码模板、论文写作参考
+- [x] A2A hand off: Fallback 自动切换备用模型 + 有限重试 + Evaluator Shadow Mode
 - [ ] chat / agent mode
 
 ## 视频demo
@@ -170,6 +174,20 @@ Prompt Inject : [prompt](./backend/app/config/md_template.toml)
 网络不畅时的配置过程示例：[网络环境极差时的MathModelAgent配置过程](docs/md/网络环境极差时的MathModelAgent配置过程.md)
 
 
+## ⚙️ 新功能配置
+
+MathModelAgent 支持以下可选功能，**默认已开启**，未配置外部依赖时自动降级跳过。详见 [升级说明](./升级说明.md)。
+
+| 功能 | 配置开关 | 说明 |
+|------|----------|------|
+| Web Search | `SEARCH_ENABLED` + `TAVILY_API_KEY` | Agent 自主联网搜索真实数据（Tavily API） |
+| RAG 知识库 | `RAG_ENABLED` | 从本地知识库检索建模方法和代码模板（ChromaDB + Rerank） |
+| HIL 人机协作 | `HIL_ENABLED` | 关键节点暂停等待用户审批，支持 6 种决策动作 |
+| Fallback Hand Off | `FALLBACK_*` 系列 | 主模型故障自动切换备用模型 |
+| Evaluator + Feedback | `EVALUATOR_*` 系列 | 输出质量评估 + 反馈重跑 |
+
+快速启用 Web Search：注册 [Tavily](https://tavily.com) 获取 API Key，在 `backend/.env.dev` 中设置 `TAVILY_API_KEY=tvly-xxx`。
+
 ## 🤝 贡献和开发
 
 [DeepWiki](https://deepwiki.com/jihe520/MathModelAgent) | [Zread](https://zread.ai/jihe520/MathModelAgent)
@@ -238,3 +256,17 @@ Thanks to the following projects:
 
 > [!CAUTION]
 > 免责声明: 注意，AI 生成仅供参考，目前水平直接参加国赛获奖是不可能的，但我相信 AI 和 该项目未来的成长。
+
+
+如何启动：
+# 启动 Redis（如果没在运行）
+redis-server
+
+# 启动后端
+cd D:\MathModelAgent\backend
+$env:ENV = "DEV"; $env:REDIS_URL = "redis://localhost:6379/0"
+.venv\Scripts\uvicorn.exe app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120
+
+# 启动前端（另一个终端）
+cd D:\MathModelAgent\frontend
+pnpm run dev
