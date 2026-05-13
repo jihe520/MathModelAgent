@@ -87,8 +87,10 @@ class KnowledgeRetriever:
             return []
 
         documents = results["documents"][0]
-        metadatas = (
-            results["metadatas"][0] if results["metadatas"] else [{}] * len(documents)
+        metadatas: list[dict[str, object]] = (
+            [dict(m) for m in results["metadatas"][0]]
+            if results["metadatas"]
+            else [{}] * len(documents)
         )
         distances = (
             results["distances"][0] if results["distances"] else [0.0] * len(documents)
@@ -106,15 +108,17 @@ class KnowledgeRetriever:
             documents[:top_k], metadatas[:top_k], distances[:top_k]
         ):
             confidence = max(0.0, 1.0 - dist)  # cosine distance → confidence
+            source_type_raw = meta.get("source_type", "textbook")
+            source_type = source_type_raw if source_type_raw in ("paper", "textbook", "code", "problem") else "textbook"
             evidence = KnowledgeEvidence(
                 content=doc,
-                source_type=meta.get("source_type", "textbook"),
-                method_name=meta.get("method_name"),
-                source_file=meta.get("source_file"),
-                source_url=meta.get("source_url"),
-                source_title=meta.get("source_title"),
+                source_type=source_type,  # type: ignore[arg-type]
+                method_name=str(meta["method_name"]) if meta.get("method_name") else None,
+                source_file=str(meta["source_file"]) if meta.get("source_file") else None,
+                source_url=str(meta["source_url"]) if meta.get("source_url") else None,
+                source_title=str(meta["source_title"]) if meta.get("source_title") else None,
                 confidence=min(1.0, confidence),
-                metadata=meta,
+                metadata=dict(meta),
             )
             evidence_list.append(evidence)
 
@@ -146,10 +150,10 @@ class KnowledgeRetriever:
         self,
         query: str,
         documents: list[str],
-        metadatas: list[dict],
+        metadatas: list[dict[str, object]],
         distances: list[float],
         top_k: int,
-    ) -> tuple[list[str], list[dict], list[float]]:
+    ) -> tuple[list[str], list[dict[str, object]], list[float]]:
         """使用 CrossEncoder 对检索结果重排序。"""
         pairs = [(query, doc) for doc in documents]
         scores = self._reranker.predict(pairs)  # type: ignore[union-attr]

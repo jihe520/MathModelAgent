@@ -41,7 +41,7 @@
 ## 🚀 后期计划
 
 - [x] 添加并完成 webui、cli
-- [ ] 完善的教程、文档
+- [x] 完善的教程、文档
 - [ ] 提供 web 服务
 - [ ] 英文支持（美赛）
 - [ ] 集成 latex 模板
@@ -173,6 +173,20 @@ Prompt Inject : [prompt](./backend/app/config/md_template.toml)
 网络状况太差难以配置Docker等设置？
 网络不畅时的配置过程示例：[网络环境极差时的MathModelAgent配置过程](docs/md/网络环境极差时的MathModelAgent配置过程.md)
 
+
+## ⚙️ 新功能配置
+
+MathModelAgent 支持以下可选功能，**默认已开启**，未配置外部依赖时自动降级跳过。详见 [升级说明](./升级说明.md)。
+
+| 功能 | 配置开关 | 说明 |
+|------|----------|------|
+| Web Search | `SEARCH_ENABLED` + `TAVILY_API_KEY` | Agent 自主联网搜索真实数据（Tavily API） |
+| RAG 知识库 | `RAG_ENABLED` | 从本地知识库检索建模方法和代码模板（ChromaDB + Rerank） |
+| HIL 人机协作 | `HIL_ENABLED` | 关键节点暂停等待用户审批，支持 6 种决策动作 |
+| Fallback Hand Off | `FALLBACK_*` 系列 | 主模型故障自动切换备用模型 |
+| Evaluator + Feedback | `EVALUATOR_*` 系列 | 输出质量评估 + 反馈重跑 |
+
+快速启用 Web Search：注册 [Tavily](https://tavily.com) 获取 API Key，在 `backend/.env.dev` 中设置 `TAVILY_API_KEY=tvly-xxx`。
 
 ## 🤝 贡献和开发
 
