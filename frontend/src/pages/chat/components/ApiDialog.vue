@@ -36,52 +36,57 @@ const emit = defineEmits<(e: "update:open", value: boolean) => void>();
 
 const apiKeyStore = useApiKeyStore();
 
+/** API 类型选项 */
+const apiTypeOptions = [
+	{ value: "openai-chat", label: "OpenAI Chat" },
+	{ value: "openai-responses", label: "OpenAI Responses" },
+	{ value: "anthropic", label: "Anthropic" },
+];
+
+/** Agent 表单配置 */
+interface AgentFormConfig {
+	apiKey: string;
+	baseUrl: string;
+	modelId: string;
+	apiType: string;
+	contextWindow: number;
+}
+
 /** 本地表单数据 */
 const form = ref<{
-	coordinator: {
-		apiKey: string;
-		baseUrl: string;
-		modelId: string;
-		provider: string;
-	};
-	modeler: {
-		apiKey: string;
-		baseUrl: string;
-		modelId: string;
-		provider: string;
-	};
-	coder: { apiKey: string; baseUrl: string; modelId: string; provider: string };
-	writer: {
-		apiKey: string;
-		baseUrl: string;
-		modelId: string;
-		provider: string;
-	};
+	coordinator: AgentFormConfig;
+	modeler: AgentFormConfig;
+	coder: AgentFormConfig;
+	writer: AgentFormConfig;
 	openalex_email: string;
 }>({
 	coordinator: {
 		apiKey: "",
 		baseUrl: "",
 		modelId: "",
-		provider: "",
+		apiType: "",
+		contextWindow: 128000,
 	},
 	modeler: {
 		apiKey: "",
 		baseUrl: "",
 		modelId: "",
-		provider: "",
+		apiType: "",
+		contextWindow: 128000,
 	},
 	coder: {
 		apiKey: "",
 		baseUrl: "",
 		modelId: "",
-		provider: "",
+		apiType: "",
+		contextWindow: 128000,
 	},
 	writer: {
 		apiKey: "",
 		baseUrl: "",
 		modelId: "",
-		provider: "",
+		apiType: "",
+		contextWindow: 128000,
 	},
 	openalex_email: "",
 });
@@ -170,6 +175,7 @@ const validateModelApiKey = async (config: {
 	apiKey: string;
 	baseUrl: string;
 	modelId: string;
+	apiType: string;
 }) => {
 	if (!config.apiKey) {
 		return { valid: false, message: "API Key 为空" };
@@ -184,6 +190,7 @@ const validateModelApiKey = async (config: {
 			api_key: config.apiKey,
 			base_url: config.baseUrl || "https://api.openai.com/v1",
 			model_id: config.modelId,
+			api_type: config.apiType || "openai-chat",
 		});
 
 		return {
@@ -221,6 +228,7 @@ const validateAllApiKeys = async () => {
 					apiKey: string;
 					baseUrl: string;
 					modelId: string;
+					apiType: string;
 				},
 			);
 
@@ -251,70 +259,36 @@ const validateAllApiKeys = async () => {
 /** 重置所有表单数据 */
 const resetAll = () => {
 	form.value = {
-		coordinator: { apiKey: "", baseUrl: "", modelId: "", provider: "" },
-		modeler: { apiKey: "", baseUrl: "", modelId: "", provider: "" },
-		coder: { apiKey: "", baseUrl: "", modelId: "", provider: "" },
-		writer: { apiKey: "", baseUrl: "", modelId: "", provider: "" },
+		coordinator: {
+			apiKey: "",
+			baseUrl: "",
+			modelId: "",
+			apiType: "",
+			contextWindow: 128000,
+		},
+		modeler: {
+			apiKey: "",
+			baseUrl: "",
+			modelId: "",
+			apiType: "",
+			contextWindow: 128000,
+		},
+		coder: {
+			apiKey: "",
+			baseUrl: "",
+			modelId: "",
+			apiType: "",
+			contextWindow: 128000,
+		},
+		writer: {
+			apiKey: "",
+			baseUrl: "",
+			modelId: "",
+			apiType: "",
+			contextWindow: 128000,
+		},
 		openalex_email: "",
 	};
-};
-
-/** 预设的模型提供商配置 */
-const providers = {
-	DeepSeek: {
-		url: "https://platform.deepseek.com/api_keys",
-		key: "DeepSeek",
-		baseUrl: "https://api.deepseek.com",
-		modelId: "deepseek/deepseek-chat",
-	},
-	硅基流动: {
-		url: "https://cloud.siliconflow.cn/i/UIb4Enf4",
-		key: "硅基流动",
-		baseUrl: "https://api.siliconflow.cn",
-		modelId: "openai/deepseek-ai/DeepSeek-V3",
-	},
-	Sophnet: {
-		url: "https://www.sophnet.com/#?code=AZBSFG",
-		key: "Sophnet",
-		baseUrl: "https://www.sophnet.com/api/open-apis",
-		modelId: "openai/DeepSeek-V3-Fast",
-	},
-	OpenAI: {
-		url: "https://platform.openai.com/api-keys",
-		key: "OpenAI",
-		baseUrl: "https://api.openai.com",
-		modelId: "openai/gpt-5",
-	},
-	"302.AI": {
-		url: "https://share.302.ai/UoTruU",
-		key: "302.AI",
-		baseUrl: "https://api.302.ai",
-		modelId: "openai/deepseek-chat",
-	},
-	"OpenAI 兼容": {
-		url: "/",
-		key: "OpenAI 兼容",
-		baseUrl: "basurl",
-		modelId: "provider/model_id",
-	},
-};
-
-/** 当供应商选择改变时，自动填写配置 */
-const onProviderChange = (configKey: string, providerKey: string) => {
-	const provider = providers[providerKey as keyof typeof providers];
-	if (provider) {
-		// biome-ignore lint/suspicious/noExplicitAny: 动态访问表单配置
-		const formConfig = (form.value as any)[configKey];
-		formConfig.provider = providerKey;
-		formConfig.baseUrl = provider.baseUrl;
-		formConfig.modelId = provider.modelId;
-
-		validationResults.value[configKey as keyof typeof validationResults.value] =
-			{
-				valid: false,
-				message: "",
-			};
-	}
 };
 </script>
 
@@ -324,13 +298,7 @@ const onProviderChange = (configKey: string, providerKey: string) => {
       <DialogHeader>
         <DialogTitle>设置</DialogTitle>
         <DialogDescription>
-          为每个 Agent 配置合适模型
-          <br>
-          <div><a href="https://docs.litellm.ai/docs/providers" target="_blank"
-              class="text-blue-600 hover:text-blue-800 underline text-xs">
-              more details
-            </a>
-          </div>
+          为每个 Agent 配置 API 类型和模型
         </DialogDescription>
       </DialogHeader>
 
@@ -341,39 +309,27 @@ const onProviderChange = (configKey: string, providerKey: string) => {
           <h3 class="text-sm font-medium">{{ config.label }}</h3>
           <div class="grid grid-cols-2 gap-2">
             <div class="space-y-1">
-              <Label :for="`${config.key}-provider`" class="text-xs text-muted-foreground">提供商</Label>
-
-              <div class="flex gap-2 items-center">
-                <Select :model-value="(form as any)[config.key].provider"
-                  @update:model-value="(value: any) => value && onProviderChange(config.key, String(value))">
-                  <SelectTrigger class="w-[120px] h-7 text-xs">
-                    <SelectValue placeholder="选择提供商" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>提供商</SelectLabel>
-                      <SelectItem v-for="(provider, key) in providers" :key="key" :value="key">
-                        {{ provider.key }}
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                <div v-if="(form as any)[config.key].provider">
-                  <a :href="providers[(form as any)[config.key].provider as keyof typeof providers]?.url"
-                    target="_blank" class="text-blue-600 hover:text-blue-800 underline text-xs">
-                    {{ providers[(form as any)[config.key].provider as keyof typeof providers]?.key }}
-                  </a>
-                </div>
-              </div>
+              <Label :for="`${config.key}-api-type`" class="text-xs text-muted-foreground">API 类型</Label>
+              <Select :model-value="(form as any)[config.key].apiType"
+                @update:model-value="(value: any) => { (form as any)[config.key].apiType = value }">
+                <SelectTrigger class="w-full h-7 text-xs">
+                  <SelectValue placeholder="选择 API 类型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>API 类型</SelectLabel>
+                    <SelectItem v-for="opt in apiTypeOptions" :key="opt.value" :value="opt.value">
+                      {{ opt.label }}
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
 
             <div class="space-y-1">
-
               <Label :for="`${config.key}-api-key`" class="text-xs text-muted-foreground">API Key</Label>
-
               <Input :id="`${config.key}-api-key`" v-model.trim="(form as any)[config.key].apiKey" type="password"
                 placeholder="请输入 API Key" class="h-7 text-xs flex-1" />
-
               <div v-if="validationResults[config.key as keyof typeof validationResults].message"
                 class="flex items-center">
                 <CheckCircle v-if="validationResults[config.key as keyof typeof validationResults].valid"
@@ -381,20 +337,27 @@ const onProviderChange = (configKey: string, providerKey: string) => {
                 <XCircle v-else class="h-4 w-4 text-red-500" />
               </div>
             </div>
-
           </div>
 
           <div class="grid grid-cols-2 gap-2">
             <div class="space-y-1">
               <Label :for="`${config.key}-base-url`" class="text-xs text-muted-foreground">Base URL</Label>
               <Input :id="`${config.key}-base-url`" v-model.trim="(form as any)[config.key].baseUrl"
-                placeholder="baseUrl" class="h-7 text-xs" />
+                placeholder="https://api.openai.com/v1" class="h-7 text-xs" />
             </div>
             <div class="space-y-1">
               <Label :for="`${config.key}-model-id`" class="text-xs text-muted-foreground">Model ID</Label>
               <Input :id="`${config.key}-model-id`" v-model.trim="(form as any)[config.key].modelId"
-                placeholder="provider/model_id" class="h-7 text-xs" />
+                placeholder="gpt-4o / claude-sonnet-4-20250514" class="h-7 text-xs" />
             </div>
+          </div>
+          <div class="space-y-1">
+            <Label :for="`${config.key}-context-window`" class="text-xs text-muted-foreground">
+              上下文窗口（token）
+            </Label>
+            <Input :id="`${config.key}-context-window`"
+              v-model.number="(form as any)[config.key].contextWindow" type="number"
+              placeholder="128000" class="h-7 text-xs" min="4096" step="1024" />
           </div>
           <div v-if="validationResults[config.key as keyof typeof validationResults].message" :class="[
             'text-xs px-2 py-1 rounded text-left border',
@@ -404,8 +367,6 @@ const onProviderChange = (configKey: string, providerKey: string) => {
           </div>
         </div>
       </div>
-
-
 
       <div class="space-y-2">
         <h3 class="text-sm font-medium">其他</h3>

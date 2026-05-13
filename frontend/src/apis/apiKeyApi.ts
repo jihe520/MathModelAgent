@@ -5,6 +5,7 @@ export interface ValidateApiKeyRequest {
 	api_key: string;
 	base_url?: string;
 	model_id: string;
+	api_type?: string;
 }
 
 /** 验证 API Key 响应 */
@@ -19,25 +20,25 @@ export interface SaveApiConfigRequest {
 		apiKey: string;
 		baseUrl: string;
 		modelId: string;
-		provider: string;
+		apiType: string;
 	};
 	modeler: {
 		apiKey: string;
 		baseUrl: string;
 		modelId: string;
-		provider: string;
+		apiType: string;
 	};
 	coder: {
 		apiKey: string;
 		baseUrl: string;
 		modelId: string;
-		provider: string;
+		apiType: string;
 	};
 	writer: {
 		apiKey: string;
 		baseUrl: string;
 		modelId: string;
-		provider: string;
+		apiType: string;
 	};
 	openalex_email: string;
 }

@@ -14,7 +14,8 @@ export const useApiKeyStore = defineStore(
 			apiKey: "",
 			baseUrl: "",
 			modelId: "",
-			provider: "",
+			apiType: "",
+			contextWindow: 128000,
 		});
 
 		/** 建模者模型配置 */
@@ -22,7 +23,8 @@ export const useApiKeyStore = defineStore(
 			apiKey: "",
 			baseUrl: "",
 			modelId: "",
-			provider: "",
+			apiType: "",
+			contextWindow: 128000,
 		});
 
 		/** 编码者模型配置 */
@@ -30,7 +32,8 @@ export const useApiKeyStore = defineStore(
 			apiKey: "",
 			baseUrl: "",
 			modelId: "",
-			provider: "",
+			apiType: "",
+			contextWindow: 128000,
 		});
 
 		/** 写作者模型配置 */
@@ -38,7 +41,8 @@ export const useApiKeyStore = defineStore(
 			apiKey: "",
 			baseUrl: "",
 			modelId: "",
-			provider: "",
+			apiType: "",
+			contextWindow: 128000,
 		});
 
 		/** OpenAlex 邮箱 */
@@ -97,25 +101,29 @@ export const useApiKeyStore = defineStore(
 				apiKey: "",
 				baseUrl: "",
 				modelId: "",
-				provider: "",
+				apiType: "",
+				contextWindow: 128000,
 			};
 			modelerConfig.value = {
 				apiKey: "",
 				baseUrl: "",
 				modelId: "",
-				provider: "",
+				apiType: "",
+				contextWindow: 128000,
 			};
 			coderConfig.value = {
 				apiKey: "",
 				baseUrl: "",
 				modelId: "",
-				provider: "",
+				apiType: "",
+				contextWindow: 128000,
 			};
 			writerConfig.value = {
 				apiKey: "",
 				baseUrl: "",
 				modelId: "",
-				provider: "",
+				apiType: "",
+				contextWindow: 128000,
 			};
 			openalexEmail.value = "";
 		}

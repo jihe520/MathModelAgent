@@ -1,6 +1,9 @@
 # 使用官方推荐的 Python 基础镜像
 FROM python:3.12-slim AS builder
 
+# 安装中文字体（确保 matplotlib 图表中文正常显示）
+RUN apt-get update && apt-get install -y --no-install-recommends fonts-noto-cjk && rm -rf /var/lib/apt/lists/*
+
 # 安装 uv（推荐直接用官方 distroless 镜像复制二进制文件，速度快且干净）
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 

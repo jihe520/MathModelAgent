@@ -73,9 +73,10 @@ df['\\u5a74\\u513f\\u884c\\u4e3a\\u7279\\u5f81']  # No unicode escapes
 ```python
 import matplotlib.pyplot as plt
 import seaborn as sns
+sns.set_theme(style='ticks')
 
 plt.rcParams.update({{
-    'font.family': 'Arial',
+    'font.family': 'sans-serif',
     'font.size': 11,
     'axes.titlesize': 12,
     'axes.titleweight': 'bold',
@@ -92,9 +93,8 @@ plt.rcParams.update({{
     'savefig.bbox': 'tight',
     'savefig.pad_inches': 0.1,
 }})
-plt.rcParams['font.sans-serif'] = ['Noto Sans CJK JP']
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Noto Sans CJK SC', 'Noto Sans SC', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
-sns.set_theme(style='ticks')
 
 COLORS = {{
     'primary': '#2E5B88',
@@ -128,7 +128,6 @@ FIG_SQUARE = (6, 6)
 - 低分辨率 PNG（用 300dpi，保存为 PNG 即可）
 
 ## 必须遵守
-- 只要用 matplotlib / seaborn 画中文图，必须先设置 `plt.rcParams['font.sans-serif'] = ['Noto Sans CJK JP']` 和 `plt.rcParams['axes.unicode_minus'] = False`
 - 去掉上右边框（已通过全局配置实现）
 - 使用统一的 COLORS 配色方案
 - 折线图用 `fill_between` 添加置信带

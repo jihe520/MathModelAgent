@@ -50,7 +50,9 @@ case "$file" in
         ;;
     frontend/src/*.vue|frontend/src/*.ts|frontend/src/*/*.vue|frontend/src/*/*.ts|frontend/src/*/*/*.vue|frontend/src/*/*/*.ts|frontend/src/*/*/*/*.vue|frontend/src/*/*/*/*.ts)
         cd "$REPO_ROOT/frontend" || exit 0
-        run_check npx biome check "$file"
+        # 去掉 frontend/ 前缀，因为已经 cd 到 frontend 目录
+        rel_file="${file#frontend/}"
+        run_check npx biome check "$rel_file"
         ;;
 esac
 
