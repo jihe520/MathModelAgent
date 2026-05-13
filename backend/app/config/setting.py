@@ -99,14 +99,14 @@ class Settings(BaseSettings):
     SEARCH_ENABLED: bool = True
 
     # RAG 知识库配置
-    RAG_ENABLED: bool = False
+    RAG_ENABLED: bool = True
     RAG_DB_PATH: str = "data/chromadb"
     RAG_TOP_K: int = 5
     RAG_EMBEDDING_MODEL: str = "BAAI/bge-m3"
     RAG_RERANKER_MODEL: str = "BAAI/bge-reranker-v2-m3"
 
     # HIL 人机协作配置
-    HIL_ENABLED: bool = False
+    HIL_ENABLED: bool = True
     HIL_TIMEOUT: int = 300  # 审批超时时间（秒）
     HIL_CHECKPOINTS: dict = {
         "problem_split": True,
