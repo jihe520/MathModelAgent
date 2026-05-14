@@ -96,10 +96,10 @@ class Settings(BaseSettings):
     # Web Search 配置（Tavily API）
     TAVILY_API_KEY: Optional[str] = None
     SEARCH_CACHE_TTL: int = 86400  # 搜索缓存过期时间（秒）
-    SEARCH_ENABLED: bool = True
+    SEARCH_ENABLED: bool = False
 
     # RAG 知识库配置
-    RAG_ENABLED: bool = True
+    RAG_ENABLED: bool = False
     RAG_DB_PATH: str = "data/chromadb"
     RAG_TOP_K: int = 5
     RAG_EMBEDDING_MODEL: str = "BAAI/bge-m3"

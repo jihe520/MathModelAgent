@@ -176,7 +176,7 @@ Prompt Inject : [prompt](./backend/app/config/md_template.toml)
 
 ## ⚙️ 新功能配置
 
-MathModelAgent 支持以下可选功能，**默认已开启**，未配置外部依赖时自动降级跳过。详见 [升级说明](./升级说明.md)。
+MathModelAgent 支持以下可选功能，默认已关闭，开启后未配置外部依赖时自动降级跳过。详见 [升级说明](./升级说明.md)。
 
 | 功能 | 配置开关 | 说明 |
 |------|----------|------|
