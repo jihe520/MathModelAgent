@@ -77,6 +77,28 @@ class Settings(BaseSettings):
     OPENALEX_EMAIL: Optional[str] = None
     OPENALEX_API_KEY: Optional[str] = None
 
+    # Web Search 配置（Tavily API）
+    TAVILY_API_KEY: Optional[str] = None
+    SEARCH_CACHE_TTL: int = 86400  # 搜索缓存过期时间（秒）
+    SEARCH_ENABLED: bool = False
+
+    # RAG 知识库配置
+    RAG_ENABLED: bool = False
+    RAG_DB_PATH: str = "data/chromadb"
+    RAG_TOP_K: int = 5
+    RAG_EMBEDDING_MODEL: str = "BAAI/bge-m3"
+    RAG_RERANKER_MODEL: str = "BAAI/bge-reranker-v2-m3"
+
+    # HIL 人机协作配置
+    HIL_ENABLED: bool = True
+    HIL_TIMEOUT: int = 300  # 审批超时时间（秒）
+    HIL_CHECKPOINTS: dict = {
+        "problem_split": True,
+        "model_selection": True,
+        "code_review": False,
+        "paper_review": True,
+    }
+
     model_config = SettingsConfigDict(
         env_file=".env.dev",
         env_file_encoding="utf-8",
