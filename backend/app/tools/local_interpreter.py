@@ -30,29 +30,33 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
         # 本地内核一般不需异步上传文件，直接切换目录即可
         # 初始化 Jupyter 内核管理器和客户端
         logger.info("初始化本地内核")
+        # 设置 UTF-8 编码环境，避免 Windows 中文环境下 GBK 编码导致的乱码问题
+        kernel_env = os.environ.copy()
+        kernel_env["PYTHONIOENCODING"] = "utf-8"
+        kernel_env["PYTHONUTF8"] = "1"
         self.km, self.kc = jupyter_client.manager.start_new_kernel(
-            kernel_name="python3"
+            kernel_name="python3", env=kernel_env
         )
         self._pre_execute_code()
 
-    def _pre_execute_code(self):  # type: ignore[reportIncompatibleMethodOverride]
+    def _pre_execute_code(self):
         init_code = (
             f"import os\n"
             f"work_dir = r'{self.work_dir}'\n"
             f"os.makedirs(work_dir, exist_ok=True)\n"
             f"os.chdir(work_dir)\n"
             f"print('当前工作目录:', os.getcwd())\n"
-            # f"import matplotlib.pyplot as plt\n"
-            # f"import matplotlib as mpl\n"
-            # # 更完整的中文字体配置
-            # f"plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'Microsoft YaHei', 'WenQuanYi Micro Hei', 'PingFang SC', 'Hiragino Sans GB', 'Heiti SC', 'DejaVu Sans', 'sans-serif']\n"
-            # f"plt.rcParams['axes.unicode_minus'] = False\n"
-            # f"plt.rcParams['font.family'] = 'sans-serif'\n"
-            # f"mpl.rcParams['font.size'] = 12\n"
-            # f"mpl.rcParams['axes.labelsize'] = 12\n"
-            # f"mpl.rcParams['xtick.labelsize'] = 10\n"
-            # f"mpl.rcParams['ytick.labelsize'] = 10\n"
-            # # 设置DPI以获得更清晰的显示
+            # 从工作目录加载字体，确保图表中文正常显示（跨平台兼容）
+            f"import matplotlib\n"
+            f"import matplotlib.pyplot as plt\n"
+            f"from matplotlib import font_manager\n"
+            f"_font_dir = work_dir\n"
+            f"for _f in os.listdir(_font_dir):\n"
+            f"    if _f.lower().endswith(('.ttf', '.otf', '.ttc')):\n"
+            f"        font_manager.fontManager.addfont(os.path.join(_font_dir, _f))\n"
+            f"plt.rcParams['font.sans-serif'] = ['SimHei', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', 'sans-serif']\n"
+            f"plt.rcParams['axes.unicode_minus'] = False\n"
+            f"plt.rcParams['font.family'] = 'sans-serif'\n"
         )
         self.execute_code_(init_code)
 
@@ -229,11 +233,16 @@ class LocalCodeInterpreter(BaseCodeInterpreter):
         """Restart the Jupyter kernel and recreate the work directory."""
         assert self.kc is not None
         self.kc.shutdown()
+        # 设置 UTF-8 编码环境，避免 Windows 中文环境下 GBK 编码导致的乱码问题
+        kernel_env = os.environ.copy()
+        kernel_env["PYTHONIOENCODING"] = "utf-8"
+        kernel_env["PYTHONUTF8"] = "1"
         self.km, self.kc = jupyter_client.manager.start_new_kernel(
-            kernel_name="python3"
+            kernel_name="python3", env=kernel_env
         )
         self.interrupt_signal = False
         self._create_work_dir()
+        self._pre_execute_code()
 
     def _create_work_dir(self):
         """Ensure the working directory exists after a restart."""

@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+from aiofile import async_open
 from fastapi import APIRouter, HTTPException
 from app.config.setting import settings
 from app.utils.common_utils import ensure_safe_task_id, get_config_template
@@ -31,7 +32,7 @@ def _require_safe_task_id(task_id: str) -> str:
         raise HTTPException(status_code=400, detail="非法任务ID") from exc
 
 
-def _load_task_messages_from_file(task_id: str) -> list[dict]:
+async def _load_task_messages_from_file(task_id: str) -> list[dict]:
     """从文件加载指定任务的历史消息。
 
     Args:
@@ -46,8 +47,9 @@ def _load_task_messages_from_file(task_id: str) -> list[dict]:
         return []
 
     try:
-        with open(message_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        async with async_open(message_file, "r", encoding="utf-8") as f:
+            content = await f.read()
+            data = json.loads(content)
         return data if isinstance(data, list) else []
     except Exception as e:
         logger.error(f"读取任务消息文件失败: {str(e)}")
@@ -80,7 +82,7 @@ async def get_writer_seque():
 
 @router.get("/messages")
 async def get_task_messages(task_id: str):
-    return _load_task_messages_from_file(task_id)
+    return await _load_task_messages_from_file(task_id)
 
 
 @router.get("/track")

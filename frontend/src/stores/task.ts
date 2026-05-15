@@ -1,7 +1,6 @@
 import { getTaskMessages } from "@/apis/commonApi";
 import { AgentType } from "@/utils/enum";
 import type {
-	ApprovalMessage,
 	CoderMessage,
 	CoordinatorMessage,
 	InterpreterMessage,
@@ -37,8 +36,10 @@ export const useTaskStore = defineStore("task", () => {
 	/** WebSocket 实例 */
 	let ws: TaskWebSocket | null = null;
 
-	/** 审批消息回调（由 ApprovalDialog 注册） */
-	let onApprovalCallback: ((data: ApprovalMessage) => void) | null = null;
+	/** WebSocket 连接状态 */
+	const wsStatus = ref<
+		"connecting" | "connected" | "disconnected" | "reconnecting"
+	>("disconnected");
 
 	// ---- Helpers ----
 
@@ -72,16 +73,8 @@ export const useTaskStore = defineStore("task", () => {
 		return (
 			typeof Reflect.get(payload, "id") === "string" &&
 			typeof msgType === "string" &&
-			["system", "agent", "user", "tool", "approval"].includes(msgType)
+			["system", "agent", "user", "tool"].includes(msgType)
 		);
-	}
-
-	/** 类型守卫：判断是否为审批消息 */
-	function isApprovalMessage(payload: unknown): payload is ApprovalMessage {
-		if (!payload || typeof payload !== "object") {
-			return false;
-		}
-		return Reflect.get(payload, "msg_type") === "approval";
 	}
 
 	/** 设置当前活跃任务 */
@@ -158,19 +151,19 @@ export const useTaskStore = defineStore("task", () => {
 		const baseUrl = import.meta.env.VITE_WS_URL;
 		const wsUrl = `${baseUrl}/task/${taskId}`;
 
-		ws = new TaskWebSocket(wsUrl, (data) => {
-			// 处理审批消息
-			if (isApprovalMessage(data)) {
+		ws = new TaskWebSocket(
+			wsUrl,
+			(data) => {
+				if (!isMessagePayload(data)) {
+					console.warn("忽略非标准任务消息:", data);
+					return;
+				}
 				appendMessage(taskId, data);
-				onApprovalCallback?.(data);
-				return;
-			}
-			if (!isMessagePayload(data)) {
-				console.warn("忽略非标准任务消息:", data);
-				return;
-			}
-			appendMessage(taskId, data);
-		});
+			},
+			(status) => {
+				wsStatus.value = status;
+			},
+		);
 		// 初始化测试数据（已在上面初始化，这里可以注释掉）
 		// messages.value = messageData as Message[]
 		ws.connect();
@@ -319,24 +312,9 @@ export const useTaskStore = defineStore("task", () => {
 	// 如果需要自动连接，可以在这里添加代码
 	// 例如：connectWebSocket('default')
 
-	/** 注册审批消息回调 */
-	function onApproval(callback: (data: ApprovalMessage) => void) {
-		onApprovalCallback = callback;
-	}
-
-	/** 通过 WebSocket 发送用户决策 */
-	function sendDecision(checkpointId: string, decision: { action: string; content?: unknown }) {
-		if (ws) {
-			ws.send({
-				type: "user_decision",
-				checkpoint_id: checkpointId,
-				decision,
-			});
-		}
-	}
-
 	return {
 		messages,
+		wsStatus,
 		chatMessages,
 		coordinatorMessages,
 		modelerMessages,
@@ -349,7 +327,5 @@ export const useTaskStore = defineStore("task", () => {
 		closeWebSocket,
 		downloadMessages,
 		addUserMessage,
-		onApproval,
-		sendDecision,
 	};
 });

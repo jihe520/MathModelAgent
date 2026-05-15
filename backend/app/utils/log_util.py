@@ -23,11 +23,9 @@ class LoggerInitializer:
             os.mkdir(self.log_path)
 
     @staticmethod
-    def __filter(log: dict):
-        """
-        自定义日志过滤器，添加trace_id
-        """
-        return log
+    def __filter(record):
+        """自定义日志过滤器，保留所有日志。"""
+        return True
 
     def init_log(self):
         """

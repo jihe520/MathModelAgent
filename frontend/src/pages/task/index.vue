@@ -95,6 +95,24 @@ onBeforeUnmount(() => {
                 <div class="text-sm text-gray-600">
                   运行时长: <span class="font-mono text-blue-600">{{ runningDuration }}</span>
                 </div>
+                <div class="flex items-center gap-1.5 text-sm">
+                  <span
+                    class="inline-block h-2 w-2 rounded-full"
+                    :class="{
+                      'bg-green-500': taskStore.wsStatus === 'connected',
+                      'bg-yellow-500 animate-pulse': taskStore.wsStatus === 'connecting' || taskStore.wsStatus === 'reconnecting',
+                      'bg-red-500': taskStore.wsStatus === 'disconnected',
+                    }"
+                  />
+                  <span class="text-gray-500">
+                    {{
+                      taskStore.wsStatus === 'connected' ? '已连接'
+                      : taskStore.wsStatus === 'connecting' ? '连接中'
+                      : taskStore.wsStatus === 'reconnecting' ? '重连中'
+                      : '未连接'
+                    }}
+                  </span>
+                </div>
                 <TabsList>
                   <TabsTrigger value="modeler" class="text-sm">
                     ModelerAgent

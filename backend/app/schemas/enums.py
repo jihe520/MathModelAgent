@@ -21,7 +21,6 @@ class AgentType(str, Enum):
     MODELER = "ModelerAgent"
     CODER = "CoderAgent"
     WRITER = "WriterAgent"
-    EVALUATOR = "EvaluatorAgent"
     SYSTEM = "SystemAgent"
 
 

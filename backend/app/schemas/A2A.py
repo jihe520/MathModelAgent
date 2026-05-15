@@ -26,12 +26,3 @@ class WriterResponse(BaseModel):
     """写作手的响应数据结构。"""
     response_content: Any
     footnotes: list[tuple[str, str]] | None = None
-
-
-class EvaluationResult(BaseModel):
-    """评估器的评估结果。"""
-    passed: bool = True
-    score: float = 1.0
-    feedback: str = ""
-    should_handoff: bool = False
-    reason: str = ""

@@ -8,7 +8,6 @@ from uuid import uuid4
 
 class Message(BaseModel):
     """消息基类。"""
-
     id: str = Field(default_factory=lambda: str(uuid4()))
     msg_type: str  # system | agent | user | tool | approval
     content: str | None = None
@@ -45,7 +44,6 @@ class CoordinatorMessage(AgentMessage):
 
 class CodeExecution(BaseModel):
     """代码执行结果基类。"""
-
     res_type: Literal["stdout", "stderr", "result", "error"]
     msg: str | None = None
 
@@ -126,7 +124,6 @@ class ApprovalMessage(Message):
     )
     timeout: int = 300
 
-
 # 所有可能的消息类型
 MessageType = Union[
     SystemMessage,
@@ -139,5 +136,4 @@ MessageType = Union[
     WriterMessage,
     ModelerMessage,
     CoordinatorMessage,
-    ApprovalMessage,
 ]

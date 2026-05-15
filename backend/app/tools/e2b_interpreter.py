@@ -54,7 +54,7 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
             raise
 
     async def _upload_all_files(self):
-        """上传工作目录中的所有文件到沙箱"""
+        """上传工作目录中的数据文件和字体文件到沙箱"""
         try:
             logger.info(f"开始上传文件，工作目录: {self.work_dir}")
             if not os.path.exists(self.work_dir):
@@ -62,7 +62,8 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
                 raise FileNotFoundError(f"工作目录不存在: {self.work_dir}")
 
             files = [
-                f for f in os.listdir(self.work_dir) if f.endswith((".csv", ".xlsx"))
+                f for f in os.listdir(self.work_dir)
+                if f.endswith((".csv", ".xlsx", ".ttf", ".otf", ".ttc"))
             ]
             logger.info(f"工作目录中的文件列表: {files}")
 
@@ -72,8 +73,6 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
                     try:
                         with open(file_path, "rb") as f:
                             content = f.read()
-                            # 使用官方推荐的 files.write 方法
-                            assert self.sbx is not None
                             await self.sbx.files.write(f"/home/user/{file}", content)
                             logger.info(f"成功上传文件到沙箱: {file}")
                     except Exception as e:
@@ -86,10 +85,18 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
 
     async def _pre_execute_code(self):
         init_code = (
+            # 从 /home/user 加载上传的字体文件（跨平台兼容，无需 apt-get）
+            "import os\n"
+            "import matplotlib\n"
             "import matplotlib.pyplot as plt\n"
-            # "plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial Unicode MS']\n"
-            # "plt.rcParams['axes.unicode_minus'] = False\n"
-            # "plt.rcParams['font.family'] = 'sans-serif'\n"
+            "from matplotlib import font_manager\n"
+            "_font_dir = '/home/user'\n"
+            "for _f in os.listdir(_font_dir):\n"
+            "    if _f.lower().endswith(('.ttf', '.otf', '.ttc')):\n"
+            "        font_manager.fontManager.addfont(os.path.join(_font_dir, _f))\n"
+            "plt.rcParams['font.sans-serif'] = ['SimHei', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', 'sans-serif']\n"
+            "plt.rcParams['axes.unicode_minus'] = False\n"
+            "plt.rcParams['font.family'] = 'sans-serif'\n"
         )
         await self.execute_code(init_code)
 

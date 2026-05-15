@@ -19,8 +19,11 @@ from fastapi import HTTPException
 from icecream import ic  # type: ignore[import-unresolved]
 from app.schemas.request import ExampleRequest
 from pydantic import BaseModel
-import litellm  # type: ignore[import-unresolved]
-from app.config.setting import settings
+from app.config.setting import settings, ApiType
+from app.core.llm.providers.openai_chat import OpenAIChatProvider
+from app.core.llm.providers.openai_responses import OpenAIResponsesProvider
+from app.core.llm.providers.anthropic import AnthropicProvider
+from app.core.llm.providers.base import BaseProvider
 import requests
 
 router = APIRouter()
@@ -30,6 +33,7 @@ class ValidateApiKeyRequest(BaseModel):
     api_key: str
     base_url: str = "https://api.openai.com/v1"
     model_id: str
+    api_type: str = "openai-chat"
 
 
 class ValidateOpenalexEmailRequest(BaseModel):
@@ -65,21 +69,37 @@ async def save_api_config(request: SaveApiConfigRequest):
             settings.COORDINATOR_API_KEY = request.coordinator.get("apiKey", "")
             settings.COORDINATOR_MODEL = request.coordinator.get("modelId", "")
             settings.COORDINATOR_BASE_URL = request.coordinator.get("baseUrl", "")
+            if api_type := request.coordinator.get("apiType"):
+                settings.COORDINATOR_API_TYPE = api_type
+            if cw := request.coordinator.get("contextWindow"):
+                settings.COORDINATOR_CONTEXT_WINDOW = int(cw)
 
         if request.modeler:
             settings.MODELER_API_KEY = request.modeler.get("apiKey", "")
             settings.MODELER_MODEL = request.modeler.get("modelId", "")
             settings.MODELER_BASE_URL = request.modeler.get("baseUrl", "")
+            if api_type := request.modeler.get("apiType"):
+                settings.MODELER_API_TYPE = api_type
+            if cw := request.modeler.get("contextWindow"):
+                settings.MODELER_CONTEXT_WINDOW = int(cw)
 
         if request.coder:
             settings.CODER_API_KEY = request.coder.get("apiKey", "")
             settings.CODER_MODEL = request.coder.get("modelId", "")
             settings.CODER_BASE_URL = request.coder.get("baseUrl", "")
+            if api_type := request.coder.get("apiType"):
+                settings.CODER_API_TYPE = api_type
+            if cw := request.coder.get("contextWindow"):
+                settings.CODER_CONTEXT_WINDOW = int(cw)
 
         if request.writer:
             settings.WRITER_API_KEY = request.writer.get("apiKey", "")
             settings.WRITER_MODEL = request.writer.get("modelId", "")
             settings.WRITER_BASE_URL = request.writer.get("baseUrl", "")
+            if api_type := request.writer.get("apiType"):
+                settings.WRITER_API_TYPE = api_type
+            if cw := request.writer.get("contextWindow"):
+                settings.WRITER_CONTEXT_WINDOW = int(cw)
 
         if request.openalex_email:
             settings.OPENALEX_EMAIL = request.openalex_email
@@ -96,15 +116,23 @@ async def validate_api_key(request: ValidateApiKeyRequest):
     验证 API Key 的有效性
     """
     try:
-        # 使用 litellm 发送测试请求
-        await litellm.acompletion(
-            model=request.model_id,
+        provider: BaseProvider
+        match request.api_type:
+            case ApiType.OPENAI_RESPONSES:
+                provider = OpenAIResponsesProvider()
+            case ApiType.ANTHROPIC:
+                provider = AnthropicProvider()
+            case _:
+                provider = OpenAIChatProvider()
+
+        await provider.call(
             messages=[{"role": "user", "content": "Hi"}],
-            max_tokens=1,
+            model=request.model_id,
             api_key=request.api_key,
             base_url=request.base_url
             if request.base_url != "https://api.openai.com/v1"
             else None,
+            max_tokens=1,
         )
 
         return ValidateApiKeyResponse(valid=True, message="✓ 模型 API 验证成功")

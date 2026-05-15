@@ -1,6 +1,7 @@
 """通用工具函数模块，提供任务 ID 生成、文件操作和文档转换等功能。"""
 
 import os
+import shutil
 import datetime
 import hashlib
 import tomllib
@@ -40,7 +41,7 @@ def ensure_safe_task_id(task_id: str) -> str:
 
 
 def create_work_dir(task_id: str) -> str:
-    """为指定任务创建工作目录。
+    """为指定任务创建工作目录，并复制字体文件到工作目录。
 
     Args:
         task_id: 任务 ID。
@@ -54,11 +55,40 @@ def create_work_dir(task_id: str) -> str:
     try:
         # 创建目录，如果目录已存在也不会报错
         os.makedirs(work_dir, exist_ok=True)
+        # 复制字体文件到工作目录，确保图表中文正常显示
+        _copy_fonts_to_work_dir(work_dir)
         return work_dir
     except Exception as e:
         # 捕获并记录创建目录时的异常
         logger.error(f"创建工作目录失败: {str(e)}")
         raise
+
+
+# 字体源目录（backend/fonts/）
+_FONTS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "fonts")
+
+
+def _copy_fonts_to_work_dir(work_dir: str) -> None:
+    """将后端字体目录中的字体文件复制到工作目录。
+
+    Args:
+        work_dir: 目标工作目录路径。
+    """
+    fonts_dir = os.path.normpath(_FONTS_DIR)
+    if not os.path.isdir(fonts_dir):
+        logger.warning(f"字体目录不存在: {fonts_dir}")
+        return
+
+    for filename in os.listdir(fonts_dir):
+        if not filename.lower().endswith((".ttf", ".otf", ".ttc")):
+            continue
+        src = os.path.join(fonts_dir, filename)
+        dst = os.path.join(work_dir, filename)
+        try:
+            shutil.copy2(src, dst)
+            logger.debug(f"复制字体: {filename} -> {work_dir}")
+        except Exception as e:
+            logger.warning(f"复制字体 {filename} 失败: {e}")
 
 
 def get_work_dir(task_id: str) -> str:
