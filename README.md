@@ -11,7 +11,7 @@
 
 ## 🌟 愿景：
 
-3 天的比赛时间变为 1 小时 <br> 
+3 天的比赛时间变为 1 小时
 自动完整一份可以获奖级别的建模论文
 
 <p align="center">
@@ -125,18 +125,35 @@ docker-compose up
 > 启动 Redis, 下载和运行问 AI
 
 ```bash
-cd backend # 切换到 backend 目录下
-pip install uv # 推荐使用 uv 管理 python 项目
-uv sync # 安装依赖
-# 启动后端
-# 激活 python 虚拟环境
-source .venv/bin/activate # MacOS or Linux
-venv\Scripts\activate.bat # Windows
-# MacOS or Linux 运行这条命令
-ENV=DEV uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
-ENV=DEV REDIS_URL=redis://localhost:6379/0 uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
-# Windows 运行这条命令
-set ENV=DEV ; uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120
+# ============ 安装依赖 ============
+# 1. 切换到 backend 目录
+cd backend
+# 2. 安装 uv 包管理器（推荐）
+pip install uv
+# 3. 同步项目依赖
+uv sync
+```
+
+```bash
+# ============ MacOS / Linux 启动命令 ============
+# 1. 设置环境变量
+export ENV=DEV
+export REDIS_URL=redis://localhost:6379/0
+# 2. 激活虚拟环境
+source .venv/bin/activate
+# 3. 启动后端服务（激活后可直接使用 uvicorn 命令）
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
+```
+
+```powershell
+# ============ Windows PowerShell 启动命令 ============
+# 1. 设置环境变量
+$env:ENV="DEV"
+$env:REDIS_URL="redis://localhost:6379/0"
+# 2. 激活虚拟环境（使用 PowerShell 专用脚本）
+. .\.venv\Scripts\Activate.ps1
+# 3. 启动后端服务（激活后命令行提示符会显示 (backend)）
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
 ```
 
 启动前端
