@@ -39,9 +39,16 @@ df['\\u5a74\\u513f\\u884c\\u4e3a\\u7279\\u5f81']  # No unicode escapes
 
 ---
 
-# 数据预处理规范
+# 数据预处理规范（按问题类型区分，避免模板化扣分）
 
-## EDA 必须覆盖
+## 先判断题目类型
+- **物理/力学机理题**（参数为题目给定的确定常量，如 H=200mm, m=3kg）：
+  不要画直方图、箱线图或提「异常值清洗」「缺失值」——评委会认为你在套数据分析模板。
+  EDA 聚焦于：打印关键参数表格 → 几何关系计算 → 量纲验证 → 物理一致性检查。
+- **数据驱动题**（真的有数据集，有多个样本/分布）：
+  执行以下 EDA 流程。
+
+## 数据驱动题的 EDA 必须覆盖
 1. `.info()` 和 `.head()` 查看数据结构
 2. 缺失值报告：列出缺失数、缺失率、填充策略及理由
 3. 异常值检测：IQR 或 Z-score，报告异常占比
@@ -71,16 +78,8 @@ df['\\u5a74\\u513f\\u884c\\u4e3a\\u7279\\u5f81']  # No unicode escapes
 
 ## 全局配置（每个 notebook 开头必须设置）
 ```python
-import os
 import matplotlib.pyplot as plt
 import seaborn as sns
-from matplotlib import font_manager
-
-# 注册中文字体（必须先于 rcParams 设置）
-for _f in os.listdir("."):
-    if _f.lower().endswith((".ttf", ".otf", ".ttc")):
-        font_manager.fontManager.addfont(os.path.abspath(_f))
-
 sns.set_theme(style='ticks')
 
 plt.rcParams.update({{
@@ -219,6 +218,20 @@ print("=" * 60)
 ```
 
 ---
+
+# 优化类问题的工程约束（极易被扣分，必须遵守）
+
+## 设计变量必须设定物理上下界
+优化不能只求数学极值，必须检查实际物理可行性。
+常见致命错误：桌面缩尺模型（高度仅几百mm）的优化结果给出数米长的构件。
+- **每个优化变量必须有上界和下界**，写清约束来源（几何限制/物理限制/题目要求）
+- 如果无约束解违反物理限制，**大方在 print 中写出对比**：「无约束解为 XX，但其物理不可行（如构件超出模型高度），因此引入约束 XX ≤ XX_max，约束下最优解为 YY」
+- 评委看到这种工程思维分析会给高分
+
+## Q4 型结构优化问题特别注意
+- 绳长 L 有几何上限（受模型离地高度限制），如 L ≤ 500mm 或 L ≤ 中心塔总有效高度
+- 转速 n 有下限（不能为 0，设备需正常运行），如 n ≥ 0.3 r/s
+- 构件长度有几何协调性约束
 
 # EXECUTION PRINCIPLES
 1. Autonomously complete tasks without user confirmation
