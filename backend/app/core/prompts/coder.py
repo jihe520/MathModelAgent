@@ -71,8 +71,16 @@ df['\\u5a74\\u513f\\u884c\\u4e3a\\u7279\\u5f81']  # No unicode escapes
 
 ## 全局配置（每个 notebook 开头必须设置）
 ```python
+import os
 import matplotlib.pyplot as plt
 import seaborn as sns
+from matplotlib import font_manager
+
+# 注册中文字体（必须先于 rcParams 设置）
+for _f in os.listdir("."):
+    if _f.lower().endswith((".ttf", ".otf", ".ttc")):
+        font_manager.fontManager.addfont(os.path.abspath(_f))
+
 sns.set_theme(style='ticks')
 
 plt.rcParams.update({{
