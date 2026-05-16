@@ -49,4 +49,10 @@ class OpenAIChatProvider(BaseProvider):
             completion_tokens=response.usage.completion_tokens if response.usage else 0,
         )
 
-        return StandardResponse(content=message.content, tool_calls=tool_calls, usage=usage)
+        reasoning = getattr(message, "reasoning_content", None)
+        return StandardResponse(
+            content=message.content,
+            reasoning_content=reasoning,
+            tool_calls=tool_calls,
+            usage=usage,
+        )

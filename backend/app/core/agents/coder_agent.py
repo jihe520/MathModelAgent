@@ -140,6 +140,8 @@ class CoderAgent(Agent):
 
                         # 更新对话历史 - 添加助手的响应
                         assistant_msg: dict = {"role": "assistant", "content": response.content}
+                        if response.reasoning_content:
+                            assistant_msg["reasoning_content"] = response.reasoning_content
                         if response.tool_calls:
                             assistant_msg["tool_calls"] = [
                                 {
