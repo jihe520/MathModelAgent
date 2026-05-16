@@ -85,16 +85,26 @@ class E2BCodeInterpreter(BaseCodeInterpreter):
 
     async def _pre_execute_code(self):
         init_code = (
-            # 从 /home/user 加载上传的字体文件（跨平台兼容，无需 apt-get）
+            # 加载中文字体，确保图表中文正常显示（跨平台兼容）
             "import os\n"
             "import matplotlib\n"
             "import matplotlib.pyplot as plt\n"
             "from matplotlib import font_manager\n"
+            "import pathlib as _pl, glob as _glob\n"
+            "_cache_dir = _pl.Path(matplotlib.get_cachedir())\n"
+            "for _cache_file in _glob.glob(str(_cache_dir / 'fontlist*.json')):\n"
+            "    _pl.Path(_cache_file).unlink(missing_ok=True)\n"
+            "font_manager.fontManager.__init__()\n"
             "_font_dir = '/home/user'\n"
+            "_loaded = False\n"
             "for _f in os.listdir(_font_dir):\n"
             "    if _f.lower().endswith(('.ttf', '.otf', '.ttc')):\n"
-            "        font_manager.fontManager.addfont(os.path.join(_font_dir, _f))\n"
-            "plt.rcParams['font.sans-serif'] = ['SimHei', 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', 'Noto Sans SC', 'Microsoft YaHei', 'DejaVu Sans', 'sans-serif']\n"
+            "        _fp = os.path.join(_font_dir, _f)\n"
+            "        font_manager.fontManager.addfont(_fp)\n"
+            "        _loaded = True\n"
+            "if _loaded:\n"
+            "    print(f'中文字体已加载，可用字体数: {len(font_manager.fontManager.ttflist)}')\n"
+            "plt.rcParams['font.sans-serif'] = ['SimHei', 'Heiti SC', 'STHeiti', 'PingFang SC', 'Noto Sans CJK SC', 'Noto Sans SC', 'WenQuanYi Micro Hei', 'Microsoft YaHei', 'sans-serif']\n"
             "plt.rcParams['axes.unicode_minus'] = False\n"
             "plt.rcParams['font.family'] = 'sans-serif'\n"
         )
