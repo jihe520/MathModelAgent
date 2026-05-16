@@ -166,9 +166,13 @@ pnpm run dev
 ```
 修改 backend/.env.dev 的环境变量 **REDIS_URL**
 
-2. 配置
+配置API Key
 
-侧边栏 -> 头像 -> API Key
+1. 使用 WebUI
+    侧边栏 -> 头像 -> API Key
+2. 修改 backend/.env.dev 文件
+    先将.env.example文件 改为.env.dev
+    然后在.env.dev中 修改各 Agent API 配置
 
 
 
