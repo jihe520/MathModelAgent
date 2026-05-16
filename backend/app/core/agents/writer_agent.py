@@ -115,6 +115,8 @@ class WriterAgent(Agent):
 
                 # 更新对话历史 - 添加助手的响应
                 assistant_msg: dict = {"role": "assistant", "content": response.content}
+                if response.reasoning_content:
+                    assistant_msg["reasoning_content"] = response.reasoning_content
                 if response.tool_calls:
                     assistant_msg["tool_calls"] = [
                         {
@@ -157,7 +159,7 @@ class WriterAgent(Agent):
                 response_content = next_response.content or ""
         else:
             response_content = response.content or ""
-        self.chat_history.append({"role": "assistant", "content": response_content})
+        self.chat_history.append({"role": "assistant", "content": response_content, "reasoning_content": response.reasoning_content} if response.reasoning_content else {"role": "assistant", "content": response_content})
         logger.info(f"{self.__class__.__name__}:完成:执行对话")
         return WriterResponse(response_content=response_content, footnotes=footnotes)
 
@@ -172,9 +174,10 @@ class WriterAgent(Agent):
                 history=self.chat_history, agent_name=self.__class__.__name__
             )
             response_content = response.content or ""
-            await self.append_chat_history(
-                {"role": "assistant", "content": response_content}
-            )
+            summary_msg: dict = {"role": "assistant", "content": response_content}
+            if response.reasoning_content:
+                summary_msg["reasoning_content"] = response.reasoning_content
+            await self.append_chat_history(summary_msg)
             return response_content
         except Exception as e:
             logger.error(f"总结生成失败: {str(e)}")

@@ -101,9 +101,10 @@ class ModelerAgent(Agent):
             logger.warning(
                 f"JSON 解析失败 (第{attempt}次)，请求模型重新生成"
             )
-            await self.append_chat_history(
-                {"role": "assistant", "content": json_str}
-            )
+            retry_msg: dict = {"role": "assistant", "content": json_str}
+            if response.reasoning_content:
+                retry_msg["reasoning_content"] = response.reasoning_content
+            await self.append_chat_history(retry_msg)
             await self.append_chat_history(
                 {
                     "role": "user",

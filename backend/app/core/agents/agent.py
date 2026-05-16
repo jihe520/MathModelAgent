@@ -64,7 +64,19 @@ class Agent:
                 sub_title=sub_title,
             )
             response_content = response.content
-            self.chat_history.append({"role": "assistant", "content": response_content})
+            assistant_msg: dict = {"role": "assistant", "content": response_content}
+            if response.reasoning_content:
+                assistant_msg["reasoning_content"] = response.reasoning_content
+            if response.tool_calls:
+                assistant_msg["tool_calls"] = [
+                    {
+                        "id": tc.id,
+                        "type": "function",
+                        "function": {"name": tc.name, "arguments": tc.arguments},
+                    }
+                    for tc in response.tool_calls
+                ]
+            self.chat_history.append(assistant_msg)
 
             # 使用 API 返回的实际 prompt_tokens 更新计数
             if response.usage.prompt_tokens > 0:
