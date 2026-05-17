@@ -1,5 +1,6 @@
-"""建模手 Agent 模块，负责分析问题并制定数学建模方案。"""
+"""建模手 Agent 模块，负责分析问题并制定建模方案。"""
 
+import asyncio
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import MODELER_PROMPT
@@ -58,8 +59,9 @@ class ModelerAgent(Agent):
         task_id: str,
         model: LLM,
         context_window: int = 128000,
+        cancel_event: asyncio.Event | None = None,
     ) -> None:
-        super().__init__(task_id, model, context_window)
+        super().__init__(task_id, model, context_window, cancel_event=cancel_event)
         self.system_prompt = MODELER_PROMPT
 
     async def run(self, coordinator_to_modeler: CoordinatorToModeler) -> ModelerToCoder:  # type: ignore[reportIncompatibleMethodOverride]
@@ -83,7 +85,7 @@ class ModelerAgent(Agent):
 
         attempt = 0
         while True:
-            response = await self.model.chat(
+            response = await self._chat(
                 history=self.chat_history,
                 agent_name=self.__class__.__name__,
             )
