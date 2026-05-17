@@ -15,6 +15,7 @@ from app.utils.common_utils import (
 )
 import os
 import asyncio
+from typing import Dict, Tuple
 from fastapi import HTTPException
 from icecream import ic  # type: ignore[import-unresolved]
 from app.schemas.request import ExampleRequest
@@ -27,6 +28,9 @@ from app.core.llm.providers.base import BaseProvider
 import requests
 
 router = APIRouter()
+
+# 任务注册表: task_id -> (asyncio.Task, asyncio.Event)
+_active_tasks: Dict[str, Tuple[asyncio.Task, asyncio.Event]] = {}
 
 
 class ValidateApiKeyRequest(BaseModel):
@@ -291,6 +295,9 @@ async def run_modeling_task_async(
         format_output=format_output,
     )
 
+    # 创建取消信号
+    cancel_event = asyncio.Event()
+
     # 发送任务开始状态
     await redis_manager.publish_message(
         task_id,
@@ -300,15 +307,64 @@ async def run_modeling_task_async(
     # 给一个短暂的延迟，确保 WebSocket 有机会连接
     await asyncio.sleep(1)
 
-    # 创建任务并等待它完成
-    task = asyncio.create_task(MathModelWorkFlow().execute(problem))
-    # 设置超时时间（比如 300 分钟）
-    await asyncio.wait_for(task, timeout=3600 * 5)
+    # 创建工作流并传入取消事件
+    workflow = MathModelWorkFlow()
+    workflow.cancel_event = cancel_event
 
-    # 发送任务完成状态
-    await redis_manager.publish_message(
-        task_id,
-        SystemMessage(content="任务处理完成", type="success"),
+    # 创建任务并注册到全局表
+    task = asyncio.create_task(workflow.execute(problem))
+    _active_tasks[task_id] = (task, cancel_event)
+
+    task_completed = False
+    try:
+        # 设置超时时间（5 小时）
+        await asyncio.wait_for(task, timeout=3600 * 5)
+        task_completed = True
+
+        # 发送任务完成状态
+        await redis_manager.publish_message(
+            task_id,
+            SystemMessage(content="任务处理完成", type="success"),
+        )
+    except asyncio.CancelledError:
+        logger.info(f"任务 {task_id} 被取消")
+        await redis_manager.publish_message(
+            task_id,
+            SystemMessage(content="任务已停止", type="warning"),
+        )
+    except Exception as e:
+        logger.error(f"任务 {task_id} 执行失败: {e}")
+        await redis_manager.publish_message(
+            task_id,
+            SystemMessage(content=f"任务执行失败: {str(e)}", type="error"),
+        )
+    finally:
+        # 从注册表中清理
+        _active_tasks.pop(task_id, None)
+        # 仅在正常完成时转换 md 为 docx
+        if task_completed:
+            md_2_docx(task_id)
+
+
+class CancelTaskResponse(BaseModel):
+    success: bool
+    message: str
+
+
+@router.post("/modeling/{task_id}/cancel", response_model=CancelTaskResponse)
+async def cancel_task(task_id: str):
+    """取消正在运行的任务。"""
+    if task_id not in _active_tasks:
+        return CancelTaskResponse(
+            success=False,
+            message="任务不存在或已完成",
+        )
+
+    _, cancel_event = _active_tasks[task_id]
+    cancel_event.set()
+    logger.info(f"已发送取消信号给任务 {task_id}")
+
+    return CancelTaskResponse(
+        success=True,
+        message="停止指令已发送",
     )
-    # 转换md为docx
-    md_2_docx(task_id)

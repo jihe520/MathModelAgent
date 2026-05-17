@@ -1,5 +1,6 @@
 """Agent 基类模块，提供对话管理和记忆压缩功能。"""
 
+import asyncio
 from typing import Any
 from app.core.llm.llm import LLM, simple_chat
 from app.utils.log_util import logger
@@ -21,6 +22,7 @@ class Agent:
         model: LLM,
         context_window: int = 128000,  # 模型上下文窗口大小（token）
         token_threshold_ratio: float = _DEFAULT_TOKEN_THRESHOLD_RATIO,
+        cancel_event: asyncio.Event | None = None,
     ) -> None:
         self.task_id = task_id
         self.model = model
@@ -28,6 +30,7 @@ class Agent:
         self.context_window = context_window
         self.token_threshold_ratio = token_threshold_ratio
         self.current_token_count = 0  # 当前历史的估算 token 数
+        self.cancel_event = cancel_event  # 取消信号
 
     def _estimate_tokens(self, text: str) -> int:
         """估算文本的 token 数量。"""
@@ -38,6 +41,31 @@ class Agent:
         content = msg.get("content") or ""
         # 4 token 额外开销（role、分隔符等）
         return self._estimate_tokens(content) + 4
+
+    async def _chat(self, **kwargs) -> Any:
+        """调用 LLM 模型，支持取消中断。
+
+        将所有关键字参数透传给 self.model.chat()。
+        若设置了 cancel_event，则通过 asyncio.wait 实现可中断等待。
+
+        Returns:
+            模型响应对象。
+        """
+        if not self.cancel_event:
+            return await self.model.chat(**kwargs)
+
+        chat_task = asyncio.create_task(self.model.chat(**kwargs))
+        cancel_wait_task = asyncio.create_task(self.cancel_event.wait())
+        done, pending = await asyncio.wait(
+            {chat_task, cancel_wait_task},
+            return_when=asyncio.FIRST_COMPLETED,
+        )
+        if cancel_wait_task in done:
+            chat_task.cancel()
+            for p in pending:
+                p.cancel()
+            raise asyncio.CancelledError("任务被用户停止")
+        return await chat_task
 
     async def run(self, prompt: str, system_prompt: str, sub_title: str) -> Any:
         """执行 Agent 对话并返回模型响应。
@@ -57,12 +85,13 @@ class Agent:
             await self.append_chat_history({"role": "system", "content": system_prompt})
             await self.append_chat_history({"role": "user", "content": prompt})
 
-            # 获取历史消息用于本次对话
-            response = await self.model.chat(
+            # 获取历史消息用于本次对话（支持取消中断）
+            response = await self._chat(
                 history=self.chat_history,
                 agent_name=self.__class__.__name__,
                 sub_title=sub_title,
             )
+
             response_content = response.content
             assistant_msg: dict = {"role": "assistant", "content": response_content}
             if response.reasoning_content:
@@ -88,6 +117,9 @@ class Agent:
 
             logger.info(f"{self.__class__.__name__}:完成:执行对话")
             return response_content
+        except asyncio.CancelledError:
+            logger.info(f"{self.__class__.__name__}:任务被用户停止")
+            raise
         except Exception as e:
             error_msg = f"执行过程中遇到错误: {str(e)}"
             logger.error(f"Agent执行失败: {str(e)}")

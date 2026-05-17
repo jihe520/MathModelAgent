@@ -1,4 +1,5 @@
 import { getTaskMessages } from "@/apis/commonApi";
+import { cancelTask as cancelTaskAPI } from "@/apis/commonApi";
 import { AgentType } from "@/utils/enum";
 import type {
 	CoderMessage,
@@ -40,6 +41,9 @@ export const useTaskStore = defineStore("task", () => {
 	const wsStatus = ref<
 		"connecting" | "connected" | "disconnected" | "reconnecting"
 	>("disconnected");
+
+	/** 任务是否正在运行 */
+	const isRunning = ref(false);
 
 	// ---- Helpers ----
 
@@ -147,6 +151,7 @@ export const useTaskStore = defineStore("task", () => {
 		}
 		setCurrentTask(taskId);
 		ensureTaskBucket(taskId);
+		isRunning.value = true;
 
 		const baseUrl = import.meta.env.VITE_WS_URL;
 		const wsUrl = `${baseUrl}/task/${taskId}`;
@@ -159,13 +164,22 @@ export const useTaskStore = defineStore("task", () => {
 					return;
 				}
 				appendMessage(taskId, data);
+				// 检测任务完成/停止/失败消息
+				if (data.msg_type === "system") {
+					const msgType = Reflect.get(data, "type");
+					if (
+						msgType === "success" ||
+						msgType === "warning" ||
+						msgType === "error"
+					) {
+						isRunning.value = false;
+					}
+				}
 			},
 			(status) => {
 				wsStatus.value = status;
 			},
 		);
-		// 初始化测试数据（已在上面初始化，这里可以注释掉）
-		// messages.value = messageData as Message[]
 		ws.connect();
 	}
 
@@ -186,6 +200,20 @@ export const useTaskStore = defineStore("task", () => {
 	function closeWebSocket() {
 		ws?.close();
 		ws = null;
+	}
+
+	/** 取消正在运行的任务 */
+	async function stopTask(taskId: string) {
+		try {
+			const res = await cancelTaskAPI(taskId);
+			if (res.data.success) {
+				isRunning.value = false;
+			}
+			return res.data;
+		} catch (error) {
+			console.error("取消任务失败:", error);
+			return { success: false, message: "取消请求失败" };
+		}
 	}
 
 	/** 添加用户消息 */
@@ -315,6 +343,7 @@ export const useTaskStore = defineStore("task", () => {
 	return {
 		messages,
 		wsStatus,
+		isRunning,
 		chatMessages,
 		coordinatorMessages,
 		modelerMessages,
@@ -325,6 +354,7 @@ export const useTaskStore = defineStore("task", () => {
 		loadTaskMessages,
 		connectWebSocket,
 		closeWebSocket,
+		stopTask,
 		downloadMessages,
 		addUserMessage,
 	};
