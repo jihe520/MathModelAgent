@@ -50,11 +50,21 @@ const formatDuration = (ms: number): string => {
 /** 运行时长显示值 */
 const runningDuration = ref<string>("0s");
 
+/** 是否正在请求停止 */
+const isStopping = ref(false);
+
 /** 更新运行时长 */
 const updateDuration = () => {
 	currentTime.value = Date.now();
 	runningDuration.value = formatDuration(currentTime.value - startTime.value);
 };
+
+/** 处理停止运行 */
+async function handleStop() {
+	isStopping.value = true;
+	await taskStore.stopTask(props.task_id);
+	isStopping.value = false;
+}
 
 // ---- Lifecycle Hooks ----
 
@@ -128,6 +138,14 @@ onBeforeUnmount(() => {
               <!--  TODO: 其他选项 -->
 
               <div class="flex justify-end gap-2 items-center">
+                <Button
+                  v-if="taskStore.isRunning"
+                  variant="destructive"
+                  :disabled="isStopping"
+                  @click="handleStop"
+                >
+                  {{ isStopping ? "停止中..." : "停止运行" }}
+                </Button>
                 <Button @click="taskStore.downloadMessages" class="flex justify-end">
                   下载消息
                 </Button>

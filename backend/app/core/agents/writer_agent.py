@@ -1,5 +1,6 @@
 """写作手 Agent 模块，负责基于建模结果撰写学术论文。"""
 
+import asyncio
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import get_writer_prompt
@@ -29,8 +30,9 @@ class WriterAgent(Agent):
         format_output: FormatOutPut = FormatOutPut.Markdown,
         scholar: OpenAlexScholar | None = None,
         context_window: int = 128000,
+        cancel_event: asyncio.Event | None = None,
     ) -> None:
-        super().__init__(task_id, model, context_window)
+        super().__init__(task_id, model, context_window, cancel_event=cancel_event)
         self.format_out_put = format_output
         self.comp_template = comp_template
         self.scholar = scholar
@@ -82,7 +84,7 @@ class WriterAgent(Agent):
         await self.append_chat_history({"role": "user", "content": prompt})
 
         # 获取历史消息用于本次对话
-        response = await self.model.chat(
+        response = await self._chat(
             history=self.chat_history,
             tools=tools,
             tool_choice="auto",
@@ -149,7 +151,7 @@ class WriterAgent(Agent):
                         "name": "search_papers",
                     }
                 )
-                next_response = await self.model.chat(
+                next_response = await self._chat(
                     history=self.chat_history,
                     tools=tools,
                     tool_choice="auto",
@@ -170,7 +172,7 @@ class WriterAgent(Agent):
                 {"role": "user", "content": "请简单总结以上完成什么任务取得什么结果:"}
             )
             # 获取历史消息用于本次对话
-            response = await self.model.chat(
+            response = await self._chat(
                 history=self.chat_history, agent_name=self.__class__.__name__
             )
             response_content = response.content or ""

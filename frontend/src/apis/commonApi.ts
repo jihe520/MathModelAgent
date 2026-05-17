@@ -57,3 +57,13 @@ export function getServiceStatus() {
 		redis: { status: string; message: string };
 	}>("/status");
 }
+
+/**
+ * 取消正在运行的任务
+ * @param task_id 任务ID
+ */
+export function cancelTask(task_id: string) {
+	return request.post<{ success: boolean; message: string }>(
+		`/modeling/${task_id}/cancel`,
+	);
+}
