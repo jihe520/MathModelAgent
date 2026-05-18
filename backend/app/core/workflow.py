@@ -1,5 +1,6 @@
 """工作流模块，编排多 Agent 协作完成数学建模任务。"""
 
+import asyncio
 from app.core.agents import WriterAgent, CoderAgent, CoordinatorAgent, ModelerAgent
 from app.schemas.request import Problem
 from app.schemas.response import SystemMessage
@@ -34,6 +35,16 @@ class MathModelWorkFlow(WorkFlow):
     work_dir: str  # worklow work dir
     ques_count: int = 0  # 问题数量
     questions: dict[str, str | int] = {}  # 问题
+    cancel_event: asyncio.Event | None = None  # 取消信号
+
+    async def _check_cancelled(self) -> None:
+        """检查是否收到取消信号，若已取消则发布通知并抛出 CancelledError。"""
+        if self.cancel_event and self.cancel_event.is_set():
+            await redis_manager.publish_message(
+                self.task_id,
+                SystemMessage(content="任务已停止", type="warning"),
+            )
+            raise asyncio.CancelledError("任务被用户停止")
 
     async def execute(self, problem: Problem):  # type: ignore[reportIncompatibleMethodOverride]
         """执行数学建模工作流。
@@ -50,12 +61,15 @@ class MathModelWorkFlow(WorkFlow):
         coordinator_agent = CoordinatorAgent(
             self.task_id, coordinator_llm,
             context_window=settings.COORDINATOR_CONTEXT_WINDOW,
+            cancel_event=self.cancel_event,
         )
 
         await redis_manager.publish_message(
             self.task_id,
             SystemMessage(content="识别用户意图和拆解问题ing..."),
         )
+
+        await self._check_cancelled()
 
         try:
             coordinator_response = await coordinator_agent.run(problem.ques_all)
@@ -76,9 +90,12 @@ class MathModelWorkFlow(WorkFlow):
             SystemMessage(content="建模手开始建模ing..."),
         )
 
+        await self._check_cancelled()
+
         modeler_agent = ModelerAgent(
             self.task_id, modeler_llm,
             context_window=settings.MODELER_CONTEXT_WINDOW,
+            cancel_event=self.cancel_event,
         )
 
         modeler_response = await modeler_agent.run(coordinator_response)
@@ -125,6 +142,7 @@ class MathModelWorkFlow(WorkFlow):
             max_retries=settings.MAX_RETRIES,
             code_interpreter=code_interpreter,
             context_window=settings.CODER_CONTEXT_WINDOW,
+            cancel_event=self.cancel_event,
         )
 
         writer_agent = WriterAgent(
@@ -134,6 +152,7 @@ class MathModelWorkFlow(WorkFlow):
             format_output=problem.format_output,
             scholar=scholar,
             context_window=settings.WRITER_CONTEXT_WINDOW,
+            cancel_event=self.cancel_event,
         )
 
         flows = Flows(self.questions)
@@ -143,6 +162,8 @@ class MathModelWorkFlow(WorkFlow):
         config_template = get_config_template(problem.comp_template)
 
         for key, value in solution_flows.items():
+            await self._check_cancelled()
+
             await redis_manager.publish_message(
                 self.task_id,
                 SystemMessage(content=f"代码手开始求解{key}"),
@@ -191,6 +212,8 @@ class MathModelWorkFlow(WorkFlow):
             user_output, config_template, problem.ques_all
         )
         for key, value in write_flows.items():
+            await self._check_cancelled()
+
             await redis_manager.publish_message(
                 self.task_id,
                 SystemMessage(content=f"论文手开始写{key}部分"),

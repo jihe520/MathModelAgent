@@ -1,5 +1,6 @@
 """协调者 Agent 模块，负责识别用户意图并拆解数学建模问题。"""
 
+import asyncio
 from app.core.agents.agent import Agent
 from app.core.llm.llm import LLM
 from app.core.prompts import COORDINATOR_PROMPT
@@ -16,8 +17,9 @@ class CoordinatorAgent(Agent):
         task_id: str,
         model: LLM,
         context_window: int = 128000,
+        cancel_event: asyncio.Event | None = None,
     ) -> None:
-        super().__init__(task_id, model, context_window)
+        super().__init__(task_id, model, context_window, cancel_event=cancel_event)
         self.system_prompt = COORDINATOR_PROMPT
 
     async def run(self, ques_all: str) -> CoordinatorToModeler:  # type: ignore[reportIncompatibleMethodOverride]
@@ -36,7 +38,7 @@ class CoordinatorAgent(Agent):
         attempt = 0
         while True:
             try:
-                response = await self.model.chat(
+                response = await self._chat(
                     history=self.chat_history,
                     agent_name=self.__class__.__name__,
                 )

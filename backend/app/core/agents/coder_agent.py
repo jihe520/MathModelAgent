@@ -1,5 +1,6 @@
 """代码手 Agent 模块，负责生成和执行 Python 代码完成建模任务。"""
 
+import asyncio
 from app.core.agents.agent import Agent
 from app.config.setting import settings, ApiType
 from app.utils.log_util import logger
@@ -30,8 +31,9 @@ class CoderAgent(Agent):
         max_retries: int | None = settings.MAX_RETRIES,  # 最大反思次数，None表示无限制
         code_interpreter: BaseCodeInterpreter | None = None,
         context_window: int = 128000,
+        cancel_event: asyncio.Event | None = None,
     ) -> None:
-        super().__init__(task_id, model, context_window)
+        super().__init__(task_id, model, context_window, cancel_event=cancel_event)
         self.work_dir = work_dir
         self.max_chat_turns = max_chat_turns
         self.current_chat_turns = 0
@@ -107,7 +109,7 @@ class CoderAgent(Agent):
             logger.info(f"当前对话轮次: {self.current_chat_turns}")
             
             try:
-                response = await self.model.chat(
+                response = await self._chat(
                     history=self.chat_history,
                     tools=tools,
                     tool_choice="auto",
