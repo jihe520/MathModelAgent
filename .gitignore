@@ -8,3 +8,4 @@
 settings.local.json
 dump.rdb
 backend/.env.dev
+.trae/
