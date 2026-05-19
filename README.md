@@ -122,20 +122,14 @@ docker-compose up
 
 
 
-# 安装依赖
+#### step1:安装依赖
 
-## 1.下载并启动Redis
-
-下载Redis
+1. 下载Redis(记得设置环境变量redis_path)
 
 - windows 下载地址：<https://github.com/tporadowski/redis/releases>
 - linux or mac 下载地址：<https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/>
 
-```bash
-redis-server
-```
-
-## 2.启动后端
+2. 安装后端依赖
 
 ```bash
 # ============ 安装依赖 ============
@@ -148,37 +142,67 @@ uv sync
 ```
 
 ```bash
-# ============ MacOS / Linux 启动命令 ============
+# ============ MacOS / Linux 安装命令 ============
 # 1. 设置环境变量
 export ENV=DEV
 export REDIS_URL=redis://localhost:6379/0
-# 2. 激活虚拟环境
-source .venv/bin/activate
-# 3. 启动后端服务（激活后可直接使用 uvicorn 命令）
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
 ```
 
 ```powershell
-# ============ Windows PowerShell 启动命令 ============
+# ============ Windows PowerShell 安装命令 ============
 # 1. 设置环境变量
 $env:ENV="DEV"
 $env:REDIS_URL="redis://localhost:6379/0"
 # 2. 设置 PowerShell 执行策略策略为 RemoteSigned
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-# 3. 激活虚拟环境（使用 PowerShell 专用脚本）
-. .\.venv\Scripts\Activate.ps1
-# 4. 启动后端服务（激活后命令行提示符会显示 (backend)）
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
+# 3. 创建虚拟环境
+python -m venv venv
 ```
 
-## 3.启动前端
+3.安装前端依赖
 
 ```bash
 cd frontend # 切换到 frontend 目录下
 npm install -g pnpm
-pnpm i #确保电脑安装了 pnpm 
+pnpm i
+```
+
+#### step2:启动项目
+
+1.启动 Redis
+
+```bash
+redis-server
+```
+
+2.启动后端
+
+```bash
+# ============ MacOS / Linux 安装命令 ============
+# 1. 激活虚拟环境
+source .venv/bin/activate
+# 2. 启动后端服务（激活后可直接使用 uvicorn 命令）
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
+```
+
+```bash
+# ============ Windows PowerShell 安装命令 ============
+# 1. 切换到 backend 目录
+cd .\backend\
+# 2. 激活虚拟环境
+.\venv\Scripts\Activate.ps1
+# 3. 启动后端服务
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
+```
+
+
+3.启动前端
+
+```bash
+cd .\frontend\
 pnpm run dev
 ```
+
 修改 backend/.env.dev 的环境变量 **REDIS_URL**
 
 配置API Key
@@ -292,27 +316,4 @@ Thanks to the following projects:
 
 > [!CAUTION]
 > 免责声明: 注意，AI 生成仅供参考，目前水平直接参加国赛获奖是不可能的，但我相信 AI 和 该项目未来的成长。
-
-# 启动项目：
-
-## 1.启动 Redis
-
-```bash
-redis-server
-```
-
-## 2.启动后端
-
-```bash
-cd .\backend\
-. .\.venv\Scripts\Activate.ps1
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
-```
-
-## 3.启动前端
-
-```bash
-cd .\frontend\
-pnpm run dev
-```
 
