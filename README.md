@@ -153,10 +153,6 @@ export REDIS_URL=redis://localhost:6379/0
 # 1. 设置环境变量
 $env:ENV="DEV"
 $env:REDIS_URL="redis://localhost:6379/0"
-# 2. 设置 PowerShell 执行策略策略为 RemoteSigned
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-# 3. 创建虚拟环境
-python -m venv venv
 ```
 
 3.安装前端依赖
@@ -180,7 +176,7 @@ redis-server
 2.启动后端
 
 ```bash
-# ============ MacOS / Linux 安装命令 ============
+# ============ MacOS / Linux 启动命令 ============
 # 1. 激活虚拟环境
 source .venv/bin/activate
 # 2. 启动后端服务（激活后可直接使用 uvicorn 命令）
@@ -188,13 +184,11 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-
 ```
 
 ```bash
-# ============ Windows PowerShell 安装命令 ============
+# ============ Windows PowerShell 启动命令 ============
 # 1. 切换到 backend 目录
 cd .\backend\
-# 2. 激活虚拟环境
-.\venv\Scripts\Activate.ps1
-# 3. 启动后端服务
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
+# 2. 启动后端服务
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
 ```
 
 
