@@ -15,10 +15,8 @@
 自动完整一份可以获奖级别的建模论文
 
 <p align="center">
-    <img src="./docs/index.png">
     <img src="./docs/chat.png">
     <img src="./docs/coder.png">
-    <img src="./docs/writer.png">
 </p>
 
 ## ✨ 功能特性
@@ -37,6 +35,99 @@
 - 📚 RAG 知识库: 从本地知识库检索建模方法、代码模板、论文写作参考（ChromaDB + Rerank）
 - 🤝 HIL 人机协作: 关键节点暂停等待用户审批，支持 6 种决策动作（confirm / edit / regenerate / ask / skip / abort）
 - 🛡️ 四层容错: 有限重试 → Fallback Hand Off → Evaluator Shadow Mode → Feedback Rerun
+
+
+
+
+---
+---
+
+我在平台中托管了一个在线版本，方便使用，欢迎体验：
+
+https://mathmodel.top/home
+
+## SKILLS
+
+项目蒸馏成完全由 SKILLS 驱动
+不再做 Harness 层
+
+### Intro
+
+MathModelAgent SKILL —— 直接在 Harness 中驱动的数学建模自动化方案.
+
+**💰 开源免费，接入任意模型**
+完全开源免费，可接入任何模型。
+
+**🧠 端到端自动化**
+从问题分析、建模、编码、绘图到论文排版和验收，一条 `/1start-mathmodel` 命令全自动完成，中间阶段自动串联，无需人工干预。
+
+**📄 17 套 Typst 论文模板**
+内置中英文主流赛事模板（国赛、华数杯、华为杯、MCM/ICM 等），自动匹配赛事类型，生成排版精良、可直接提交的 PDF 论文。
+
+**📐 内置建模知识库**
+包含完整的建模规范、模型选择决策树（AHP、TOPSIS、ARIMA、GA 等）、常见易错模式和 MCM/ICM 评分标准，每个阶段自动参考，降低模型幻觉。
+
+**✅ 9 步自动验收**
+文本泄漏检测 → 数值一致性校验 → Typst 编译 → PDF 可视化检查，确保论文零低级错误。
+
+**🔧 可组合、可扩展**
+每个阶段是独立 Skill，可单独调用（如只跑分析、只写论文）；模板和知识库可自由扩展；支持 Typst 生态排版。
+
+
+
+### Install & Usage
+
+安装 SKILL
+```
+npx skills add jihe520/MathModelAgent
+```
+
+运行
+```
+// claude
+claude --dangerously-skip-permissions
+claude: /1start-mathmodel 完成这个数学建模任务
+
+// codex
+codex --yolo
+codex: $start-mathmodel 完成这个数学建模任务
+```
+
+其他命令
+```
+/doctor:  检查环境配置
+/typst-author: typst 知识
+```
+
+
+### What Can You Contribute?
+
+项目以后只会做 SKLLS 层的迭代和优化，不会再做其他部分。
+
+如果你希望寻找 Agent 开发岗位，你可以研究该项目 Agent 设计并贡献，我会尽量合并.
+
+你能做什么：
+
+- 优化贡献比赛 typst Template , 你可以找一些 LaTeX 转成 typst
+- 优化 SKILL Workflow
+- 在不同的 Harness 上测试 不同的 LLM, 提供反馈和案例放在 example 仓库
+
+Harness SKILL 的优化需要大量黑盒测试和调优.
+
+
+### Thinking
+
+- 两年前，我做了一个 Mulit-Agent 的数学建模项目并开源出来，收到了社区的欢迎和很多 star, 感谢大家支持。
+- 感谢开源的 latex 模板，我在此基础上转化为 typst 模板
+- 此 SKILL 是一个基础模板，你可以基于此构建更适合你自己的 MathModel SKILL
+- For Agent DEVs : 两年前，我都是自己实现一套 Agent 框架，现在和以后更多的 Agent 产品直接基于 Harness 如 Codex / Claude Code / Pi  + SKILLS 来构建
+
+---
+---
+
+
+
+
 
 ## 🚀 后期计划
 
