@@ -381,7 +381,7 @@ Thanks to the following projects:
 
 [☕️ 给作者买一杯咖啡](./docs/md/sponser.md)
 
-感谢赞助
+https://linux.do/
 
 #### 企业
 
