@@ -156,7 +156,7 @@ fi
 ## 给论文阶段的嵌入建议
 ```
 
-嵌入建议只说明每张图适合放入哪个章节和建议 caption，不生成 `*_typst_includes.typ`。最终的 `#figure(image(...), caption: [...])` 由 `5writing` 根据论文结构决定。
+嵌入建议只说明每张图适合放入哪个章节和建议 caption，不生成 `*_typst_includes.typ`。最终的图表插入代码（Typst 的 `#figure(image(...), caption: [...])` 或 LaTeX 的 `\begin{figure}...\end{figure}`）由 `5writing` 根据论文结构和所选引擎决定。
 
 ## 质量要求
 

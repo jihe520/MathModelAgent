@@ -9,7 +9,7 @@ Usage:
 
 Options:
   --root-dir DIR          Project root. Defaults to the parent of paper-dir.
-  --main FILE            Typst entry file. Defaults to <paper-dir>/main.typ.
+  --main FILE            Paper entry file. Supports both Typst (main.typ) and LaTeX (main.tex). Defaults to <paper-dir>/main.typ, then main.tex.
   --sections-dir DIR     Section directory. Defaults to <paper-dir>/sections when it exists.
   --references FILE      Reference file. Defaults to <paper-dir>/references.typ when it exists.
   --figures-dir DIR      Figure directory. Defaults to <root-dir>/figures when it exists.
@@ -114,10 +114,10 @@ if [ -z "$PAPER_DIR" ] && [ "${#POSITIONAL[@]}" -gt 0 ]; then
 fi
 
 if [ -z "$PAPER_DIR" ]; then
-  if [ -f "main.typ" ]; then
+  if [ -f "main.typ" ] || [ -f "main.tex" ]; then
     PAPER_DIR="."
   else
-    CANDIDATE="$(find . -maxdepth 3 -type f -name main.typ -print 2>/dev/null | head -n 1 || true)"
+    CANDIDATE="$(find . -maxdepth 3 -type f \( -name main.typ -o -name main.tex \) -print 2>/dev/null | head -n 1 || true)"
     if [ -n "$CANDIDATE" ]; then
       PAPER_DIR="$(dirname "$CANDIDATE")"
     else
@@ -135,15 +135,23 @@ if [ -z "$ROOT_DIR" ]; then
 fi
 
 if [ -z "$MAIN_FILE" ]; then
-  MAIN_FILE="$PAPER_DIR/main.typ"
+  if [ -f "$PAPER_DIR/main.typ" ]; then
+    MAIN_FILE="$PAPER_DIR/main.typ"
+  elif [ -f "$PAPER_DIR/main.tex" ]; then
+    MAIN_FILE="$PAPER_DIR/main.tex"
+  fi
 fi
 
 if [ -z "$SECTIONS_DIR" ] && [ -d "$PAPER_DIR/sections" ]; then
   SECTIONS_DIR="$PAPER_DIR/sections"
 fi
 
-if [ -z "$REFERENCES_FILE" ] && [ -f "$PAPER_DIR/references.typ" ]; then
-  REFERENCES_FILE="$PAPER_DIR/references.typ"
+if [ -z "$REFERENCES_FILE" ]; then
+  if [ -f "$PAPER_DIR/references.typ" ]; then
+    REFERENCES_FILE="$PAPER_DIR/references.typ"
+  elif [ -f "$PAPER_DIR/references.tex" ]; then
+    REFERENCES_FILE="$PAPER_DIR/references.tex"
+  fi
 fi
 
 if [ -z "$FIGURES_DIR" ] && [ -d "$ROOT_DIR/figures" ]; then
@@ -298,32 +306,47 @@ if not paper.exists():
     fail(f"paper directory not found: {paper}")
 
 if not main.exists():
-    fail(f"missing main Typst file: {main}")
+    fail(f"missing main paper file: {main}")
     sys.exit(exit_code)
+
+# Detect engine by main file extension
+is_latex = main.suffix == ".tex"
+is_typst = main.suffix == ".typ"
+engine_name = "LaTeX" if is_latex else "Typst"
+info(f"detected engine: {engine_name} (main suffix: {main.suffix})")
 
 main_text = read(main)
 
+# Section file extension matches engine
+section_ext = "*.tex" if is_latex else "*.typ"
 if sections_dir and sections_dir.exists():
-    section_files = sorted(sections_dir.glob("*.typ"), key=section_sort_key)
+    section_files = sorted(sections_dir.glob(section_ext), key=section_sort_key)
 elif paper.exists():
     excluded = {main.resolve()}
     if refs:
         excluded.add(refs.resolve())
     section_files = [
-        path for path in sorted(paper.rglob("*.typ"), key=section_sort_key)
+        path for path in sorted(paper.rglob(section_ext), key=section_sort_key)
         if path.resolve() not in excluded
     ]
     if section_files:
-        warn("sections dir not supplied/found; using other .typ files under paper dir as body sections")
+        warn(f"sections dir not supplied/found; using other {section_ext} files under paper dir as body sections")
 else:
     section_files = []
 
 info(f"section file count: {len(section_files)}")
 if not section_files:
-    warn("no separate section .typ files detected; treating paper as a single-file Typst document")
+    warn(f"no separate section {section_ext} files detected; treating paper as a single-file {engine_name} document")
 
-include_re = re.compile(r'#include\(\s*"([^"]+\.typ)"\s*\)')
-includes = include_re.findall(main_text)
+# Include/input detection: Typst uses #include("..."), LaTeX uses \input{...} or \include{...}
+if is_typst:
+    include_re = re.compile(r'#include\(\s*"([^"]+\.typ)"\s*\)')
+    includes = include_re.findall(main_text)
+else:
+    include_re = re.compile(r'\\(?:input|include)\s*\{([^}]+)\}')
+    raw_includes = [inc.strip() for inc in include_re.findall(main_text)]
+    # LaTeX \input{name} may omit .tex extension; normalize by appending .tex if missing
+    includes = [inc if inc.endswith(".tex") else inc + ".tex" for inc in raw_includes]
 include_paths = [(main.parent / inc).resolve() for inc in includes]
 include_names = [Path(inc).name for inc in includes]
 
@@ -331,21 +354,21 @@ info(f"main include count: {len(includes)}")
 seen = set()
 for name in include_names:
     if name in seen:
-        fail(f"duplicate Typst include: {name}")
+        fail(f"duplicate {engine_name} include: {name}")
     seen.add(name)
 
 for inc, path in zip(includes, include_paths):
     if not path.exists():
-        fail(f"included Typst file does not exist: {inc}")
+        fail(f"included {engine_name} file does not exist: {inc}")
 
 actual_names = [path.name for path in section_files]
 if includes:
     included_set = set(include_names)
     for name in actual_names:
         if name not in included_set and not name.startswith("A_"):
-            warn(f"body section file not included by main.typ: {name}")
+            warn(f"body section file not included by main: {name}")
 else:
-    warn("main.typ has no #include(\"...\") calls; skip include order checks")
+    warn(f"main has no include/input calls; skip include order checks")
 
 def leading_number(name):
     match = re.match(r"^(\d+)[_-]", name)
@@ -392,7 +415,7 @@ if all_results:
 internal_terms = sorted(set(term for term in internal_terms if term))
 internal_re = re.compile("|".join(re.escape(term) for term in internal_terms)) if internal_terms else None
 
-typ_files = unique_paths([main] + section_files + ([refs] if refs and refs.exists() else []) + sorted(paper.glob("*.typ")))
+typ_files = unique_paths([main] + section_files + ([refs] if refs and refs.exists() else []) + sorted(paper.glob(section_ext)))
 file_texts = []
 combined = []
 section_titles = []
@@ -420,30 +443,59 @@ for path in typ_files:
         info(f"section length: {path.name} {len(body)} chars")
         if len(body) < 800 and not path.name.startswith("A_"):
             warn(f"section is short: {path.name} ({len(body)} chars)")
-        malformed_headings = [
-            line.strip()
-            for line in text.splitlines()
-            if re.match(r"^={1,6}(?![=\s]).+", line)
-        ]
-        for line in malformed_headings[:5]:
-            fail(f"Typst heading is missing a space after '=' in {path.name}: {line[:80]}")
-        heading = re.search(r"(?m)^=\s+.+", text)
-        if not heading and not path.name.startswith("A_"):
-            fail(f"section has no level-1 Typst heading: {path.name}")
-        if heading:
-            title = heading.group(0).lstrip("= ").strip()
-            section_titles.append((path.name, title))
-            if re.search(r"problem\d+|q\d", path.name, re.I) and not re.search(r"问题|Problem|Question", title, re.I):
-                warn(f"problem section title may not match filename: {path.name} -> {title}")
-        if re.search(r"(?m)^={3,}\s+", text):
-            warn(f"deep heading level appears in section: {path.name}")
-        list_count = len(re.findall(r"#(?:enum|list)\s*\(", text))
-        if list_count >= 3:
-            warn(f"many lists in section, consider prose: {path.name} ({list_count})")
-        figure_calls = extract_calls(text, "figure")
-        text_without_figures = remove_spans(text, figure_calls)
-        if len(figure_calls) >= 2 and len(text_without_figures.strip()) < 1000:
-            warn(f"many figures but little surrounding prose: {path.name}")
+
+        # Auxiliary sections (appendix code, abstracts, appendices) may
+        # legitimately omit a level-1 heading because the title is rendered
+        # by main.typ/main.tex directly.
+        lower_name = path.name.lower()
+        is_aux_section = (
+            path.name.startswith("A_")
+            or lower_name.startswith("abstract")
+            or lower_name.startswith("appendices")
+        )
+
+        if is_typst:
+            # Typst heading check: `= Title` (space after =)
+            malformed_headings = [
+                line.strip()
+                for line in text.splitlines()
+                if re.match(r"^={1,6}(?![=\s]).+", line)
+            ]
+            for line in malformed_headings[:5]:
+                fail(f"Typst heading is missing a space after '=' in {path.name}: {line[:80]}")
+            heading = re.search(r"(?m)^=\s+.+", text)
+            if not heading and not is_aux_section:
+                fail(f"section has no level-1 Typst heading: {path.name}")
+            if heading:
+                title = heading.group(0).lstrip("= ").strip()
+                section_titles.append((path.name, title))
+                if re.search(r"problem\d+|q\d", path.name, re.I) and not re.search(r"问题|Problem|Question", title, re.I):
+                    warn(f"problem section title may not match filename: {path.name} -> {title}")
+            if re.search(r"(?m)^={3,}\s+", text):
+                warn(f"deep heading level appears in section: {path.name}")
+            list_count = len(re.findall(r"#(?:enum|list)\s*\(", text))
+            if list_count >= 3:
+                warn(f"many lists in section, consider prose: {path.name} ({list_count})")
+            figure_calls = extract_calls(text, "figure")
+            text_without_figures = remove_spans(text, figure_calls)
+            if len(figure_calls) >= 2 and len(text_without_figures.strip()) < 1000:
+                warn(f"many figures but little surrounding prose: {path.name}")
+        else:
+            # LaTeX heading check: \section{...}
+            section_headings = re.findall(r"\\section\{([^}]*)\}", text)
+            subsection_headings = re.findall(r"\\subsection\{([^}]*)\}", text)
+            if not section_headings and not subsection_headings and not is_aux_section:
+                fail(f"section has no \\section{{}} heading: {path.name}")
+            for title in section_headings:
+                section_titles.append((path.name, title))
+                if re.search(r"problem\d+|q\d", path.name, re.I) and not re.search(r"问题|Problem|Question", title, re.I):
+                    warn(f"problem section title may not match filename: {path.name} -> {title}")
+            list_count = len(re.findall(r"\\begin\{(?:itemize|enumerate)\}", text))
+            if list_count >= 3:
+                warn(f"many lists in section, consider prose: {path.name} ({list_count})")
+            figure_env_count = len(re.findall(r"\\begin\{figure\}", text))
+            if figure_env_count >= 2 and len(text) < 2000:
+                warn(f"many figures but little surrounding prose: {path.name}")
 
 paper_text = "\n".join(combined)
 
@@ -455,7 +507,11 @@ if section_titles:
     if len(titles) != len(set(titles)):
         fail("duplicate level-1 section titles detected")
 
-image_re = re.compile(r'image\(\s*"([^"]+)"')
+# Image reference check: Typst uses image("..."), LaTeX uses \includegraphics{...}
+if is_typst:
+    image_re = re.compile(r'image\(\s*"([^"]+)"')
+else:
+    image_re = re.compile(r'\\includegraphics\s*(?:\[[^\]]*\])?\s*\{([^}]+)\}')
 for path, text in file_texts:
     for ref in image_re.findall(text):
         target = (path.parent / ref).resolve()
@@ -469,12 +525,27 @@ if figures_dir and figures_dir.exists():
 else:
     info("figures dir not supplied/found; skip unused figure check")
 
-for _, _, body in extract_calls(paper_text, "figure"):
-    if "caption:" not in body:
-        fail("figure without caption")
-        continue
-    cap_match = re.search(r"caption:\s*\[(.*?)\]", body, re.S)
-    if cap_match:
+# Figure caption check
+if is_typst:
+    for _, _, body in extract_calls(paper_text, "figure"):
+        if "caption:" not in body:
+            fail("figure without caption")
+            continue
+        cap_match = re.search(r"caption:\s*\[(.*?)\]", body, re.S)
+        if cap_match:
+            cap = re.sub(r"\s+", " ", cap_match.group(1)).strip()
+            if len(cap) > 80:
+                warn(f"long figure caption: {cap[:80]}...")
+            if len(cap) < 4:
+                warn("very short figure caption")
+else:
+    # LaTeX: check \begin{figure}...\end{figure} blocks contain \caption{}
+    figure_blocks = re.findall(r"\\begin\{figure\}.*?\\end\{figure\}", paper_text, re.S)
+    for block in figure_blocks:
+        cap_match = re.search(r"\\caption\{([^}]*)\}", block)
+        if not cap_match:
+            fail("LaTeX figure without \\caption{}")
+            continue
         cap = re.sub(r"\s+", " ", cap_match.group(1)).strip()
         if len(cap) > 80:
             warn(f"long figure caption: {cap[:80]}...")
@@ -485,7 +556,11 @@ if refs and refs.exists():
     refs_text = read(refs)
     if len(refs_text.strip()) < 80:
         warn(f"{rel(refs)} looks very short")
-    if re.search(r"@\w[\w:-]*|#cite\(", paper_text):
+    if is_typst:
+        citation_re = r"@\w[\w:-]*|#cite\("
+    else:
+        citation_re = r"\\cite\w*\{[^}]+\}"
+    if re.search(citation_re, paper_text):
         info("citation markers detected")
     else:
         warn(f"{rel(refs)} exists but no citation markers detected in paper")

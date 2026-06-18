@@ -14,7 +14,8 @@ allowed-tools: Bash(*), Read, Write
 
 | 工具 | 用途 | 检测命令 |
 | --- | --- | --- |
-| `typst` | 论文编译（5writing、6verity） | `command -v typst` |
+| `typst` | 论文编译（5writing、6verity，Typst 引擎） | `command -v typst` |
+| `xelatex` | 论文编译（5writing、6verity，LaTeX 引擎，中文模板必需） | `command -v xelatex` |
 | `python3` | 数值计算与图表（3coding-visual） | `command -v python3` |
 | `drawio` / `draw.io` | DrawIO 流程图导出 PDF（4drawio） | `command -v drawio \|\| command -v draw.io` |
 | `pdftoppm` | PDF 转 PNG 视觉检查（6verity） | `command -v pdftoppm` |
@@ -72,6 +73,7 @@ check_cmd() {
 }
 
 check_cmd typst
+check_cmd xelatex
 check_cmd python3 || check_cmd python   # Windows 上可能是 python
 command -v drawio >/dev/null 2>&1 || command -v draw.io >/dev/null 2>&1 \
   && echo "OK  drawio" || echo "MISS drawio"
@@ -110,7 +112,7 @@ PYEOF
 ...
 ```
 
-**必须项：** typst、python3、numpy、pandas、matplotlib  
+**必须项：** typst 或 xelatex（至少一个论文编译器）、python3、numpy、pandas、matplotlib  
 **可选项：** drawio、pdftoppm/mutool/magick 三选一、scipy、scikit-learn、openpyxl
 
 ### Step 4：提供安装命令（按平台）
@@ -127,6 +129,21 @@ PYEOF
 | Windows (winget) | `winget install Typst.Typst` |
 | Windows (scoop) | `scoop install typst` |
 | 通用 | `cargo install --locked typst-cli`（需要 Rust） |
+
+#### xelatex（TeX 发行版）
+
+xelatex 包含在主流 TeX 发行版中（TeX Live / MiKTeX / MacTeX）。安装发行版即可获得 xelatex。
+
+| 平台 | 命令 |
+| --- | --- |
+| macOS | `brew install --cask mactex` 或 `brew install texlive` |
+| Linux (apt) | `sudo apt install texlive-full` |
+| Linux (dnf) | `sudo dnf install texlive-scheme-full` |
+| Linux (arch) | `sudo pacman -S texlive` |
+| Windows (winget) | `winget install MiKTeX.MiKTeX` 或 `winget install TeXLive` |
+| Windows (scoop) | `scoop install latex`（需先添加 extras bucket） |
+
+注意：`texlive-full` 体积较大（约 5GB），如需精简可只装 `texlive-xetex` + `texlive-lang-chinese`（中文支持）。
 
 #### Python 3
 
@@ -201,7 +218,7 @@ Doctor 检查完成（macOS）
   2analysis-modeling ✓
   3coding-visual     ✓（scipy 缺失，部分功能受限）
   4drawio            ⚠ drawio 未安装，PDF 导出将跳过
-  5writing           ✓
+  5writing           ✓（typst ✓，xelatex ✓）
   6verity            ⚠ 无 PDF 转 PNG 工具，视觉检查将跳过
 ```
 

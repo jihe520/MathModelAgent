@@ -1,0 +1,226 @@
+% !TEX program = xelatex
+% =============================================================================
+%  全国大学生统计建模大赛 LaTeX 模板
+%  对应 Typst 模板 zh/stats/main.typ 的全部功能。
+%
+%  字体依赖（正文宋体 / 标题黑体 / 副标题楷体）：
+%    - 规范字体：SimSun（宋体）、SimHei（黑体）、KaiTi（楷体）、FangSong（仿宋）。
+%    - 本模板默认使用 ctex 的 fontset=mac，在 macOS 上自动选用同族等价字体
+%      Songti SC / Heiti SC / Kaiti SC / STFangsong，确保开箱即用。
+%    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
+%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+% =============================================================================
+\documentclass[fontset=mac, 10.5pt, a4paper]{ctexart}
+
+% ---------- 页面：A4，上下 2.54cm，左右 3.17cm ----------
+\usepackage[a4paper, top=2.54cm, bottom=2.54cm, left=3.17cm, right=3.17cm]{geometry}
+
+% ---------- 数学 ----------
+\usepackage{amsmath}
+
+% ---------- 字体 ----------
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}}{}
+
+% ---------- 正文：10.5pt，首行缩进 2em，两端对齐 ----------
+\linespread{1.3}
+\setlength{\parindent}{2em}
+
+% ---------- 标题编号（统计建模专用：一、 / （一） / 1. ） ----------
+\ctexset{
+  section/number       = \chinese{section},
+  subsection/number    = \chinese{subsection},
+  subsubsection/number = \arabic{subsubsection},
+}
+
+% ---------- 标题格式 ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\fontsize{15pt}{18pt}\heiti\bfseries}
+  {\chinese{section}、}{1em}{}
+\titleformat{\subsection}
+  {\fontsize{14pt}{16.8pt}\kaishu}
+  {（\chinese{subsection}）}{1em}{}
+\titleformat{\subsubsection}
+  {\fontsize{10.5pt}{12.6pt}\songti\bfseries}
+  {\arabic{subsubsection}.}{1em}{}
+\titlespacing{\section}       {0pt}{1.2em}{0.42em}
+\titlespacing{\subsection}    {2em}{0.9em}{0.65em}
+\titlespacing{\subsubsection} {2em}{0.8em}{0.48em}
+
+% ---------- 目录 ----------
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\heiti\bfseries}
+\renewcommand{\cftsecpagefont}{\heiti\bfseries}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+
+% ---------- 表格与代码 ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{black!30},
+  framerule=0.8pt,
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% ---------- 页码：底部居中 ----------
+\pagestyle{plain}
+
+% ---------- 自定义命令 ----------
+% \threelinetable{标题}{列定义}{表头}{表格内容}
+\newcommand{\threelinetable}[4]{%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\heiti\bfseries #1}\par
+    \vspace{0.6em}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+}
+% \linefield{内容}{宽度}：带下划线的填写栏
+\newcommand{\linefield}[2][8cm]{%
+  \makebox[#1][c]{#1}\rule{0pt}{1.45em}%
+}
+
+\begin{document}
+
+% ==================== 封面页 ====================
+\thispagestyle{empty}
+
+{\fontsize{15pt}{18pt}\heiti\bfseries 作品编号：TJJM}
+
+\vspace{5.7cm}
+
+\begin{center}
+  {\fontsize{18pt}{21.6pt}\heiti\bfseries [竞赛年份]年（第[届数]届）全国大学生统计建模大赛}\\[22pt]
+  {\fontsize{26pt}{31.2pt}\heiti\bfseries 参\quad 赛\quad 作\quad 品}
+\end{center}
+
+\vspace{4.4cm}
+
+\begin{center}
+{\fontsize{15pt}{18pt}\fangsong
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{r@{\quad}l}
+  参赛学校： & \underline{\makebox[9cm][c]{学校名称}} \\
+  论文题目： & \underline{\makebox[9cm][c]{论文标题}} \\
+  参赛队员： & \underline{\makebox[9cm][c]{队员1\quad 队员2\quad 队员3}} \\
+  指导老师： & \underline{\makebox[9cm][c]{指导老师}} \\
+\end{tabular}
+}
+\end{center}
+
+\newpage
+
+% ==================== 中文摘要页 ====================
+\setcounter{page}{1}
+\begin{center}
+  {\fontsize{16pt}{19.2pt}\heiti\bfseries [论文标题]}
+\end{center}
+\vspace{1em}
+\begin{center}
+  {\fontsize{14pt}{16.8pt}\heiti\bfseries 摘要}
+\end{center}
+\vspace{0.4em}
+
+中文摘要内容：500--700 字。
+
+\vspace{0.85em}
+
+\noindent{\heiti\bfseries 关键词：}关键词1；关键词2；关键词3；关键词4；关键词5
+
+\newpage
+
+% ==================== 英文摘要页 ====================
+\begin{center}
+  {\fontsize{14pt}{16.8pt}\bfseries Abstract}
+\end{center}
+\vspace{0.4em}
+
+English abstract, 350--500 words.
+
+\vspace{0.5em}
+
+\noindent\textbf{Keywords:} keyword1; keyword2; keyword3; keyword4; keyword5
+
+\newpage
+
+% ==================== 目录页 ====================
+\thispagestyle{empty}
+\begin{center}
+  {\fontsize{14pt}{16.8pt}\heiti\bfseries 目\quad 录}
+\end{center}
+\vspace{1.7em}
+\tableofcontents
+\newpage
+
+% ==================== 表格与插图清单 ====================
+\thispagestyle{empty}
+\begin{center}
+  {\fontsize{14pt}{16.8pt}\heiti\bfseries 表格与插图清单}
+\end{center}
+\vspace{1em}
+
+\noindent 表1. 解释变量定义及其与居民消费的关系
+
+\noindent 表2. KMO 和 Bartlett 球形检验结果
+
+\noindent 表3. 时序全局主成分分析解释率
+
+\noindent 表4. 性能评估指标
+
+\noindent 图1. 流程图
+
+\noindent 图2. 代表变量时间趋势图
+
+\noindent 图3. 代表变量密度图
+
+\newpage
+
+% ==================== 正文 ====================
+\begin{center}
+  {\fontsize{16pt}{19.2pt}\heiti\bfseries [论文标题]}
+\end{center}
+\vspace{0.8em}
+
+\input{sections/1_introduction}
+\input{sections/2_method}
+\input{sections/3_data}
+\input{sections/4_analysis}
+\input{sections/5_results}
+\input{sections/6_conclusion}
+
+% 参考文献
+\addcontentsline{toc}{section}{参考文献}
+\input{references}
+
+% 附录
+\section*{附录}
+\addcontentsline{toc}{section}{附录}
+\input{sections/A_code}
+
+% 致谢
+\vspace{1.2em}
+\begin{center}
+  {\fontsize{14pt}{16.8pt}\heiti\bfseries 致谢}
+\end{center}
+\vspace{0.8em}
+
+致谢内容
+
+\end{document}

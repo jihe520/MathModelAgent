@@ -1,0 +1,19 @@
+\section{问题三的模型建立与求解}
+
+\subsection{优化模型}
+
+将问题建模为约束优化问题：
+\[
+  \min \quad f(\mathbf{x}) = \sum_{i=1}^{n} c_i(x_i)
+\]
+\[
+  \text{s.t.} \quad g_j(\mathbf{x}) \le 0, \quad h_k(\mathbf{x}) = 0
+\]
+
+\subsection{算法求解}
+
+采用遗传算法（种群规模 200，迭代 100 代）进行求解，算法快速收敛到稳定解。
+
+\subsection{结果}
+
+得到最优策略方案：$x_1 = 0.75$，$x_2 = 1.20$，$x_3 = 0.45$，$x_4 = 0.88$。
