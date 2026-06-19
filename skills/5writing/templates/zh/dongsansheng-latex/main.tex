@@ -1,0 +1,165 @@
+% !TEX program = xelatex
+% =============================================================================
+%  东三省（东北三省数学建模联赛）LaTeX 模板
+%  对应 Typst 模板 zh/dongsansheng/main.typ 的全部功能。
+%
+%  字体依赖（正文宋体 / 标题黑体 / 强调楷体）：
+%    - 规范字体：SimSun（宋体）、SimHei（黑体）、KaiTi（楷体）。
+%    - 本模板默认使用 ctex 的 fontset=mac，在 macOS 上自动选用同族等价字体
+%      Songti SC / Heiti SC / Kaiti SC，确保开箱即用。
+%    - 若系统已安装 SimSun/SimHei/KaiTi（如 Windows 或手动安装），可将下方
+%      \documentclass 选项 fontset=mac 改为 fontset=windows，即可使用规范字体。
+%    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
+%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+% =============================================================================
+\documentclass[fontset=mac, 12pt, a4paper]{ctexart}
+
+% ---------- 页面：A4，上下左右 2.5cm ----------
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+
+% ---------- 数学 ----------
+\usepackage{amsmath}
+
+% ---------- 字体（fontspec + ctex，xelatex 编译） ----------
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}}{}
+
+% ---------- 正文：12pt，首行缩进 2em，两端对齐 ----------
+% typst leading 0.95em => \linespread ≈ (1+0.95)/1.2 ≈ 1.63
+\linespread{1.63}
+\setlength{\parindent}{2em}
+
+% ---------- 标题编号（\ctexset 配置） ----------
+% 一级标题用中文数字"一、二、"，二级及以下用 1.1 / 1.1.1
+\ctexset{
+  section/number       = \chinese{section},
+  subsection/number    = \arabic{section}.\arabic{subsection},
+  subsubsection/number = \arabic{section}.\arabic{subsection}.\arabic{subsubsection},
+}
+
+% ---------- 标题格式（titlesec 配置） ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\centering\fontsize{14pt}{16.8pt}\heiti\bfseries}
+  {\chinese{section}、}{1em}{}
+\titleformat{\subsection}
+  {\fontsize{12pt}{14.4pt}\heiti\bfseries}
+  {\arabic{section}.\arabic{subsection}}{1em}{}
+\titleformat{\subsubsection}
+  {\fontsize{12pt}{14.4pt}\heiti\bfseries}
+  {\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{1em}{}
+\titlespacing{\section}       {0pt}{1.45em}{0.95em}
+\titlespacing{\subsection}    {0pt}{1.15em}{0.65em}
+\titlespacing{\subsubsection} {0pt}{0.95em}{0.55em}
+
+% ---------- 表格与代码 ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{black!30},
+  framerule=0.8pt,
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% ---------- 页眉横线 + 页脚页码（fancyhdr） ----------
+\usepackage{fancyhdr}
+\fancypagestyle{content}{%
+  \fancyhf{}
+  \fancyfoot[C]{\fontsize{9pt}{10.8pt}\thepage}
+  \renewcommand{\headrulewidth}{0.4pt}
+}
+\pagestyle{content}
+
+% ---------- 自定义命令（对应 Typst 函数） ----------
+% \coverpage：封面页，论文题目 + 组别 + 参赛队员信息 + 参赛学校
+\newcommand{\coverpage}{%
+  \thispagestyle{empty}%
+  \setcounter{page}{0}%
+  \vspace*{3.2cm}
+
+  \noindent{\heiti\bfseries 论文题目：}\underline{\makebox[6.2cm]{\centering [A/B/C/D]}}
+
+  \vspace{2.7em}
+
+  \noindent{\heiti\bfseries 组\quad 别：}\underline{\makebox[6.2cm]{\centering [研究生/本科生/专科生]}}
+
+  \vspace{4.35cm}
+
+  \noindent{\heiti\bfseries 参赛队员信息：}
+
+  \vspace{0.9em}
+
+  \begin{center}
+  \begin{tabular}{|p{2.5cm}|p{4.2cm}|p{4.2cm}|p{3.3cm}|}
+    \hline
+    & {\heiti\bfseries 姓名} & {\heiti\bfseries 联系电话} & {\heiti\bfseries 指导老师} \\
+    \hline
+    {\heiti\bfseries 参赛队员 1} & [队员1] & [电话1] & [指导教师] \\
+    \hline
+    {\heiti\bfseries 参赛队员 2} & [队员2] & [电话2] & \\
+    \hline
+    {\heiti\bfseries 参赛队员 3} & [队员3] & [电话3] & \\
+    \hline
+  \end{tabular}
+  \end{center}
+
+  \vspace{3cm}
+
+  \noindent{\heiti\bfseries 参赛学校：}
+
+  \vspace{1em}
+
+  \begin{center}
+  \underline{\makebox[7.6cm]{\centering [学校名称]}}
+  \end{center}
+
+  \newpage
+}
+% \threelinetable{标题}{列定义}{表头}{表格内容}：三线表，标题在表格上方居中 10.5pt 黑体加粗
+% 调用示例：\threelinetable{表 1 示例}{ccc}{A & B & C}{1 & 2 & 3 \\ 4 & 5 & 6}
+\newcommand{\threelinetable}[4]{%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\heiti\bfseries #1}\par
+    \vspace{0.6em}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+}
+
+\begin{document}
+
+% 封面（不编号）
+\coverpage
+
+% 摘要页（页码从 1 开始，带页眉横线和页脚页码）
+\input{sections/abstract}
+
+\input{sections/1_restatement}
+\input{sections/2_analysis}
+\input{sections/3_assumptions}
+\input{sections/4_symbols}
+\input{sections/5_problem1}
+\input{sections/6_problem2}
+\input{sections/7_problem3}
+\input{sections/8_evaluation}
+
+\newpage
+% 参考文献（thebibliography 自动生成"参考文献"标题，不带编号，不进目录）
+\input{references}
+\input{sections/A_code}
+
+\end{document}

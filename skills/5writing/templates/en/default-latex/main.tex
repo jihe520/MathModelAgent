@@ -1,0 +1,151 @@
+\documentclass[a4paper,12pt]{article}
+
+% ======== Packages ========
+\usepackage[top=1in,bottom=1in,left=1in,right=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{fontspec}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{ifthen}
+\usepackage{times}
+\usepackage{hyperref}
+\usepackage{array}
+
+% ======== Fonts ========
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Courier New}
+
+% ======== Variables ========
+\newcommand{\PaperTitle}{[Paper Title]}
+\newcommand{\PaperAuthor}{[Author Name]}
+\newcommand{\PaperDate}{June 3, 2026}
+\newcommand{\TotalPages}{4}
+
+% ======== Page Header ========
+\fancyhf{}
+\fancyhead[R]{\sffamily \thepage}
+\cfoot{}
+\pagestyle{fancy}
+
+% ======== Heading Formats ========
+\titleformat{\section}[block]{\normalsize\bfseries}{\thesection\ }{0em}{}
+\titleformat{\subsection}[block]{\normalsize\bfseries}{\thesubsection\ }{0em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.55em}
+\titlespacing*{\subsection}{0pt}{0.82em}{0.4em}
+
+% ======== Three-line Table ========
+\newcommand{\threelinetable}[4]{%
+  \begin{table}[htbp]
+    \centering
+    \caption{#1}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{table}%
+}
+
+% ======== Code Block ========
+\lstset{
+  frame=topbottom,
+  framerule=0.55pt,
+  framesep=0pt,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color[gray]{0.97},
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+}
+
+% ======== Table of Contents Entry ========
+\newcommand{\tocentry}[4]{\par\vskip0.55em\noindent%
+  \ifthenelse{\equal{#4}{1}}{\bfseries}{}%
+  #1\quad#2%
+  \leaders\hbox{$\cdot$}\hfill\ #
+  #3\par%
+}
+
+% ======== Document ========
+\begin{document}
+
+% ---- Title Page ----
+\thispagestyle{empty}
+\vspace*{4em}
+\begin{center}
+  \LARGE \PaperTitle
+\end{center}
+\vspace{2em}
+\begin{center}
+  \large \PaperAuthor
+\end{center}
+\vspace{8em}
+\begin{center}
+  \PaperDate
+\end{center}
+\newpage
+
+% ---- Contents Page ----
+\pagestyle{empty}
+\begin{center}
+  \LARGE\textbf{Contents}
+\end{center}
+\vspace{2em}
+\tocentry{1}{Introduction}{2}{1}
+\tocentry{}{~~~~1.1 Background}{2}{0}
+\tocentry{}{~~~~1.2 Problem Statement}{2}{0}
+\tocentry{}{~~~~1.3 Our Approach}{2}{0}
+\tocentry{2}{Assumptions and Justifications}{2}{1}
+\tocentry{3}{Notations and Terminology}{2}{1}
+\tocentry{4}{Solution and Results}{2}{1}
+\tocentry{}{~~~~4.1 Problem 1}{2}{0}
+\tocentry{}{~~~~4.2 Problem 2}{3}{0}
+\tocentry{}{~~~~4.3 Problem 3}{3}{0}
+\tocentry{5}{Results}{3}{1}
+\tocentry{}{~~~~5.1 Problem 1}{3}{0}
+\tocentry{}{~~~~5.2 Problem 2}{3}{0}
+\tocentry{}{~~~~5.3 Problem 3}{3}{0}
+\tocentry{6}{Sensitivity Analysis}{3}{1}
+\tocentry{7}{Strengths and Weaknesses}{3}{1}
+\tocentry{}{~~~~7.1 Strengths}{3}{0}
+\tocentry{}{~~~~7.2 Weaknesses}{3}{0}
+\tocentry{8}{Conclusions}{4}{1}
+\tocentry{}{References}{4}{1}
+\tocentry{}{Appendices}{4}{1}
+\tocentry{}{~~~~Appendix A Core Code}{4}{0}
+\newpage
+
+% ---- Main Content ----
+\pagestyle{fancy}
+\input{sections/1_introduction}
+\pagebreak[100]
+\input{sections/2_assumptions}
+\pagebreak[100]
+\input{sections/3_notations}
+\pagebreak[100]
+\input{sections/4_model}
+\pagebreak[100]
+\input{sections/5_results}
+\input{sections/6_sensitivity}
+\input{sections/7_evaluation}
+\pagebreak[100]
+\input{sections/8_conclusions}
+
+% ---- References ----
+\pagebreak[100]
+\fontsize{20pt}{24pt}\selectfont\textbf{References}\par\normalsize
+\input{references}
+
+% ---- Appendices ----
+\pagebreak[100]
+\fontsize{28pt}{32pt}\selectfont\textbf{Appendices}\par
+\fontsize{20pt}{24pt}\selectfont\textbf{Appendix A \quad Core Code}\par\normalsize
+\input{sections/A_code}
+
+\end{document}

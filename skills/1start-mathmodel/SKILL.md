@@ -25,8 +25,14 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 在规划前，只询问会实质影响流程的问题。问题要少而关键。
 
-优先询问：
-  每个模型选择
+优先询问（按重要性排序）：
+
+1. **排版引擎**：Typst 还是 LaTeX？— 决定 5writing 使用哪套模板和编译命令。两套引擎均覆盖全部模板（14 中 + 3 英）。Typst 使用 `typst` 命令编译；LaTeX 使用 `xelatex` 命令编译（需跑两遍解决交叉引用）。
+2. **竞赛类型**：国赛/华为杯/华中杯/MCM/...— 决定模板选择，见 5writing 的模板族清单。
+3. **论文语言**：中文/英文 — MCM/ICM/COMAP 强制英文，其他默认中文。
+4. **子问题数量是否已知**：影响章节文件生成数量。若未知，由 2analysis-modeling 阶段根据题面确定。
+
+将用户的选择记录到 `plan.md` 的"方案"小节中。
 
 
 ### 2. 制定方案
@@ -37,6 +43,12 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 # 方案
 
 要依次调用这些 skill，按照里面要求完成任务。
+
+用户偏好：
+- 排版引擎：<Typst / LaTeX>
+- 竞赛类型：<国赛 / 华为杯 / MCM / ...>
+- 论文语言：<中文 / 英文>
+- 子问题数量：<已知 N 个 / 待分析确定>
 
 workflow:
    step      skills
@@ -71,8 +83,8 @@ workflow:
 │   ├── *.pdf                    #     数据图 + 非数据图 PDF
 │   ├── *.drawio                 #     非数据图源文件
 ├── paper/                       # 4: 论文（5writing）
-│   ├── main.typ              #     论文主文件
-│   └── sections/            #     各节 typ 文件
+│   ├── main.typ / main.tex      #     论文主文件（按用户选择的引擎）
+│   └── sections/                #     各节文件（.typ 或 .tex）
 ```
 
 方案必须明确每个阶段由哪个下游 skill 负责，以及该阶段应产出什么文件。
@@ -110,5 +122,7 @@ workflow:
 - `3coding-visual` 负责生成所有依赖计算结果或实验输出的数据图表。
 - `4drawio` 只负责概念图、算法流程图、架构图、路线图等非数据型图示。
 - 不要让 `4drawio` 重复绘制 `3coding-visual` 已经生成的统计图或数据图。
-- `5writing` 负责决定图表在论文中的位置，并直接写入 `#figure(image(...), caption: [...])`。
+- `5writing` 负责决定图表在论文中的位置，并按所选引擎写入图表代码：
+  - Typst：`#figure(image("../../figures/xxx.pdf", width: 85%), caption: [...])`
+  - LaTeX：`\begin{figure}[H]\centering\includegraphics[width=0.85\textwidth]{../../figures/xxx.pdf}\caption{...}\label{fig:xxx}\end{figure}`
 - 不要让 `5writing` 编造数值结论。论文中的数值必须来自 `RESULTS_REPORT.md`、结果表或已生成图表的数据。

@@ -9,3 +9,18 @@ settings.local.json
 dump.rdb
 backend/.env.dev
 .trae/
+
+# 字体文件（用户自行安装，见 README）
+# 微软字体（SimHei/SimSun/SimKai）有版权限制，不提交
+# 用户可通过系统字体或安装 Noto CJK 替代
+skills/5writing/templates/**/fonts/
+
+# LaTeX 编译产物（用户自行编译生成）
+skills/5writing/templates/**/*.aux
+skills/5writing/templates/**/*.log
+skills/5writing/templates/**/*.toc
+skills/5writing/templates/**/*.out
+skills/5writing/templates/**/missfont.log
+# LaTeX 模板编译生成的 PDF（保留 huaweibei 的 logo.pdf 和 title.pdf 模板资源）
+skills/5writing/templates/**/main.pdf
+

@@ -1,0 +1,28 @@
+\section{Results}
+
+\subsection{Problem 1}
+Multiple models were compared:
+
+\begin{table}[htbp]
+  \centering
+  \caption{Model Performance Comparison}
+  \begin{tabular}{lcc}
+    \toprule
+    \textbf{Model} & \textbf{Train $R^2$} & \textbf{Test $R^2$} \\
+    \midrule
+    Linear Regression & 0.852 & 0.834 \\
+    Ridge Regression   & 0.861 & 0.847 \\
+    Random Forest      & 0.921 & 0.896 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Random Forest achieves the best $R^2$ of 0.896 on the test set.
+
+\subsection{Problem 2}
+LASSO-based feature selection identifies 8 key features. The optimized model
+achieves $R^2 = 0.923$ with 15\% RMSE reduction.
+
+\subsection{Problem 3}
+A genetic algorithm (population size 200, 100 generations) solves the
+constrained optimization, converging to a stable solution efficiently.

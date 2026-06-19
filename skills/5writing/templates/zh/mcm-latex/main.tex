@@ -1,0 +1,176 @@
+% !TEX program = xelatex
+% =============================================================================
+%  MCM/ICM 数学建模竞赛 LaTeX 模板（中文版，支持中英文混排）
+%  对应 Typst 模板 zh/mcm/main.typ 的全部功能。
+%
+%  字体依赖（正文宋体 / 标题黑体）：
+%    - 规范字体：SimSun（宋体）、SimHei（黑体）、KaiTi（楷体）。
+%    - 本模板默认使用 ctex 的 fontset=mac，在 macOS 上自动选用同族等价字体
+%      Songti SC / Heiti SC / Kaiti SC，确保开箱即用。
+%    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
+%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+% =============================================================================
+\documentclass[fontset=mac, 12pt, a4paper]{ctexart}
+
+% ---------- 页面：A4，四边 1in（2.54cm） ----------
+\usepackage[a4paper, top=1in, bottom=1in, left=1in, right=1in]{geometry}
+
+% ---------- 数学 ----------
+\usepackage{amsmath, amssymb}
+
+% ---------- 字体 ----------
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{}
+\IfFontExistsTF{Arial}{\setsansfont{Arial}}{}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}}{}
+
+% ---------- 正文：12pt，首行缩进 1.5em，两端对齐 ----------
+\linespread{1.15}
+\setlength{\parindent}{1.5em}
+
+% ---------- 标题编号（MCM 风格：1. / 1.1 / 1.1.1） ----------
+\ctexset{
+  section/number       = \arabic{section},
+  subsection/number    = \arabic{section}.\arabic{subsection},
+  subsubsection/number = \arabic{section}.\arabic{subsection}.\arabic{subsubsection},
+}
+
+% ---------- 标题格式 ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\fontsize{22pt}{26.4pt}\bfseries}
+  {\arabic{section}.}{0.5em}{}
+\titleformat{\subsection}
+  {\fontsize{18pt}{21.6pt}\bfseries}
+  {\arabic{section}.\arabic{subsection}}{0.5em}{}
+\titleformat{\subsubsection}
+  {\fontsize{12pt}{14.4pt}\bfseries}
+  {\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{0.5em}{}
+\titlespacing{\section}       {0pt}{1em}{0.75em}
+\titlespacing{\subsection}    {0pt}{0.75em}{0.62em}
+\titlespacing{\subsubsection} {0pt}{0.55em}{0.38em}
+
+% ---------- 目录 ----------
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+
+% ---------- 表格与代码 ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=topbottom,
+  framerule=0.55pt,
+  framesep=6pt,
+  rulecolor=\color{black!30},
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% ---------- 页眉页脚 ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\ttfamily Team \# 0000}
+\fancyhead[R]{\small\ttfamily Page \thepage\ of 4}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------- 自定义命令 ----------
+\newcommand{\threelinetable}[4]{%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\bfseries #1}\par
+    \vspace{0.6em}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+}
+
+\begin{document}
+
+% ==================== Summary Sheet ====================
+\thispagestyle{empty}
+\vspace*{-0.45in}
+\begin{center}
+\begin{tabular}{ccc}
+  \textbf{Problem Chosen} & \textbf{2026 MCM/ICM Summary Sheet} & \textbf{Team Control Number} \\[0.7em]
+  \textbf{\LARGE A} & & \textbf{\LARGE 0000}
+\end{tabular}
+\end{center}
+\vspace{0.7em}
+\hrule height 0.8pt
+\vspace{1.45em}
+\begin{center}\textbf{Summary}\end{center}
+\vspace{1.6em}
+
+Summary: problem overview + methods for each sub-problem + key numerical results + conclusions, 300--500 words.
+
+\vspace{0.45em}
+
+\noindent\textbf{Keywords:} Keyword1; Keyword2; Keyword3
+
+\newpage
+
+% ==================== Title Page ====================
+\thispagestyle{empty}
+\vspace*{0.45in}
+\begin{center}
+  {\fontsize{24pt}{28.8pt}\selectfont [Paper Title]}
+\end{center}
+\vspace{1in}
+\begin{center}
+  {\fontsize{15pt}{18pt}\selectfont June 3, 2026}
+\end{center}
+\vspace{0.75in}
+\begin{center}\textbf{Summary}\end{center}
+\vspace{1.25em}
+
+Summary: problem overview + methods for each sub-problem + key numerical results + conclusions, 300--500 words.
+
+\vspace{0.45em}
+
+\noindent\textbf{Keywords:} Keyword1; Keyword2; Keyword3
+
+\newpage
+
+% ==================== Contents ====================
+\begin{center}
+  {\fontsize{20pt}{24pt}\bfseries Contents}
+\end{center}
+\vspace{1.6em}
+\tableofcontents
+\newpage
+
+% ==================== Main Content ====================
+\input{sections/1_introduction}
+\input{sections/2_assumptions}
+\input{sections/3_model_design}
+\input{sections/4_solution}
+\input{sections/5_sensitivity}
+\input{sections/6_strengths_weaknesses}
+\input{sections/7_conclusions}
+
+% References
+\section*{References}
+\addcontentsline{toc}{section}{References}
+\input{references}
+
+% Appendices
+\section*{Appendices}
+\addcontentsline{toc}{section}{Appendices}
+\subsection*{Appendix A \quad Core Code}
+\input{sections/A_code}
+
+\end{document}

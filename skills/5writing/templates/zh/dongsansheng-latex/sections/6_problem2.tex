@@ -1,0 +1,13 @@
+\section{问题二的模型建立与求解}
+
+\subsection{特征选择}
+
+采用 LASSO 回归筛选关键特征：
+\[
+  \min_{\theta} \frac{1}{2N} \sum_{i=1}^{N} (y_i - \theta^T x_i)^2 + \lambda \|\theta\|_1
+\]
+
+\subsection{模型优化}
+
+基于筛选的关键特征建立优化预测模型，引入交叉项捕捉交互效应。
+优化后测试集 $R^2$ 从 0.896 提升至 0.923，RMSE 降低约 15\%。

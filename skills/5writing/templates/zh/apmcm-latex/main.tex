@@ -1,0 +1,196 @@
+% !TEX program = xelatex
+% =============================================================================
+%  APMCM 亚太地区大学生数学建模竞赛 LaTeX 模板
+%  对应 Typst 模板 zh/apmcm/main.typ 的全部功能。
+%
+%  字体依赖（正文宋体 / 标题黑体）：
+%    - 规范字体：SimSun（宋体）、SimHei（黑体）、KaiTi（楷体）。
+%    - 本模板默认使用 ctex 的 fontset=mac，在 macOS 上自动选用同族等价字体
+%      Songti SC / Heiti SC / Kaiti SC，确保开箱即用。
+%    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
+%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+% =============================================================================
+\documentclass[fontset=mac, 12pt, a4paper]{ctexart}
+
+% ---------- 页面：A4，上下 25.4mm，左右 31.8mm ----------
+\usepackage[a4paper, top=25.4mm, bottom=25.4mm, left=31.8mm, right=31.8mm]{geometry}
+
+% ---------- 数学 ----------
+\usepackage{amsmath}
+
+% ---------- 字体 ----------
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}}{}
+
+% ---------- 正文：12pt，首行缩进 2em，两端对齐 ----------
+\linespread{1.2}
+\setlength{\parindent}{2em}
+
+% ---------- 标题编号（APMCM 风格：I. / 1.1 / 1.1.1） ----------
+\ctexset{
+  section/number       = \Roman{section},
+  subsection/number    = \arabic{section}.\arabic{subsection},
+  subsubsection/number = \arabic{section}.\arabic{subsection}.\arabic{subsubsection},
+}
+
+% ---------- 标题格式 ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\centering\fontsize{17pt}{20.4pt}\bfseries}
+  {\Roman{section}.}{0.5em}{}
+\titleformat{\subsection}
+  {\fontsize{14pt}{16.8pt}\bfseries}
+  {\arabic{section}.\arabic{subsection}}{1em}{}
+\titleformat{\subsubsection}
+  {\fontsize{12pt}{14.4pt}\bfseries\itshape}
+  {\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{1em}{}
+\titlespacing{\section}       {0pt}{1.25em}{0.8em}
+\titlespacing{\subsection}    {0pt}{1em}{0.45em}
+\titlespacing{\subsubsection} {0pt}{0.9em}{0.4em}
+
+% ---------- 目录 ----------
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+
+% ---------- 表格与代码 ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{black!30},
+  framerule=0.8pt,
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% ---------- 页眉页脚 ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small APMCM}
+\fancyhead[R]{\small Page \thepage}
+\renewcommand{\headrulewidth}{0.45pt}
+\fancyfoot[C]{\small \thepage}
+
+% ---------- 自定义命令 ----------
+\newcommand{\threelinetable}[4]{%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\bfseries #1}\par
+    \vspace{0.6em}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+}
+
+\begin{document}
+
+% ==================== Control Sheet ====================
+\thispagestyle{empty}
+\begin{center}
+  {\fontsize{21pt}{25.2pt}\bfseries 2026 APMCM Control Sheet}
+\end{center}
+\vspace{1.05em}
+
+\textbf{Each team member must sign the statement below:}
+
+(Failure to obtain signatures from each team member will result in disqualification of the entire team.)
+
+Each of us hereby testifies that our team abided by all of the contest's rules and did not consult with anyone who was not on this team in developing the enclosed solution paper. Our submission and all rights to its publication become the property of APMCM. APMCM may use, edit, excerpt, and publish this submission for promotional use or any other purpose, including placing it online, distributing it electronically or otherwise, without compensation of any kind. APMCM reserves the right to use in materials relating to this contest, the names of the team members, their advisor(s), and their affiliations, without further notification, permission, or compensation. Team members assert that All images, figures, photographs, tables, and drawings in their submission were either created by the team or else, if reproduced from another source, the submission cites a specific reference for each at its location in the submission. All direct quotations in the submission are enclosed in quotation marks or otherwise identified as such, with a specific reference cited for each at its location in the submission.
+
+\vspace{0.45em}
+
+\noindent Problem chosen is (A or B): \underline{\makebox[5cm]{A/B/C}}
+
+\vspace{0.18em}
+
+\noindent Team control number is (team number): \underline{\makebox[5cm]{Team Number}}
+
+\vspace{0.18em}
+
+\noindent School (Please fill in the full name): \underline{\makebox[5cm]{School Name}}
+
+\vspace{0.18em}
+
+\noindent Member name (Handwriting signature):
+\begin{enumerate}
+  \item \underline{\makebox[5cm]{Member A}}
+  \item \underline{\makebox[5cm]{Member B}}
+  \item \underline{\makebox[5cm]{Member C}}
+\end{enumerate}
+
+\noindent Team adviser name: \underline{\makebox[5cm]{Adviser Name}}
+
+\vspace{1.05em}
+\hfill Date: \underline{\makebox[4cm]{}}
+
+\newpage
+
+% ==================== Summary Sheet ====================
+\vspace{0.4em}
+\begin{center}
+\begin{tabular}{ll}
+  Team Number: & Team Number \\
+  Problem Chosen: & A/B/C \\
+\end{tabular}
+\end{center}
+\vspace{1.35em}
+\noindent\rule{\textwidth}{2pt}
+\vspace{1.35em}
+
+\begin{center}
+  {\fontsize{12pt}{14.4pt} 2026 APMCM summary sheet}
+\end{center}
+\vspace{1.2em}
+
+[Summary: problem overview + methods for each sub-problem + key numerical results + conclusions, 300--500 words]
+
+\vspace{0.45em}
+
+\noindent{\fontsize{15pt}{18pt}\bfseries Keywords：} Keyword1; Keyword2; Keyword3
+
+\newpage
+
+% ==================== Contents ====================
+\begin{center}
+  {\fontsize{17pt}{20.4pt} Contents}
+\end{center}
+\vspace{1em}
+\tableofcontents
+\newpage
+
+% ==================== Main Content ====================
+\input{sections/1_introduction}
+\input{sections/2_assumptions}
+\input{sections/3_model_design}
+\input{sections/4_solution}
+\input{sections/5_sensitivity}
+\input{sections/6_strengths_weaknesses}
+\input{sections/7_conclusions}
+
+% References
+\section*{References}
+\addcontentsline{toc}{section}{References}
+\input{references}
+
+% Appendix
+\section*{Appendix}
+\addcontentsline{toc}{section}{Appendix}
+\input{sections/A_code}
+
+\end{document}

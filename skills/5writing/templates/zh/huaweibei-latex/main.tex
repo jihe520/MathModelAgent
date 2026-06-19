@@ -1,0 +1,199 @@
+% !TEX program = xelatex
+% =============================================================================
+%  华为杯（中国研究生数学建模竞赛）LaTeX 模板
+%  对应 Typst 模板 zh/huaweibei/main.typ 的全部功能。
+%
+%  字体依赖（正文宋体 / 标题黑体 / 强调楷体）：
+%    - 规范字体：SimSun（宋体）、SimHei（黑体）、KaiTi（楷体）。
+%    - 本模板默认使用 ctex 的 fontset=mac，在 macOS 上自动选用同族等价字体
+%      Songti SC / Heiti SC / Kaiti SC，确保开箱即用。
+%    - 若系统已安装 SimSun/SimHei/KaiTi（如 Windows 或手动安装），可将下方
+%      \documentclass 选项 fontset=mac 改为 fontset=windows，即可使用规范字体。
+%    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
+%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+% =============================================================================
+\documentclass[fontset=mac, 12pt, a4paper]{ctexart}
+
+% ---------- 页面：A4，上 30mm，下 25mm，左右 22.5mm ----------
+\usepackage[a4paper, top=30mm, bottom=25mm, left=22.5mm, right=22.5mm]{geometry}
+
+% ---------- 数学 ----------
+\usepackage{amsmath}
+
+% ---------- 图片 ----------
+\usepackage{graphicx}
+
+% ---------- 多行表格合并 ----------
+\usepackage{multirow}
+
+% ---------- 字体（fontspec + ctex，xelatex 编译） ----------
+% 中文宋体/黑体/楷体由 ctex 的 fontset=mac 自动设置（Songti SC / Heiti SC / Kaiti SC），
+% 并自动定义 \songti / \heiti / \kaishu 等字体命令。
+% 西文正文与代码等宽字体：
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}}{}
+
+% ---------- 正文：12pt，首行缩进 2em，两端对齐 ----------
+% typst leading 1.02em => \linespread ≈ (1+1.02)/1.2 ≈ 1.68
+\linespread{1.68}
+\setlength{\parindent}{2em}
+
+% ---------- 标题编号（\ctexset 配置） ----------
+% 一级标题用阿拉伯数字"1."，二级及以下用 1.1 / 1.1.1
+\ctexset{
+  section/number       = \arabic{section},
+  subsection/number    = \arabic{section}.\arabic{subsection},
+  subsubsection/number = \arabic{section}.\arabic{subsection}.\arabic{subsubsection},
+}
+
+% ---------- 标题格式（titlesec 配置） ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\centering\fontsize{14pt}{16.8pt}\heiti\bfseries}
+  {\arabic{section}.}{1em}{}
+\titleformat{\subsection}
+  {\fontsize{12pt}{14.4pt}\heiti\bfseries}
+  {\arabic{section}.\arabic{subsection}}{1em}{}
+\titleformat{\subsubsection}
+  {\fontsize{12pt}{14.4pt}\heiti\bfseries}
+  {\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{1em}{}
+\titlespacing{\section}       {0pt}{1.15em}{1.0em}
+\titlespacing{\subsection}    {0pt}{0.85em}{0.55em}
+\titlespacing{\subsubsection} {0pt}{0.75em}{0.45em}
+
+% ---------- 目录（tocloft 点线引导） ----------
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\heiti\bfseries}
+\renewcommand{\cftsecpagefont}{\heiti\bfseries}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+
+% ---------- 表格与代码 ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{black!30},
+  framerule=0.8pt,
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% ---------- 页码：底部居中 ----------
+\pagestyle{plain}
+
+% ---------- 自定义命令（对应 Typst 函数） ----------
+% \coverpage：封面页，logo + title + 信息表
+\newcommand{\coverpage}{%
+  \thispagestyle{empty}%
+  \setcounter{page}{0}%
+  \begin{center}
+    \includegraphics[width=14.5cm]{logo.pdf}\\[1.35cm]
+    \includegraphics[width=10.8cm]{title.pdf}\\[2.35cm]
+    \begin{tabular}{p{4.2cm}p{9.5cm}}
+      {\fontsize{20pt}{24pt}\heiti\bfseries 学\quad 校} & {\fontsize{20pt}{24pt}\heiti\bfseries [学校名称]} \\[0.3cm]
+      \hline
+      {\fontsize{20pt}{24pt}\heiti\bfseries 参赛队号} & {\fontsize{20pt}{24pt}\heiti\bfseries [参赛队号]} \\[0.3cm]
+      \hline
+      \multirow{3}{4.2cm}{\fontsize{20pt}{24pt}\heiti\bfseries 队员姓名} & {\fontsize{20pt}{24pt}\heiti\bfseries 1.\quad [成员 A]} \\[0.2cm]
+      \cline{2-2}
+      & {\fontsize{20pt}{24pt}\heiti\bfseries 2.\quad [成员 B]} \\[0.2cm]
+      \cline{2-2}
+      & {\fontsize{20pt}{24pt}\heiti\bfseries 3.\quad [成员 C]} \\[0.2cm]
+      \hline
+    \end{tabular}
+  \end{center}
+  \newpage
+}
+% \abstractpage：摘要页，title 图 + 题目 + 摘要 + 关键词
+\newcommand{\abstractpage}{%
+  \setcounter{page}{1}%
+  \begin{center}
+    \includegraphics[width=10.8cm]{title.pdf}\\[0.65cm]
+    {\fontsize{14pt}{16.8pt} 题\quad 目\quad}%
+    \parbox{10cm}{%
+      \centering{\fontsize{16pt}{19.2pt}\heiti\bfseries [论文标题]}%
+      \par\vspace{2pt}%
+      \rule{10cm}{0.5pt}%
+    }\\[0.45cm]
+    {\fontsize{14pt}{16.8pt}\heiti\bfseries 摘\quad\quad 要：}\\[0.45cm]
+  \end{center}
+  中文摘要内容：问题概述 + 每个子问题的方法和数值结果 + 结论\par
+  \vspace{0.65em}
+  {\heiti\bfseries 关键词：}关键词1 \quad 关键词2 \quad 关键词3\par
+  \newpage
+}
+% \tocpage：目录页，标题"目录"居中 16pt 黑体加粗，点线引导
+\makeatletter
+\newcommand{\tocpage}{%
+  \begin{center}
+    {\fontsize{16pt}{19.2pt}\heiti\bfseries 目录}
+  \end{center}
+  \vspace{1.0cm}
+  \@starttoc{toc}%
+  \newpage
+}
+\makeatother
+% \referencescn：参考文献节，标题"参考文献"居中 14pt 黑体加粗（不带编号但进目录）
+\newcommand{\referencescn}{%
+  \section*{参考文献}%
+  \addcontentsline{toc}{section}{参考文献}%
+  \input{references}%
+}
+% \appendixcn：附录节，标题"附录 A  核心代码"居中 14pt 黑体加粗
+\newcommand{\appendixcn}{%
+  \section*{附录 A\quad 核心代码}%
+  \addcontentsline{toc}{section}{附录 A\quad 核心代码}%
+  \input{sections/A_code}%
+}
+% \threelinetable{标题}{列定义}{表头}{表格内容}：三线表，标题在表格上方居中 10.5pt 黑体加粗
+% 调用示例：\threelinetable{表 1 示例}{ccc}{A & B & C}{1 & 2 & 3 \\ 4 & 5 & 6}
+\newcommand{\threelinetable}[4]{%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\heiti\bfseries #1}\par
+    \vspace{0.6em}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+}
+
+\begin{document}
+
+% 封面（不编号）
+\coverpage
+
+% 摘要页（页码从 1 开始）
+\abstractpage
+
+% 目录页
+\tocpage
+
+\input{sections/1_restatement}
+\input{sections/2_analysis}
+\input{sections/3_assumptions}
+\input{sections/4_symbols}
+\input{sections/5_problem1}
+\input{sections/6_problem2}
+\input{sections/7_problem3}
+\input{sections/8_sensitivity}
+\input{sections/9_evaluation}
+
+\newpage
+\referencescn
+\newpage
+\appendixcn
+
+\end{document}

@@ -1,0 +1,228 @@
+% !TEX program = xelatex
+% =============================================================================
+%  五一杯数学建模竞赛 LaTeX 模板
+%  对应 Typst 模板 zh/wuyibei/main.typ 的全部功能。
+%
+%  字体依赖（正文宋体 / 标题黑体 / 强调楷体）：
+%    - 规范字体：SimSun（宋体）、SimHei（黑体）、KaiTi（楷体）。
+%    - 本模板默认使用 ctex 的 fontset=mac，在 macOS 上自动选用同族等价字体
+%      Songti SC / Heiti SC / Kaiti SC，确保开箱即用。
+%    - 若系统已安装 SimSun/SimHei/KaiTi（如 Windows 或手动安装），可将下方
+%      \documentclass 选项 fontset=mac 改为 fontset=windows，即可使用规范字体。
+%    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
+%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+% =============================================================================
+\documentclass[fontset=mac, 12pt, a4paper]{ctexart}
+
+% ---------- 页面：A4，上下左右 2.5cm ----------
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+
+% ---------- 数学 ----------
+\usepackage{amsmath}
+
+% ---------- 图片 ----------
+\usepackage{graphicx}
+
+% ---------- 字体（fontspec + ctex，xelatex 编译） ----------
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}}{}
+
+% ---------- 正文：12pt，首行缩进 2em，两端对齐 ----------
+\linespread{1.43}
+\setlength{\parindent}{2em}
+
+% ---------- 标题编号（\ctexset 配置） ----------
+% 一级标题用中文数字“一、二、三、”，二级及以下用 1.1 / 1.1.1
+\ctexset{
+  section/number       = \chinese{section},
+  subsection/number    = \arabic{section}.\arabic{subsection},
+  subsubsection/number = \arabic{section}.\arabic{subsection}.\arabic{subsubsection},
+}
+
+% ---------- 标题格式（titlesec 配置） ----------
+% 对应 Typst：一级 15.5pt 居中黑体加粗，二级 13pt 黑体加粗，三级 12pt 黑体加粗
+\usepackage{titlesec}
+\titleformat{\section}
+  {\centering\fontsize{15.5pt}{18.6pt}\heiti\bfseries}
+  {\chinese{section}、}{1em}{}
+\titleformat{\subsection}
+  {\fontsize{13pt}{15.6pt}\heiti\bfseries}
+  {\arabic{section}.\arabic{subsection}}{1em}{}
+\titleformat{\subsubsection}
+  {\fontsize{12pt}{14.4pt}\heiti\bfseries}
+  {\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{1em}{}
+\titlespacing{\section}       {0pt}{1.55em}{1.25em}
+\titlespacing{\subsection}    {0pt}{1.18em}{0.95em}
+\titlespacing{\subsubsection} {0pt}{0.85em}{0.55em}
+
+% ---------- 目录（tocloft 点线引导） ----------
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\heiti\bfseries}
+\renewcommand{\cftsecpagefont}{\heiti\bfseries}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+
+% ---------- 表格与代码 ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{black!30},
+  framerule=0.8pt,
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% ---------- 页码：底部居中 ----------
+\pagestyle{plain}
+
+% ---------- 自定义命令（对应 Typst 函数） ----------
+% \centertitle{内容}{字号}：居中黑体加粗标题
+\newcommand{\centertitle}[2][22pt]{%
+  \begin{center}
+    {\fontsize{#1}{1.2em}\heiti\bfseries #2}
+  \end{center}
+}
+% \pledgerow{标签}{宽度}：承诺书填空行（标签 + 下划线）
+\newcommand{\pledgerow}[2]{%
+  \vspace{0.78em}%
+  \noindent #1\underline{\hspace{#2}}\par
+  \vspace{0.34em}%
+}
+% \commitmentpage：承诺书页
+\newcommand{\commitmentpage}{%
+  \centertitle{五一数学建模竞赛}
+  \vspace{0.72em}
+  \centertitle[18pt]{承\quad 诺\quad 书}
+  \vspace{1.15em}
+
+  我们仔细阅读了五一数学建模竞赛的竞赛规则。我们完全明白，在竞赛开始后参赛队员不能以任何方式（包括电话、电子邮件、网上咨询等）与本队以外的任何人（包括指导教师）研究、讨论与赛题有关的问题。
+
+  我们知道，抄袭别人的成果是违反竞赛规则的, 如果引用别人的成果或其它公开的资料（包括网上查到的资料），必须按照规定的参考文献的表述方式在正文引用处和参考文献中明确列出。
+
+  我们郑重承诺，严格遵守竞赛规则，以保证竞赛的公正、公平性。如有违反竞赛规则的行为，我们愿意承担由此引起的一切后果。
+
+  我们授权五一数学建模竞赛组委会，可将我们的论文以任何形式进行公开展示（包括进行网上公示，在书籍、期刊和其他媒体进行正式或非正式发表等）。
+
+  \pledgerow{参赛题号（从A/B/C中选择一项填写）：}{8.1cm}
+  \pledgerow{参赛队号：}{12.2cm}
+  \pledgerow{参赛组别（研究生、本科、专科、高中）：}{7.4cm}
+  \pledgerow{所属学校（学校全称）：}{9.6cm}
+  \vspace{0.7em}
+  \noindent 参赛队员：队员1姓名：\underline{\hspace{8.6cm}}\par
+  \vspace{0.28em}
+  \noindent \hspace{4.3em}队员2姓名：\underline{\hspace{8.6cm}}\par
+  \vspace{0.28em}
+  \noindent \hspace{4.3em}队员3姓名：\underline{\hspace{8.6cm}}\par
+  \vspace{0.7em}
+  \noindent 联系方式：Email：\underline{\hspace{4.1cm}}\hspace{0.8em}联系电话：\underline{\hspace{4.1cm}}\par
+  \vspace{0.65em}
+  \hfill 日期：\underline{\hspace{1.1cm}}年\underline{\hspace{1.1cm}}月\underline{\hspace{1.1cm}}日\par
+  \vspace{0.65em}
+  \hfill {\heiti\bfseries （除本页外不允许出现学校及个人信息）}
+  \newpage
+}
+% \titlepagecn：标题页（竞赛标题 + 图片 + 题目 + 关键词 + 摘要）
+\newcommand{\titlepagecn}{%
+  \centertitle{五一数学建模竞赛}
+  \vspace{1em}
+  \begin{center}
+    \IfFileExists{image2.png}{\includegraphics[width=2in]{image2.png}}{}
+  \end{center}
+  \vspace{1em}
+  \begin{center}
+    {\heiti\bfseries 题目：}\underline{\hspace{3.4cm}[论文标题]\hspace{0pt}}
+  \end{center}
+  \vspace{1em}
+  \noindent {\heiti\bfseries 关键词：}关键词1\hspace{0.8em}关键词2\hspace{0.8em}关键词3\hspace{0.8em}关键词4\hspace{0.8em}关键词5\par
+  \vspace{0.55em}
+  \noindent {\heiti\bfseries 摘\quad 要：}\par
+  \vspace{0.55em}
+
+  中文摘要内容：问题概述 + 每个子问题的方法和数值结果 + 结论。400-600字。每个子问题单独一段。
+  \newpage
+}
+% \tocpage：目录页，标题“Contents”居中 16pt 加粗
+\makeatletter
+\newcommand{\tocpage}{%
+  \begin{center}
+    {\fontsize{16pt}{19.2pt}\bfseries Contents}
+  \end{center}
+  \vspace{1.2em}
+  \@starttoc{toc}%
+  \newpage
+}
+\makeatother
+% \referencescn：参考文献节，标题“参考文献”（不带编号但进目录）
+\newcommand{\referencescn}{%
+  \section*{参考文献}%
+  \addcontentsline{toc}{section}{参考文献}%
+  \input{references}%
+}
+% \appendixcn：附录节（文件列表 + 核心代码）
+\newcommand{\appendixcn}{%
+  \section*{附录 A\quad 文件列表}%
+  \addcontentsline{toc}{section}{附录 A\quad 文件列表}%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\heiti Table 2\quad 文件列表}\\[0.6em]
+    \begin{tabular}{cc}
+      \toprule
+      \textbf{文件名} & \textbf{文件描述} \\
+      \midrule
+      main.py & 主程序 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+  \section*{附录 B\quad 核心代码}%
+  \addcontentsline{toc}{section}{附录 B\quad 核心代码}%
+  \input{sections/A_code}%
+}
+% \threelinetable{标题}{列定义}{表头}{表格内容}：三线表
+\newcommand{\threelinetable}[4]{%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\heiti\bfseries #1}\par
+    \vspace{0.6em}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+}
+
+\begin{document}
+
+% 承诺书页
+\commitmentpage
+
+% 标题页（图片 + 题目 + 关键词 + 摘要）
+\titlepagecn
+
+% 目录页
+\tocpage
+
+\input{sections/1_restatement}
+\input{sections/2_analysis}
+\input{sections/3_assumptions}
+\input{sections/4_symbols}
+\input{sections/5_problem1}
+\input{sections/6_problem2}
+\input{sections/7_problem3}
+\input{sections/8_evaluation}
+
+\newpage
+\referencescn
+\newpage
+\appendixcn
+
+\end{document}

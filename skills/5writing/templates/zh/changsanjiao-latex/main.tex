@@ -1,0 +1,189 @@
+% !TEX program = xelatex
+% =============================================================================
+%  长三角高校数学建模竞赛 LaTeX 模板
+%  对应 Typst 模板 zh/changsanjiao/main.typ 的全部功能。
+%
+%  字体依赖（正文宋体 / 标题黑体 / 强调楷体）：
+%    - 规范字体：SimSun（宋体）、SimHei（黑体）、KaiTi（楷体）。
+%    - 本模板默认使用 ctex 的 fontset=mac，在 macOS 上自动选用同族等价字体
+%      Songti SC / Heiti SC / Kaiti SC，确保开箱即用。
+%    - 若系统已安装 SimSun/SimHei/KaiTi（如 Windows 或手动安装），可将下方
+%      \documentclass 选项 fontset=mac 改为 fontset=windows，即可使用规范字体。
+%    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
+%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+% =============================================================================
+\documentclass[fontset=mac, 12pt, a4paper]{ctexart}
+
+% ---------- 页面：A4，上下左右 2.5cm ----------
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+
+% ---------- 数学 ----------
+\usepackage{amsmath}
+
+% ---------- 字体（fontspec + ctex，xelatex 编译） ----------
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}}{}
+
+% ---------- 正文：12pt，首行缩进 2em，两端对齐，行距 0.9em ----------
+% 0.9em 行距 => 行高 = 1.9 * 字号，\linespread 因子 ≈ 1.583
+\linespread{1.583}
+\setlength{\parindent}{2em}
+
+% ---------- 标题编号（\ctexset 配置） ----------
+% 一级标题用中文数字“一、二、三、”，二级及以下用 1.1 / 1.1.1
+\ctexset{
+  section/number       = \chinese{section},
+  subsection/number    = \arabic{section}.\arabic{subsection},
+  subsubsection/number = \arabic{section}.\arabic{subsection}.\arabic{subsubsection},
+}
+
+% ---------- 标题格式（titlesec 配置） ----------
+% 对应 Typst：一级 14pt 居中黑体加粗，二级 12pt 黑体加粗，三级 10.5pt 黑体加粗
+\usepackage{titlesec}
+\titleformat{\section}
+  {\centering\fontsize{14pt}{16.8pt}\heiti\bfseries}
+  {\chinese{section}、}{1em}{}
+\titleformat{\subsection}
+  {\fontsize{12pt}{14.4pt}\heiti\bfseries}
+  {\arabic{section}.\arabic{subsection}}{1em}{}
+\titleformat{\subsubsection}
+  {\fontsize{10.5pt}{12.6pt}\heiti\bfseries}
+  {\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{1em}{}
+\titlespacing{\section}       {0pt}{1.4em}{0.85em}
+\titlespacing{\subsection}    {0pt}{0.9em}{0.55em}
+\titlespacing{\subsubsection} {0pt}{0.7em}{0.4em}
+
+% ---------- 目录（tocloft 点线引导） ----------
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\heiti\bfseries}
+\renewcommand{\cftsecpagefont}{\heiti\bfseries}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+
+% ---------- 表格与代码 ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{black!30},
+  framerule=0.8pt,
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% ---------- 页码：长三角杯正文不显示页码 ----------
+\pagestyle{empty}
+
+% ---------- 封面信息 ----------
+\newcommand{\teamnumber}{[队伍编号]}
+\newcommand{\problemid}{[A/B/C]}
+\newcommand{\trackname}{[本科生/研究生]}
+\newcommand{\competitionname}{\the\year 年第四届长三角高校数学建模竞赛}
+
+% ---------- 自定义命令（对应 Typst 函数） ----------
+% \tocpage：目录页，标题“目录”居中 17pt 黑体加粗，点线引导
+\makeatletter
+\newcommand{\tocpage}{%
+  \begin{center}
+    {\fontsize{17pt}{20.4pt}\heiti\bfseries 目录}
+  \end{center}
+  \vspace{0.5em}
+  \@starttoc{toc}%
+  \newpage
+}
+\makeatother
+% \referencescn：参考文献节，标题“参考文献”（不带编号但进目录）
+\newcommand{\referencescn}{%
+  \addcontentsline{toc}{section}{参考文献}%
+  \input{references}%
+}
+% \appendixcn：附录节，标题“附录 A  核心代码”
+\newcommand{\appendixcn}{%
+  \section*{附录 A\quad 核心代码}%
+  \addcontentsline{toc}{section}{附录 A\quad 核心代码}%
+  \input{sections/A_code}%
+}
+% \threelinetable{标题}{列定义}{表头}{表格内容}：三线表，标题在表格上方居中 10.5pt 黑体加粗
+% 调用示例：\threelinetable{表 1 示例}{ccc}{A & B & C}{1 & 2 & 3 \\ 4 & 5 & 6}
+\newcommand{\threelinetable}[4]{%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\heiti\bfseries #1}\par
+    \vspace{0.6em}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+}
+
+\begin{document}
+
+% ---------- 封面（不编号、不显示页码） ----------
+\thispagestyle{empty}
+
+\vspace*{-1.5cm}
+\begin{center}
+  \fbox{%
+    \begin{minipage}{0.72\textwidth}
+      \centering
+      \vspace{2pt}
+      {\fontsize{10.5pt}{15pt}参赛编号：\teamnumber}\\[3pt]
+      {\fontsize{10.5pt}{15pt}选题：\underline{\problemid\hspace{2em}}\quad参赛赛道：\underline{\trackname\hspace{2em}}}\\[2pt]
+    \end{minipage}%
+  }
+\end{center}
+\vspace{0.6em}
+
+\begin{center}
+  {\fontsize{22pt}{28pt}\heiti\bfseries \competitionname}
+\end{center}
+
+\vspace{2em}
+
+\begin{center}
+  {\fontsize{15.75pt}{19pt}\heiti\bfseries 题\hspace{1em}目：\underline{\hspace{0.3em}论文标题\hspace{0.3em}}}
+\end{center}
+
+\vspace{0.6em}
+
+\begin{center}
+  {\fontsize{15.75pt}{19pt}\heiti\bfseries 摘\hspace{1em}要：}
+\end{center}
+
+\vspace{0.2em}
+
+\begin{quote}
+  中文摘要内容：问题概述 + 每个子问题的方法和数值结果 + 结论
+\end{quote}
+
+\newpage
+
+% 目录页
+\tocpage
+
+\input{sections/1_restatement}
+\input{sections/2_analysis}
+\input{sections/3_assumptions}
+\input{sections/4_symbols}
+\input{sections/5_problem1}
+\input{sections/6_problem2}
+\input{sections/7_problem3}
+\input{sections/8_evaluation}
+
+\newpage
+\referencescn
+\newpage
+\appendixcn
+
+\end{document}

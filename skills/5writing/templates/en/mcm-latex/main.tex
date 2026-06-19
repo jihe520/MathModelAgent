@@ -1,0 +1,173 @@
+\documentclass[a4paper,12pt]{article}
+
+% ======== Packages ========
+\usepackage[top=1in,bottom=1in,left=1in,right=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{fontspec}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{ifthen}
+\usepackage{times}
+\usepackage{hyperref}
+
+% ======== Fonts ========
+\setmainfont{Times New Roman}
+\setsansfont{Arial}
+\setmonofont{Courier New}
+
+% ======== Variables ========
+\newcommand{\MCMYear}{2026}
+\newcommand{\TeamNumber}{0000}
+\newcommand{\ProblemChosen}{A}
+\newcommand{\PaperTitle}{[Paper Title]}
+\newcommand{\PaperDate}{June 3, 2026}
+\newcommand{\SummaryText}{[Summary: problem overview + methods for each sub-problem + key numerical results + conclusions, 300-500 words]}
+\newcommand{\KeywordsText}{[Keyword1]; [Keyword2]; [Keyword3]}
+\newcommand{\TotalPages}{4}
+
+% ======== Page Header ========
+\fancyhf{}
+\fancyhead[L]{\sffamily Team \#\TeamNumber}
+\fancyhead[R]{\sffamily Page \thepage\ of \TotalPages}
+\fancyhead[C]{\rule[-0.1em]{0pt}{\baselineskip}}
+\cfoot{}
+\pagestyle{fancy}
+
+% ======== Heading Formats ========
+\titleformat{\section}[block]{\normalsize\bfseries}{\thesection\ }{0em}{}
+\titleformat{\subsection}[block]{\normalsize\bfseries}{\thesubsection\ }{0em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.55em}
+\titlespacing*{\subsection}{0pt}{0.82em}{0.4em}
+
+% ======== Three-line Table ========
+\newcommand{\threelinetable}[4]{%
+  \begin{table}[htbp]
+    \centering
+    \caption{#1}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{table}%
+}
+
+% ======== Code Block ========
+\lstset{
+  frame=topbottom,
+  framerule=0.55pt,
+  framesep=0pt,
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color[gray]{0.97},
+  numbers=none,
+  showstringspaces=false,
+  breaklines=true,
+}
+
+% ======== Table of Contents Entry ========
+\newcommand{\tocentry}[4]{\par\vskip0.55em\noindent%
+  \ifthenelse{\equal{#4}{1}}{\bfseries}{}%
+  #1\quad#2%
+  \leaders\hbox{$\cdot$}\hfill\ #
+  #3\par%
+}
+
+% ======== Document ========
+\begin{document}
+
+% ---- Summary Sheet ----
+\thispagestyle{empty}
+\vspace*{-1.8em}
+\begin{center}
+  \begin{tabular}{ccc}
+    \textbf{Problem Chosen} & \textbf{\MCMYear MCM/ICM Summary Sheet} & \textbf{Team Control Number} \\[0.7em]
+    \textbf{\LARGE\ProblemChosen} & & \textbf{\LARGE\TeamNumber}
+  \end{tabular}
+\end{center}
+\vspace{0.43em}
+\hrule height 0.8pt
+\vspace{2.4em}
+\begin{center}\textbf{Summary}\end{center}
+\vspace{2.1em}
+\SummaryText
+\vspace{0.75em}
+\par\textbf{Keywords:} \KeywordsText
+\newpage
+
+% ---- Title Page ----
+\thispagestyle{empty}
+\vspace{0.25em}
+\begin{center}
+  \LARGE\PaperTitle
+\end{center}
+\vspace{5.8em}
+\begin{center}
+  \PaperDate
+\end{center}
+\vspace{2.75em}
+\begin{center}\textbf{Summary}\end{center}
+\vspace{2.1em}
+\SummaryText
+\vspace{0.75em}
+\par\textbf{Keywords:} \KeywordsText
+\newpage
+
+% ---- Contents Page ----
+\pagestyle{empty}
+\begin{center}
+  \LARGE\textbf{Contents}
+\end{center}
+\vspace{2em}
+\tocentry{1}{Introduction}{2}{1}
+\tocentry{}{~~~~1.1 Background}{2}{0}
+\tocentry{}{~~~~1.2 Problem Statement}{2}{0}
+\tocentry{}{~~~~1.3 Our Approach}{2}{0}
+\tocentry{2}{Assumptions and Justifications}{2}{1}
+\tocentry{3}{Model Design and Methodology}{2}{1}
+\tocentry{}{~~~~3.1 Prediction Model}{2}{0}
+\tocentry{}{~~~~3.2 Optimization Objective}{2}{0}
+\tocentry{}{~~~~3.3 Ensemble Strategy}{2}{0}
+\tocentry{4}{Solution and Results}{3}{1}
+\tocentry{}{~~~~4.1 Problem 1}{3}{0}
+\tocentry{}{~~~~4.2 Problem 2}{3}{0}
+\tocentry{}{~~~~4.3 Problem 3}{3}{0}
+\tocentry{5}{Sensitivity Analysis}{3}{1}
+\tocentry{6}{Strengths and Weaknesses}{3}{1}
+\tocentry{}{~~~~6.1 Strengths}{3}{0}
+\tocentry{}{~~~~6.2 Weaknesses}{3}{0}
+\tocentry{7}{Conclusions}{4}{1}
+\tocentry{}{Appendices}{4}{1}
+\tocentry{}{~~~~Appendix A Core Code}{4}{0}
+\newpage
+
+% ---- Main Content ----
+\pagestyle{fancy}
+\input{sections/1_introduction}
+\pagebreak[100]
+\input{sections/2_assumptions}
+\pagebreak[100]
+\input{sections/3_model_design}
+\pagebreak[100]
+\input{sections/4_solution}
+\input{sections/5_sensitivity}
+\input{sections/6_strengths_weaknesses}
+\pagebreak[100]
+\input{sections/7_conclusions}
+
+% ---- References ----
+\pagebreak[100]
+\fontsize{20pt}{24pt}\selectfont\textbf{References}\par\normalsize
+\input{references}
+
+% ---- Appendices ----
+\pagebreak[100]
+\fontsize{28pt}{32pt}\selectfont\textbf{Appendices}\par
+\fontsize{20pt}{24pt}\selectfont\textbf{Appendix A \quad Core Code}\par\normalsize
+\input{sections/A_code}
+
+\end{document}

@@ -1,0 +1,172 @@
+% !TEX program = xelatex
+% =============================================================================
+%  数维杯大学生数学建模挑战赛 LaTeX 模板
+%  对应 Typst 模板 zh/shuweibei/main.typ 的全部功能。
+%
+%  字体依赖（正文宋体 / 标题黑体）：
+%    - 规范字体：SimSun（宋体）、SimHei（黑体）。
+%    - 本模板默认使用 ctex 的 fontset=mac，在 macOS 上自动选用同族等价字体
+%      Songti SC / Heiti SC / Kaiti SC，确保开箱即用。
+%    - 若系统已安装 SimSun/SimHei/KaiTi（如 Windows 或手动安装），可将下方
+%      \documentclass 选项 fontset=mac 改为 fontset=windows，即可使用规范字体。
+%    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
+%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+% =============================================================================
+\documentclass[fontset=mac, 12pt, a4paper]{ctexart}
+
+% ---------- 页面：A4，上下 25.4mm，左右 25mm ----------
+\usepackage[a4paper, top=25.4mm, bottom=25.4mm, left=25mm, right=25mm]{geometry}
+
+% ---------- 数学 ----------
+\usepackage{amsmath}
+
+% ---------- 字体（fontspec + ctex，xelatex 编译） ----------
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}}{}
+
+% ---------- 正文：12pt，首行缩进 2em，两端对齐 ----------
+\linespread{1.3}
+\setlength{\parindent}{2em}
+
+% ---------- 标题编号（\ctexset 配置） ----------
+% 一级标题用中文数字"一、二、三、"，二级及以下用 1.1 / 1.1.1
+\ctexset{
+  section/number       = \chinese{section},
+  subsection/number    = \arabic{section}.\arabic{subsection},
+  subsubsection/number = \arabic{section}.\arabic{subsection}.\arabic{subsubsection},
+}
+
+% ---------- 标题格式（titlesec 配置） ----------
+\usepackage{titlesec}
+\titleformat{\section}
+  {\fontsize{16pt}{19.2pt}\heiti\bfseries}
+  {\chinese{section}、}{1em}{}
+\titleformat{\subsection}
+  {\fontsize{15pt}{18pt}\songti\bfseries}
+  {\arabic{section}.\arabic{subsection}}{1em}{}
+\titleformat{\subsubsection}
+  {\fontsize{13.5pt}{16.2pt}\songti\bfseries}
+  {\arabic{section}.\arabic{subsection}.\arabic{subsubsection}}{1em}{}
+\titlespacing{\section}       {0pt}{1.35em}{0.82em}
+\titlespacing{\subsection}    {0pt}{1.08em}{0.82em}
+\titlespacing{\subsubsection} {0pt}{0.92em}{0.62em}
+
+% ---------- 目录（tocloft 点线引导） ----------
+\usepackage{tocloft}
+\renewcommand{\cftsecfont}{\heiti\bfseries}
+\renewcommand{\cftsecpagefont}{\heiti\bfseries}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
+\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
+
+% ---------- 表格与代码 ----------
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{black!3},
+  frame=single,
+  framesep=6pt,
+  rulecolor=\color{black!30},
+  framerule=0.8pt,
+  breaklines=true,
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% ---------- 页眉页脚 ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Team \# 2024000000001}
+\fancyhead[R]{\small Page \thepage\ of ??}
+\renewcommand{\headrulewidth}{0.45pt}
+\fancyfoot[C]{\small \thepage}
+
+% ---------- 自定义命令 ----------
+% \threelinetable{标题}{列定义}{表头}{表格内容}：三线表
+\newcommand{\threelinetable}[4]{%
+  \begin{center}
+    {\fontsize{10.5pt}{12.6pt}\heiti\bfseries #1}\par
+    \vspace{0.6em}
+    \begin{tabular}{#2}
+      \toprule
+      #3 \\
+      \midrule
+      #4 \\
+      \bottomrule
+    \end{tabular}
+  \end{center}
+}
+
+\begin{document}
+
+% ---------- 封面页（含摘要，不编号） ----------
+\thispagestyle{empty}
+\begin{center}
+  \vspace*{27mm}
+  {\fontsize{25pt}{30pt}\heiti\bfseries 2026 第十届"数维杯"大学生}\\[0.5em]
+  {\fontsize{25pt}{30pt}\heiti\bfseries 数学建模挑战赛论文}
+\end{center}
+
+\vspace{14mm}
+
+% 题目
+\noindent
+\begin{tabular}{@{}p{70pt}@{}p{\dimexpr\textwidth-70pt}@{}}
+  {\fontsize{14pt}{16.8pt}\heiti\bfseries 题\quad 目} &
+  {\centering{\fontsize{16pt}{19.2pt}\heiti\bfseries 论文的题目（三号黑体）}\par
+   \vspace{0.3em}\rule{\linewidth}{1.1pt}} \\
+\end{tabular}
+
+\vspace{14mm}
+
+\begin{center}
+  {\fontsize{15pt}{18pt}\heiti\bfseries 摘\quad 要}
+\end{center}
+
+\vspace{9mm}
+
+{\fontsize{11.2pt}{13.44pt}\selectfont
+\input{sections/Abstract}
+}
+
+\newpage
+
+% ---------- 目录页（不编号） ----------
+\thispagestyle{empty}
+\begin{center}
+  \vspace*{22mm}
+  {\fontsize{18pt}{21.6pt}\heiti\bfseries 目录}
+\end{center}
+\vspace{1.5em}
+\tableofcontents
+\newpage
+
+% ---------- 正文（页码从 1 开始） ----------
+\setcounter{page}{1}
+\input{sections/Introduction}
+\input{sections/2_analysis}
+\input{sections/3_assumptions}
+\input{sections/4_symbols}
+\input{sections/5_problem1}
+\input{sections/6_problem2}
+\input{sections/7_problem3}
+\input{sections/8_evaluation}
+
+\newpage
+% 参考文献
+\addcontentsline{toc}{section}{参考文献}
+\input{references}
+
+\newpage
+% 附录
+\section*{附录}
+\addcontentsline{toc}{section}{附录}
+\input{sections/Appendices1}
+\input{sections/A_code}
+
+\end{document}

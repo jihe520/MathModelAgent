@@ -1,0 +1,17 @@
+\section{Model Design and Methodology}
+
+\subsection{Prediction Model}
+
+\[
+  \hat{y} = f(\mathbf{x}; \theta) = \sum_{i=1}^{n} \theta_i \phi_i(\mathbf{x})
+\]
+
+\subsection{Optimization Objective}
+
+\[
+  \mathcal{L}(\theta) = \frac{1}{N} \sum_{i=1}^{N} (y_i - \hat{y}_i)^2 + \lambda R(\theta)
+\]
+
+\subsection{Ensemble Strategy}
+
+Random Forest with $n = 100$ estimators and max\_depth=10 for robust prediction.
