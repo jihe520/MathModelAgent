@@ -114,6 +114,14 @@ It is recommended to use models with strong capabilities and large parameter cou
 
 Copy `/frontend/.env.example` to `/frontend/.env.development` (remove the `.example` suffix)
 
+If you need to customize allowed frontend origins, set this in `backend/.env.dev`:
+
+```bash
+CORS_ALLOW_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+Avoid `CORS_ALLOW_ORIGINS=*` when requests need credentials.
+
 2. Install Dependencies
 
 Clone the project
