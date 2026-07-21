@@ -10,8 +10,7 @@ from app.utils.log_util import logger
 import re
 import pypandoc  # type: ignore[import-unresolved]
 from app.config.setting import settings
-
-TASK_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
+from app.utils.path_utils import ensure_safe_task_id
 
 
 def create_task_id() -> str:
@@ -20,24 +19,6 @@ def create_task_id() -> str:
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     random_hash = hashlib.md5(str(datetime.datetime.now()).encode()).hexdigest()[:8]
     return f"{timestamp}-{random_hash}"
-
-
-def ensure_safe_task_id(task_id: str) -> str:
-    """验证任务 ID 的合法性，防止路径遍历攻击。
-
-    Args:
-        task_id: 待验证的任务 ID。
-
-    Returns:
-        验证通过的任务 ID。
-
-    Raises:
-        ValueError: 任务 ID 不合法时抛出。
-    """
-    normalized = (task_id or "").strip()
-    if not normalized or not TASK_ID_PATTERN.fullmatch(normalized):
-        raise ValueError("非法 task_id")
-    return normalized
 
 
 def create_work_dir(task_id: str) -> str:
@@ -50,7 +31,8 @@ def create_work_dir(task_id: str) -> str:
         工作目录路径。
     """
     # 设置主工作目录和子目录
-    work_dir = os.path.join("project", "work_dir", task_id)
+    safe_task_id = ensure_safe_task_id(task_id)
+    work_dir = os.path.join("project", "work_dir", safe_task_id)
 
     try:
         # 创建目录，如果目录已存在也不会报错
@@ -103,7 +85,8 @@ def get_work_dir(task_id: str) -> str:
     Raises:
         FileNotFoundError: 工作目录不存在时抛出。
     """
-    work_dir = os.path.join("project", "work_dir", task_id)
+    safe_task_id = ensure_safe_task_id(task_id)
+    work_dir = os.path.join("project", "work_dir", safe_task_id)
     if os.path.exists(work_dir):
         return work_dir
     else:
