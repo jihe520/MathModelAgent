@@ -1,28 +1,59 @@
 """文件管理路由模块，提供文件下载、列表和目录打开等接口。"""
 
-from fastapi import APIRouter
-from app.utils.common_utils import get_current_files, get_work_dir
 import os
 import subprocess
+from urllib.parse import quote
+
+from fastapi import APIRouter, HTTPException
+
+from app.utils.common_utils import get_current_files, get_work_dir
+from app.utils.path_utils import (
+    ensure_safe_task_id,
+    resolve_path_within,
+)
 from icecream import ic  # type: ignore[import-unresolved]
-from fastapi import HTTPException
 
 router = APIRouter()
 
 
+def _require_work_dir(task_id: str) -> tuple[str, str]:
+    """Return a validated task ID and its existing work directory."""
+    try:
+        safe_task_id = ensure_safe_task_id(task_id)
+        return safe_task_id, get_work_dir(safe_task_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="任务不存在") from exc
+
+
 @router.get("/download_url")
 async def get_download_url(task_id: str, filename: str):
-    return {"download_url": f"http://localhost:8000/static/{task_id}/{filename}"}
+    safe_task_id, work_dir = _require_work_dir(task_id)
+    try:
+        safe_filename = resolve_path_within(work_dir, filename).name
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return {
+        "download_url": (
+            "http://localhost:8000/static/"
+            f"{quote(safe_task_id, safe='')}/{quote(safe_filename, safe='')}"
+        )
+    }
 
 
 @router.get("/download_all_url")
 async def get_download_all_url(task_id: str):
-    return {"download_url": f"http://localhost:8000/static/{task_id}/all.zip"}
+    safe_task_id, _ = _require_work_dir(task_id)
+    return {
+        "download_url": f"http://localhost:8000/static/{quote(safe_task_id, safe='')}/all.zip"
+    }
 
 
 @router.get("/files")
 async def get_files(task_id: str):
-    work_dir = get_work_dir(task_id)
+    _, work_dir = _require_work_dir(task_id)
     files = get_current_files(work_dir, "all")
     file_all = []
 
@@ -37,7 +68,7 @@ async def get_files(task_id: str):
 async def open_folder(task_id: str):
     ic(task_id)
     # 打开工作目录
-    work_dir = get_work_dir(task_id)
+    _, work_dir = _require_work_dir(task_id)
 
     # 打开工作目录
     if os.name == "nt":

@@ -13,6 +13,7 @@ from app.utils.common_utils import (
     get_current_files,
     md_2_docx,
 )
+from app.utils.path_utils import resolve_path_within
 import os
 import asyncio
 from typing import Dict, Tuple
@@ -193,15 +194,26 @@ async def exampleModeling(
 ):
     task_id = create_task_id()
     work_dir = create_work_dir(task_id)
-    example_dir = os.path.join("app", "example", "example", example_request.source)
+    try:
+        example_dir = resolve_path_within(
+            os.path.join("app", "example", "example"),
+            example_request.source,
+            "示例来源",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    if not example_dir.is_dir():
+        raise HTTPException(status_code=404, detail="示例不存在")
+
     ic(example_dir)
-    with open(os.path.join(example_dir, "questions.txt"), "r", encoding="utf-8") as f:
+    with open(example_dir / "questions.txt", "r", encoding="utf-8") as f:
         ques_all = f.read()
 
-    current_files = get_current_files(example_dir, "data")
+    current_files = get_current_files(str(example_dir), "data")
     for file in current_files:
-        src_file = os.path.join(example_dir, file)
-        dst_file = os.path.join(work_dir, file)
+        src_file = resolve_path_within(example_dir, file)
+        dst_file = resolve_path_within(work_dir, file)
         with open(src_file, "rb") as src, open(dst_file, "wb") as dst:
             dst.write(src.read())
     # 存储任务ID
@@ -234,19 +246,19 @@ async def modeling(
     if files:
         logger.info(f"开始处理上传的文件，工作目录: {work_dir}")
         for file in files:
+            filename = file.filename or ""
             try:
-                assert file.filename is not None
-                data_file_path = os.path.join(work_dir, file.filename)
-                logger.info(f"保存文件: {file.filename} -> {data_file_path}")
+                data_file_path = resolve_path_within(work_dir, filename)
+            except ValueError as exc:
+                logger.warning(f"拒绝非法上传文件名: {filename!r}")
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-                # 确保文件名不为空
-                if not file.filename:
-                    logger.warning("跳过空文件名")
-                    continue
+            try:
+                logger.info(f"保存文件: {filename} -> {data_file_path}")
 
                 content = await file.read()
                 if not content:
-                    logger.warning(f"文件 {file.filename} 内容为空")
+                    logger.warning(f"文件 {filename} 内容为空")
                     continue
 
                 with open(data_file_path, "wb") as f:
@@ -254,9 +266,9 @@ async def modeling(
                 logger.info(f"成功保存文件: {data_file_path}")
 
             except Exception as e:
-                logger.error(f"保存文件 {file.filename} 失败: {str(e)}")
+                logger.error(f"保存文件 {filename} 失败: {str(e)}")
                 raise HTTPException(
-                    status_code=500, detail=f"保存文件 {file.filename} 失败: {str(e)}"
+                    status_code=500, detail=f"保存文件 {filename} 失败: {str(e)}"
                 )
     else:
         logger.warning("没有上传文件")
