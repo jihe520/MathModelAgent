@@ -9,6 +9,37 @@
 
 <h5 align="center"><a href="README.md">简体中文</a> | English</h5>
 
+<p align="center">
+    <a href="https://github.com/jihe520/MathModelAgent/releases/latest"><b>⬇️ Download the latest desktop app (recommended)</b></a>
+</p>
+
+---
+
+## 🖥️ Desktop App (recommended)
+
+> **Don't want to set up an environment? Download the desktop app and start right away.**
+>
+> 👉 **[Get the latest release](https://github.com/jihe520/MathModelAgent/releases/latest)**
+
+The desktop app bundles Claude Code and the full set of MathModelAgent SKILLS. No Python / Node.js / Redis installation and no manual SKILL setup — install it, add one model API key, and start modeling.
+
+| OS | File |
+|----|------|
+| macOS (Apple Silicon) | `mathmodel-<version>-arm64.dmg` |
+| macOS (Intel) | `mathmodel-<version>-x64.dmg` |
+| Windows 64-bit | `mathmodel-<version>-x64.exe` |
+
+The macOS installers are signed with a Developer ID and notarized by Apple.
+
+> [!WARNING]
+> The Windows installer is not code-signed yet. Microsoft Defender SmartScreen may warn on first install or launch — choose "More info" → "Run anyway", and only download from the official [Releases page](https://github.com/jihe520/MathModelAgent/releases/latest).
+
+The app checks for updates automatically (auto-update is live on macOS; Windows will be enabled once a code-signing certificate is in place).
+
+If you'd rather deploy it yourself or contribute, keep reading below.
+
+---
+
 ## 🌟 Vision
 
 Turn 3 days of competition into 1 hour <br>

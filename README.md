@@ -9,6 +9,40 @@
 
 <h5 align="center">简体中文 | <a href="README_EN.md">English</a></h5>
 
+<p align="center">
+    <a href="https://github.com/jihe520/MathModelAgent/releases/latest"><b>⬇️ 下载最新桌面版（推荐）</b></a>
+</p>
+
+---
+
+## 🖥️ 桌面版（推荐使用方式）
+
+> **不想折腾环境？直接下载桌面版，开箱即用。**
+>
+> 👉 **[前往 Releases 下载最新版本](https://github.com/jihe520/MathModelAgent/releases/latest)**
+
+桌面版已内置 Claude Code 与全套 MathModelAgent SKILLS，无需安装 Python / Node.js / Redis，也无需手动配置 SKILL，装好填一个模型 API Key 即可开始建模。
+
+| 系统 | 下载文件 |
+|------|----------|
+| macOS（Apple 芯片 M 系列） | `mathmodel-<version>-arm64.dmg` |
+| macOS（Intel 芯片） | `mathmodel-<version>-x64.dmg` |
+| Windows 64 位 | `mathmodel-<version>-x64.exe` |
+
+macOS 安装包已 Developer ID 签名并通过 Apple 公证。
+
+> [!TIP]
+> 不确定自己的 Mac 是哪种芯片？点击左上角  → 关于本机，看「芯片」一栏：显示 Apple M 系列选 arm64，显示 Intel 选 x64。
+
+> [!WARNING]
+> Windows 安装包当前未签名，首次安装或运行时可能出现 Microsoft Defender SmartScreen 提示，请选择「更多信息」→「仍要运行」，并务必从官方 [Releases 页面](https://github.com/jihe520/MathModelAgent/releases/latest) 下载。
+
+安装后应用会自动检查更新（macOS 支持自动更新，Windows 待代码签名证书配置完成后启用）。
+
+如果你是开发者，想自行部署或参与贡献，请继续阅读下方的 [SKILLS](#skills) 与 [使用教程](#-使用教程)。
+
+---
+
 ## 🌟 愿景：
 
 3 天的比赛时间变为 1 小时
