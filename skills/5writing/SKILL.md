@@ -14,6 +14,19 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 如需领域判断，读取 `../_references/modeling_core_norms.md` 中的“通用论文写作原则”“图表与可视化”和“非数据图工具选择”小节；若当前赛题为 CUMCM 或需核对赛制要求，再读取 `../_references/competition_rules/cumcm.md`。该文件仅作为规范知识库，论文结构仍按比赛模板和当前赛题内容决定，不作为固定模板强制要求。
 
+## 写作证据约束（核心原则）
+
+- 模型设计逻辑、变量定义、假设和理论路线优先读取 `reports/ANALYSIS_MODELING_REPORT.md`。
+- 实际实现模型、参数、实验结果、benchmark、约束校验、敏感性/稳健性结论，以 `reports/RESULTS_REPORT.md` 和真实结果文件为准。
+- 图表只引用真实存在、可追溯的 `figures/` 文件。
+- 若分析阶段推荐路线与代码阶段最终实际实现存在偏差，以 `RESULTS_REPORT.md` 中明确记录的最终实际实现为论文结果依据，并合理说明必要偏差；不得把未实现的推荐路线写成已经实现。
+- 论文中的关键结果必须能追溯到 `RESULTS_REPORT.md` 或真实结果文件；允许正常四舍五入以统一小数位数，但不得改变计算口径、重新计算出与结果报告不同的值，或让摘要、正文、表格、图表采用相互矛盾的精度/口径。
+- 题面事实不得改写成未经支持的新事实；建模假设必须明确作为假设表达；只有经过 3coding 验证的结果才能作为确定性结果陈述；尚未验证的推测不得包装成实验结论。
+- 只引用真实存在且已核验基本书目信息的来源；禁止编造作者、题名、期刊/会议、年份、DOI 或其他引用信息。若某项外部研究性主张无法核验，不得用无来源措辞绕过核验，应核验来源、降为无需该来源即可成立的普通表述，或删除。
+- 每张进入论文的图表必须服务至少一个明确论证或结果说明；caption 必须真实描述图意，不得夸大图中没有体现的结论。
+- 摘要在正文、结果、图表和关键数字基本稳定后生成；摘要中的方法、核心结果和关键数字必须从已验证正文及结果中提炼，不从分析阶段尚未验证的推荐方案直接生成结果性摘要。
+- 对赛事格式要求只使用已确认的官方规则或 `_references/competition_rules/cumcm.md` 中已记录内容；不主动补造未确认的当年比赛规则；不因美化或个人偏好擅自删除、改变模板要求保留的封面、编号、页眉页脚、摘要页或其他结构。
+
 ## 模板族
 
 本技能内捆绑的模板位于：
@@ -25,25 +38,9 @@ templates/en/<竞赛>/main.typ         # Typst 模板
 templates/en/<竞赛>-latex/main.tex   # LaTeX 模板
 ```
 
-**LaTeX 模板覆盖范围**：所有中文模板和英文模板均已提供 LaTeX 版本（`-latex` 后缀），使用 xelatex 编译。
-
-支持的中文模板（Typst + LaTeX 双版本）：
-
-```text
-apmcm, changsanjiao, cumcm, default, diangongbei, dongsansheng,
-huashubei, huaweibei, huazhongbei, mathorcup, mcm, shuweibei, stats, wuyibei
-```
-
-华为杯、华中杯、五一杯统一使用 `huaweibei`、`huazhongbei`、`wuyibei` 作为模板。
-
-支持的英文模板（Typst + LaTeX 双版本）：
-
-```text
-apmcm, default, mcm
-```
-
-论文中的所有数值图表结论必须来自 `reports/RESULTS_REPORT.md` 或 `figures/*`。不得编造、估算或使用不同的四舍五入方式。
-
+- 选择排版引擎后，所有章节文件、图片路径和插图语法必须按同一引擎保持一致。
+- 保留模板要求保留的封面、页眉页脚、编号、摘要页等结构；不自行删改比赛模板的关键格式元素。
+- 若模板与当年官方规则存在冲突，应标记并进入验收，而不是自行猜测处理。
 
 ## 工作流
 
@@ -154,189 +151,40 @@ fig_pipeline.pdf -> 数据预处理/方法节
 
 ### 步骤 4：撰写各节
 
-**以下章节文件名按所选引擎使用 `.typ`（Typst）或 `.tex`（LaTeX）扩展名。** 例如 Typst 引擎用 `1_restatement.typ`，LaTeX 引擎用 `1_restatement.tex`。文件名主体保持一致。
+**以下章节文件名按所选引擎使用 `.typ`（Typst）或 `.tex`（LaTeX）扩展名。** 例如 Typst 引擎用 `1_restatement.typ`，LaTeX 引擎用 `1_restatement.tex`。文件名主体保持一致；具体结构按所选模板规定执行，不要自行重写为其他章节顺序。
 
-中文数学建模通用模板各节文件（`changsanjiao`、`diangongbei`、`huashubei`、`mathorcup`、`wuyibei`）：
+正文写作应使用连贯的学术段落。避免在最终论文中出现工作流内部名称，如 `reports/`、`figures/` 或 `CLAUDE.md`。
 
-```text
-1_restatement.typ  - 问题重述与分析
-2_analysis.typ     - 数据理解与总体思路
-3_assumptions.typ  - 模型假设
-4_symbols.typ      - 符号说明
-5_problem1.typ     - 问题一建模与求解
-6_problem2.typ     - 问题二建模与求解
-7_problem3.typ     - 问题三建模与求解
-...         - 根据题目调整问题数量  
-8_evaluation.typ   - 灵敏度分析、模型评价与推广
-A_code.typ         - 附录代码
-```
-
-国赛/华中杯/华为杯（`cumcm`、`huazhongbei`、`huaweibei`）按以下章节结构：
-
-```text
-1_restatement.typ
-2_analysis.typ
-3_assumptions.typ
-4_symbols.typ
-5_problem1.typ
-6_problem2.typ
-7_problem3.typ
-...        - 根据题目调整问题数量
-8_sensitivity.typ
-9_evaluation.typ
-A_code.typ
-```
-
-东三省模板（`dongsansheng`）额外使用单独摘要文件：
-
-```text
-abstract.typ
-1_restatement.typ
-2_analysis.typ
-3_assumptions.typ
-4_symbols.typ
-5_problem1.typ
-6_problem2.typ
-7_problem3.typ
-...       - 根据题目调整问题数量
-8_evaluation.typ
-A_code.typ
-```
-
-数维杯模板（`shuweibei`）保留原 LaTeX 的示例入口命名：
-
-```text
-Abstract.typ
-Introduction.typ
-2_analysis.typ
-3_assumptions.typ
-4_symbols.typ
-5_problem1.typ
-6_problem2.typ
-7_problem3.typ
-...      - 根据题目调整问题数量
-8_evaluation.typ
-Appendices1.typ
-A_code.typ
-```
-
-中文默认模板（`default`）：
-
-```text
-1_restatement.typ
-2_assumptions.typ
-3_symbols.typ
-4_problem1.typ
-5_problem2.typ
-6_problem3.typ
-...      - 根据题目调整问题数量
-7_sensitivity.typ
-8_evaluation.typ
-A_code.typ
-```
-
-中文统计建模各节文件：
-
-```text
-1_introduction.typ
-2_method.typ
-3_data.typ
-4_analysis.typ
-5_results.typ
-6_conclusion.typ
-A_code.typ
-```
-
-英文 MCM/APMCM 各节文件（`en/mcm`、`en/apmcm`、`zh/mcm`、`zh/apmcm`）：
-
-```text
-1_introduction.typ
-2_assumptions.typ
-3_model_design.typ
-4_solution.typ
-5_sensitivity.typ
-6_strengths_weaknesses.typ
-7_conclusions.typ
-A_code.typ
-```
-
-**LaTeX 模板章节文件**（对应 `-latex` 后缀模板，结构与 Typst 版本一一对应）：
-
-国赛 LaTeX 模板（`zh/cumcm-latex`，对应 `cumcm` Typst 版本）：
-
-```text
-1_restatement.tex
-2_analysis.tex
-3_assumptions.tex
-4_symbols.tex
-5_problem1.tex
-6_problem2.tex
-7_problem3.tex
-8_sensitivity.tex
-9_evaluation.tex
-A_code.tex
-```
-
-MCM/ICM LaTeX 模板（`en/mcm-latex`）：
-
-```text
-1_introduction.tex
-2_assumptions.tex
-3_model_design.tex
-4_solution.tex
-5_sensitivity.tex
-6_strengths_weaknesses.tex
-7_conclusions.tex
-A_code.tex
-```
-
-其余 LaTeX 模板（`changsanjiao-latex`、`default-latex`、`huashubei-latex`、`mathorcup-latex`、`wuyibei-latex`、`huazhongbei-latex`、`huaweibei-latex`、`diangongbei-latex`、`dongsansheng-latex`、`shuweibei-latex`、`stats-latex`、`apmcm-latex`、`mcm-latex`、`en/apmcm-latex`、`en/default-latex`）的章节文件命名与上述结构类似，以 `main.tex` 中 `\input{}` 引用的文件名为准。
-
-英文默认模板（`en/default`）：
-
-```text
-1_introduction.typ
-2_assumptions.typ
-3_notations.typ
-4_model.typ
-5_sensitivity.typ
-6_evaluation.typ
-7_conclusions.typ
-A_code.typ
-```
-
-**正文写作应使用连贯的学术段落。避免在最终论文中出现工作流内部名称，如 `reports/`、`figures/` 或 `CLAUDE.md`。**
+- 每张进入论文的图表必须服务至少一个明确论证或结果说明；正文应在适当位置引导并解释图表，而不是连续堆图。
+- caption 必须真实描述图表内容，不得夸大图中没有体现的结论。
+- 图中数字、正文数字和 `RESULTS_REPORT.md` 中对应结果必须口径一致。
+- 不为满足数量而插入无实际论证作用的图。
 
 ### 步骤 5：参考文献
 
-只使用真实存在的参考文献。文件名按引擎选择：Typst 用 `paper/references.typ`，LaTeX 用 `paper/references.tex`。
+只使用真实存在且已核验基本书目信息的参考文献。文件名按引擎选择：Typst 用 `paper/references.typ`，LaTeX 用 `paper/references.tex`。
 
-**Typst 引擎**：
-
-```typst
-#set enum(numbering: "[1]")
-#enum[
-  作者. 题名[J]. 期刊名, 年份, 卷(期): 页码.
-  Author. "Title." Journal or Conference, year.
-]
-```
-
-正文上标引用：`相关研究已用于物流网络优化#super("[1]")。`
-
-**LaTeX 引擎**：
-
-```latex
-\begin{thebibliography}{99}
-  \bibitem{ref1} 作者. 题名[J]. 期刊名, 年份, 卷(期): 页码.
-  \bibitem{ref2} Author. "Title." Journal, year.
-\end{thebibliography}
-```
-
-正文引用用 `\cite{ref1}` 或 `\cite{ref1,ref2}`。
+- 禁止编造作者、题名、期刊/会议、年份、DOI 或其他引用信息。
+- 若某项外部研究性主张需要文献支持但当前无法核验来源，不得通过写成“相关研究表明”等无来源措辞绕过核验；应核验来源、降低为无需该来源即可成立的普通表述，或删除。
+- 不为了增加参考文献数量而添加无实际作用的引用。
 
 ### 步骤 6：最后撰写摘要或总结
 
-在所有章节完成后撰写中文摘要或英文 Summary Sheet。必须包含每个子问题的方法和精确的数值结果。
+在正文、结果、图表和关键数字基本稳定后撰写中文摘要或英文 Summary Sheet。摘要中的方法、核心结果和关键数字必须从已验证正文及结果中提炼，不从分析阶段尚未验证的推荐方案直接生成结果性摘要。修改正文关键结果后，应同步检查摘要一致性。
+
+### 6.1 最小交接给 6verity
+
+最终 paper 与现有报告应能让 `6verity` 核验：
+
+- 论文入口和使用的模板/引擎；
+- 关键模型路线是否与实际实现一致；
+- 关键结果和 benchmark 是否可追溯；
+- 图表是否真实存在并与正文一致；
+- 摘要关键数字是否与正文一致；
+- 参考文献是否真实；
+- 模板关键结构是否保留。
+
+不另增交接报告文件。
 
 ## LaTeX 写作要点
 
