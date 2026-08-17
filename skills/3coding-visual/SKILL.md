@@ -17,7 +17,24 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 - 本阶段负责：代码、实验运行、结果、结果表、数据驱动图表。
 - 本阶段不负责：技术路线图、算法流程图、系统架构图、概念示意图。这些交给 `4drawio`。
 - 本阶段不写论文正文，只为 `5writing` 提供可信数值和图表资产。
+- 路线约束原则：`2analysis-modeling` 负责确定最终模型路线；`3coding-visual` 负责实现、运行和验证；默认不得擅自更换模型类型、关键假设、关键约束结构或主求解路线。实现层 bug、参数格式、数值稳定性、绘图、求解器配置等不改变主路线的问题可自行修复。
+- 路线级阻断条件：若出现以下情况，必须停止继续扩展实现，并回到 `2analysis-modeling` 对对应子问题重新确认路线：数据与关键假设明显不符；模型数学上或计算上无法合理实现；关键业务/物理约束无法满足；验证结果否定关键假设或核心逻辑；必须更换模型类型、目标函数性质或主要约束结构才能继续。
+- benchmark 规则：若存在合理的基线方案 / benchmark，则必须进行对比；benchmark 可以是朴素规则、历史均值、贪心解、小规模精确解、简单模型等。若 benchmark 明显优于最终模型，且排除代码 bug、数据处理错误和实现问题后仍成立，则视为路线级异常，需要回到 `2analysis-modeling` 复核；若当前问题没有合理 benchmark，应在 `reports/RESULTS_REPORT.md` 中简要说明原因，不强行构造。
 
+### 必须执行的核心检查清单
+
+在逐子问题实现前后，至少执行以下检查：
+
+- 数据读取正确性；
+- 缺失值 / 异常值；
+- 单位与量纲一致性；
+- 数据泄漏防范；
+- 训练 / 验证划分（如适用）；
+- 可行性与约束回代；
+- 随机种子与可复现性；
+- 数值稳定性；
+- benchmark 对比（如适用）；
+- 敏感性 / 稳健性验证（如适用）。
 
 ### Step 1: 代码结构
 
@@ -41,30 +58,30 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ### Step 3: 结果文件格式
 
-
 AI 在实现、求解和作图过程中，必须把关键中间过程保存成数据并做好记录，例如清洗后的数据摘要、模型参数、迭代历史、约束检查、灵敏度分析过程、图表所用数据和运行日志。中间数据优先保存到 `figures/` 或 `code/outputs/`，并在 `reports/RESULTS_REPORT.md` 中说明文件用途。
 
-`reports/RESULTS_REPORT.md` 推荐结构：
+`reports/RESULTS_REPORT.md` 最小交付内容：
 
 ```markdown
 # 计算结果
 
 ## 运行环境
-## 数据读取与预处理
-## 问题一结果
-## 问题二结果
-## 问题三结果
-## 灵敏度分析
-## 约束与一致性校验
-## 与建模报告的一致性说明
+## 最终实际实现的模型路线
+## 关键参数
+## 核心结果
+## 关键约束是否满足
+## benchmark 对比结论（如适用）
+## 敏感性 / 稳健性结论
+## 图表清单与对应结论
 ## 可复现运行方式
+## 与分析阶段的偏差说明
 ```
 
-所有数据和图表结果都必须出现在 `reports/RESULTS_REPORT.md` 中引用
+若与 `ANALYSIS_MODELING_REPORT.md` 有任何偏差，必须显式说明；所有数据和图表结果都必须在 `RESULTS_REPORT.md` 中可追溯。
 
 ### Step 4: 生成数据驱动图表
 
-根据 `reports/ANALYSIS_MODELING_REPORT.md` 和 `reports/RESULTS_REPORT.md` 规划图表，生成 PDF 到 `figures/`。
+根据 `reports/ANALYSIS_MODELING_REPORT.md` 和 `reports/RESULTS_REPORT.md` 规划图表，生成 PDF 到 `figures/`。每张图必须回答一个明确问题，并支撑分析或论文中的某个结论；不要为了凑数量生成图。图表类型仍然限制在数据驱动图，不接管 `4drawio` 的流程图/架构图职责。
 
 典型图表：
 
