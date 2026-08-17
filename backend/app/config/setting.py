@@ -10,29 +10,39 @@ from typing import Annotated, Optional
 
 class ApiType(str, Enum):
     """LLM API 类型。"""
+
     OPENAI_CHAT = "openai-chat"
     OPENAI_RESPONSES = "openai-responses"
     ANTHROPIC = "anthropic"
 
 
-def parse_cors(value: str) -> list[str]:
-    """将 CORS 配置字符串解析为 URL 列表。
+DEFAULT_CORS_ALLOW_ORIGINS = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
+
+def parse_cors(value: str | list[str]) -> list[str]:
+    """将 CORS 配置解析为 URL 列表。
 
     Args:
-        value: 逗号分隔的 URL 字符串，或 "*" 表示允许所有来源。
+        value: 逗号分隔的 URL 字符串、URL 列表，或 "*" 表示允许所有来源。
 
     Returns:
         解析后的 URL 列表。
     """
+    if isinstance(value, list):
+        return [url.strip() for url in value if url.strip()]
+
+    value = value.strip()
+    if not value:
+        return []
     if value == "*":
         return ["*"]
-    if "," in value:
-        return [url.strip() for url in value.split(",")]
-    return [value]
+
+    return [url.strip() for url in value.split(",") if url.strip()]
 
 
 class Settings(BaseSettings):
     """全局应用配置，从环境变量和 .env 文件加载。"""
+
     ENV: str = "dev"
 
     COORDINATOR_API_TYPE: Optional[ApiType] = None
@@ -70,7 +80,9 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     REDIS_URL: str = "redis://redis:6379/0"
     REDIS_MAX_CONNECTIONS: int = 10
-    CORS_ALLOW_ORIGINS: Annotated[list[str] | str, BeforeValidator(parse_cors)] = "*"
+    CORS_ALLOW_ORIGINS: Annotated[list[str], BeforeValidator(parse_cors)] = (
+        DEFAULT_CORS_ALLOW_ORIGINS
+    )
     SERVER_HOST: str = "http://localhost:8000"
     DEEPSEEK_MODEL: Optional[str] = None
     DEEPSEEK_BASE_URL: Optional[str] = None

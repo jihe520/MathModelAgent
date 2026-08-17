@@ -349,6 +349,14 @@ pnpm run dev
 
 修改 backend/.env.dev 的环境变量 **REDIS_URL**
 
+如需调整前端跨域来源，可在 `backend/.env.dev` 中配置：
+
+```bash
+CORS_ALLOW_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+不建议在需要携带凭据的场景下使用 `CORS_ALLOW_ORIGINS=*`。
+
 配置API Key
 
 1. 使用 WebUI
