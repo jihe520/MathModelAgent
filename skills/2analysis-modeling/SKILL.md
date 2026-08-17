@@ -8,7 +8,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ## 数学建模规范参考
 
-如需领域判断，读取 `../_references/math_modeling_norms.md` 中的“赛题理解与子问题识别”“假设与模型建立”和“题型防错速查”小节。该文件只作为规范知识库，不替代本阶段的分析报告结构。
+如需领域判断，优先读取 `../_references/modeling_core_norms.md` 中的“赛题理解与子问题识别”“假设与模型建立”和“通用题型防错”小节，并根据需要参考 `../_references/model_catalog.md` 中对应模型类型的候选方法说明。该文件仅作为规范知识库，不替代本阶段的分析报告结构，也不将固定套路强行纳入分析结果。
 
 ## 必须产出
 

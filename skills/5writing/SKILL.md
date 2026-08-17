@@ -12,7 +12,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ## 数学建模规范参考
 
-如需领域判断，读取 `../_references/math_modeling_norms.md` 中的“论文写作”“图表与可视化”和“非数据图工具选择”小节。该文件只作为规范知识库，论文结构仍按比赛模板和当前赛题内容决定。
+如需领域判断，读取 `../_references/modeling_core_norms.md` 中的“通用论文写作原则”“图表与可视化”和“非数据图工具选择”小节；若当前赛题为 CUMCM 或需核对赛制要求，再读取 `../_references/competition_rules/cumcm.md`。该文件仅作为规范知识库，论文结构仍按比赛模板和当前赛题内容决定，不作为固定模板强制要求。
 
 ## 模板族
 

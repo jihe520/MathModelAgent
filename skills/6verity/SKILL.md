@@ -10,7 +10,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ## 数学建模规范参考
 
-如需领域判断，读取 `../_references/math_modeling_norms.md` 中的"论文验收与一致性"小节。该文件只是规范知识库，不是固定执行流程；具体目录、入口文件、结果文件和图表目录由当前项目结构决定。
+如需领域判断，读取 `../_references/modeling_core_norms.md` 中的“论文验收与一致性”和“代码实现与结果”小节，并根据需要参考 `../_references/common_failure_cases.md` 中的常见失误案例；若当前任务需要核对 CUMCM 赛制要求，再读取 `../_references/competition_rules/cumcm.md`。该文件仅作为规范知识库，不是固定执行流程；具体目录、入口文件、结果文件和图表目录由当前项目结构决定。
 
 ## 阶段边界
 

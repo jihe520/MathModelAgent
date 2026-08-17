@@ -10,7 +10,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ## 数学建模规范参考
 
-如需领域判断，读取 `../_references/math_modeling_norms.md` 中的“题型防错速查”“代码实现与结果”“编码阶段常见错误”和“图表与可视化”小节。该文件只作为规范知识库，不新增本阶段的固定产物。
+如需领域判断，读取 `../_references/modeling_core_norms.md` 中的“通用题型防错”“代码实现与结果”和“图表与可视化”小节，并参考 `../_references/common_failure_cases.md` 中的高价值常见失误案例；若需要确认模型候选方法，再阅读 `../_references/model_catalog.md`。该文件仅作为规范知识库，不新增本阶段的固定产物，也不替代代码阶段的真实实验和结果核对。
 
 ## 阶段边界
 

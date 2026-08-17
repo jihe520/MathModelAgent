@@ -10,7 +10,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ## 数学建模规范参考
 
-如需领域判断，读取 `../_references/math_modeling_norms.md` 中的“图表与可视化”和“非数据图工具选择”小节。该文件只作为规范知识库，不要求为了凑数量生成额外图示。
+如需领域判断，读取 `../_references/modeling_core_norms.md` 中的“图表与可视化”和“非数据图工具选择”小节。该文件仅作为规范知识库，不要求为了凑数量生成额外图示，也不替代具体题目的图形需求判断。
 
 ## 阶段边界
 

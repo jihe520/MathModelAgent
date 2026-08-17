@@ -10,7 +10,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ## 数学建模规范参考
 
-如需领域判断，读取 `../_references/math_modeling_norms.md`。该文件只提供数学建模基本规范和防错知识，不改变本 skill 的阶段顺序和产出约定。
+如需领域判断，优先读取 `../_references/modeling_core_norms.md` 和 `../_references/model_catalog.md`。前者提供长期稳定的数学建模原则、题型防错和结果一致性要求；后者提供模型候选工具箱，不作为机械选型规则。若当前任务涉及 CUMCM 赛制要求，再读取 `../_references/competition_rules/cumcm.md`。这些文件仅提供规范参考，不改变本 skill 的阶段顺序和产出约定。
 
 ## 必须产出
 
