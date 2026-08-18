@@ -23,41 +23,44 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ### 1. 询问用户偏好 AskUserQuestions
 
-在规划前，只询问会实质影响流程的问题。问题要少而关键。
+在规划前，只询问会实质影响全局流程的问题。问题要少而关键。
 
 优先询问（按重要性排序）：
 
-1. **排版引擎**：Typst 还是 LaTeX？— 决定 5writing 使用哪套模板和编译命令。两套引擎均覆盖全部模板（14 中 + 3 英）。Typst 使用 `typst` 命令编译；LaTeX 使用 `xelatex` 命令编译（需跑两遍解决交叉引用）。
-2. **竞赛类型**：国赛/华为杯/华中杯/MCM/...— 决定模板选择，见 5writing 的模板族清单。
+1. **排版引擎**：Typst 还是 LaTeX？— 决定 5writing 使用哪套模板和编译命令。
+2. **竞赛类型**：国赛/华为杯/华中杯/MCM/...— 决定模板和规则来源。
 3. **论文语言**：中文/英文 — MCM/ICM/COMAP 强制英文，其他默认中文。
-4. **子问题数量是否已知**：影响章节文件生成数量。若未知，由 2analysis-modeling 阶段根据题面确定。
+
+**子问题数量**不作为启动阶段必须询问项。若用户已明确给出，可写入 `plan.md`；否则由 `2analysis-modeling` 根据题面自动识别，不在 1start 阶段强制追问。
+
+不在本阶段询问：具体模型、benchmark、绘图细节、算法参数、以及其他应由下游阶段决定的内容。
 
 将用户的选择记录到 `plan.md` 的"方案"小节中。
 
 
 ### 2. 制定方案
 
-按以下结构编写 `plan.md`：
+按以下结构编写 `plan.md`，保持轻量：
 
 ```markdown
 # 方案
-
-要依次调用这些 skill，按照里面要求完成任务。
 
 用户偏好：
 - 排版引擎：<Typst / LaTeX>
 - 竞赛类型：<国赛 / 华为杯 / MCM / ...>
 - 论文语言：<中文 / 英文>
-- 子问题数量：<已知 N 个 / 待分析确定>
+- 子问题数量：<已知 N 个 / 待分析确定>（可选）
 
-workflow:
-   step      skills
-1. 赛题分析与建模设计 - `2analysis-modeling`
-2. 编程实现和图表生成 - `3coding-visual`
-3. 流程与架构图绘制 - `4drawio`
-4. 竞赛论文撰写 - `5writing`
-5. 验证和验收 - `6verity`
+当前阶段：2analysis-modeling
+阶段推进：2analysis → 3coding → 4drawio（按需）→ 5writing → 6verity
+阻断原则：
+- 存在 blocker / 未完成关键 checkpoint 时暂停
+- 需要改变模型路线时回退 2analysis
+- 实现问题回退 3coding
+- 论文表达问题回退 5writing
 ```
+
+`plan.md` 不做运行日志，也不增加复杂表格或 DAG。
 
 ## 项目目录结构
 
@@ -98,12 +101,12 @@ workflow:
 
 - [ ] 1. 赛题分析与建模设计 - `2analysis-modeling`
 - [ ] 2. 编程实现和图表生成 - `3coding-visual`
-- [ ] 3. 流程与架构图绘制 - `4drawio`
+- [ ] 3. 非数据图示（按需） - `4drawio`
 - [ ] 4. 竞赛论文撰写 - `5writing`
 - [ ] 5. 验证和验收 - `6verity`
 ```
 
-每完成一个阶段，都要更新 `todo.md` 中对应任务的状态。
+若某阶段 blocked，只在该项后简短备注原因，不增加复杂语法体系。
 
 ### 4. 依次执行阶段
 
@@ -111,18 +114,77 @@ workflow:
 
 | 阶段 | Skill | 作用 | 主要产物 |
 | --- | --- | --- | --- |
-| 赛题分析与建模设计 | `2analysis-modeling` | 解析题意、识别变量/约束/数据/评价指标，并建立数学模型、目标函数、约束条件和求解策略。 | `ANALYSIS_MODELING_REPORT.md` |
-| 编程实现和图表生成 | `3coding-visual` | 实现可复现代码，运行实验，生成结果表和多种多样的图表。 | `code/`, `results/` ,  `RESULTS_REPORT.md`, `figures/图表` |
-| 流程与架构图绘制 | `4drawio` | 在论文确实需要时，绘制方法流程图、架构图和非数据型概念图。 | `figures/*.drawio`, `figures/*.pdf`, `DRAWIO_REPORT.md` |
-| 竞赛论文撰写 | `5writing` | 基于分析、建模、代码结果和图表撰写最终竞赛论文，并按章节直接插入图表。 | `paper/` |
-| 验证和验收 | `6verity` | 检查可复现性、一致性、产物完整性、格式规范和提交就绪状态。 | `VERIFY_REPORT.md` |
+| 赛题分析与建模设计 | `2analysis-modeling` | 解析题面、识别子问题、确定模型路线、关键假设和验证要求。 | `ANALYSIS_MODELING_REPORT.md` |
+| 编程实现和图表生成 | `3coding-visual` | 实现可复现代码、运行实验、输出结果和数据图表。 | `code/`, `results/`, `RESULTS_REPORT.md`, `figures/` |
+| 非数据图示（按需） | `4drawio` | 在论文确实需要时，绘制流程图、架构图、路线图等非数据型图示。 | `figures/*.drawio`, `figures/*.pdf`, `DRAWIO_REPORT.md` |
+| 竞赛论文撰写 | `5writing` | 基于已验证证据写论文。 | `paper/` |
+| 验证和验收 | `6verity` | 最终门禁：一致性、编译、图表、提交状态检查。 | `VERIFY_REPORT.md` |
 
 ## 阶段边界
 
 - `3coding-visual` 负责生成所有依赖计算结果或实验输出的数据图表。
-- `4drawio` 只负责概念图、算法流程图、架构图、路线图等非数据型图示。
-- 不要让 `4drawio` 重复绘制 `3coding-visual` 已经生成的统计图或数据图。
+- `4drawio` 只负责概念图、算法流程图、架构图、路线图等非数据型图示；不是每道题都必须生成图。
+- 若本题不需要非数据型图，可在 `todo.md` 中标记 `done: not needed`，不得为了完成 workflow 强制生成无意义图示。
 - `5writing` 负责决定图表在论文中的位置，并按所选引擎写入图表代码：
   - Typst：`#figure(image("../../figures/xxx.pdf", width: 85%), caption: [...])`
   - LaTeX：`\begin{figure}[H]\centering\includegraphics[width=0.85\textwidth]{../../figures/xxx.pdf}\caption{...}\label{fig:xxx}\end{figure}`
 - 不要让 `5writing` 编造数值结论。论文中的数值必须来自 `RESULTS_REPORT.md`、结果表或已生成图表的数据。
+
+## 阶段推进规则（canonical）
+
+1. 当前阶段完成且关键产物存在，才能进入下一阶段。
+2. 若当前阶段存在未解决 checkpoint 或 blocker，不得继续推进。
+3. 若下游 skill 明确要求回退，则将对应阶段标记为 `blocked`，并回到指定前序阶段处理。
+4. `1start-mathmodel` 只负责推进 / 暂停 / 回退，不自行替代下游重新判断模型、结果或论文内容。
+
+关键门槛：
+
+- `2analysis-modeling → 3coding-visual`
+  - `ANALYSIS_MODELING_REPORT.md` 已生成。
+  - 最终重大模型路线已完成必要确认。
+- `3coding-visual → 4drawio / 5writing`
+  - `RESULTS_REPORT.md` 与核心结果已生成。
+  - 不存在路线级 blocker。
+- `4drawio → 5writing`
+  - 若本题需要非数据图，则相关图示已完成；若不需要，可直接跳过。
+- `5writing → 6verity`
+  - `paper/` 已形成可验收论文。
+  - 关键结果有证据来源。
+- `6verity`
+  - `P0 / P1` 未清零时不得标记最终完成。
+  - 若需要回退，按 `VERIFY_REPORT.md` 指向的阶段处理。
+
+## 阶段状态
+
+只使用四种状态，不做复杂状态机：
+
+- `pending`
+- `in progress`
+- `done`
+- `blocked`
+
+`blocked` 后直接记录原因，例如：
+
+- `blocked: 等待最终模型路线确认`
+- `blocked: 3coding 要求回退 2analysis`
+- `blocked: 5writing 缺少可信结果`
+- `blocked: 6verity 存在 P0/P1`
+
+`1start-mathmodel` 只负责判断是否推进、暂停或回退，不承担后续阶段的具体判断。
+
+## 读取边界
+
+`1start-mathmodel` 可以检查：
+
+- 阶段产物是否存在；
+- 下游报告是否明确存在 blocker / checkpoint / FAIL；
+- 是否满足进入下一阶段的最小条件。
+
+但不要：
+
+- 自己重新分析赛题；
+- 自己重新评估模型优劣；
+- 自己解释数值结果；
+- 自己审论文事实。
+
+这些仍由对应下游 skill 负责。
