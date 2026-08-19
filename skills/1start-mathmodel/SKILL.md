@@ -80,9 +80,10 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 │   ├── problem2.py
 │   ├── problem3.py               # 问题的数量应该更具题目动态调整
 │   ├── ... 
-│   └── utils.py
-├── results/                     # 2: 结果记录（3coding-visual）
-├── figures/                     # 2+3: 所有图表（3coding-visual + 4drawio）
+│   ├── utils.py
+│   └── outputs/                 #     运行中间产物、调试输出、模型日志、临时计算结果
+├── results/                     # 2: 最终或结构化结果数据、关键指标及后续可直接引用的数据文件
+├── figures/                     # 2+3: 论文可用图表及必要图源（3coding-visual + 4drawio）
 │   ├── *.pdf                    #     数据图 + 非数据图 PDF
 │   ├── *.drawio                 #     非数据图源文件
 ├── paper/                       # 4: 论文（5writing）

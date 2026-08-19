@@ -28,6 +28,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 冲突处理：
 
 - 论文与 `RESULTS_REPORT` 不一致 → 判定为 5writing 问题。
+- `RESULTS_REPORT.md` 与真实结果文件不一致 → 不自行选择哪个正确；必须回退 `3coding-visual`，由代码阶段重新核对并统一结果记录后再继续。
 - `RESULTS_REPORT` 与分析路线不一致：
   - 若只是实现偏差 → 回 3coding；
   - 若涉及模型类型、关键假设、目标函数或主要约束变化 → 回 2analysis。
@@ -243,7 +244,8 @@ fi
 
 原则：
 
-- P0、P1 必须在最终 PASS 前解决或明确回退处理。
+- 只要仍存在未解决的 P0 或 P1，结论必须为 `FAIL` / `blocked`，不得写 `PASS`。
+- 已明确回退但尚未修复，不视为通过；回退修复完成后必须重新执行 `6verity`，确认 P0、P1 清零后才可写 `PASS`。
 - P2 尽量修，但不能因为 P2 阻塞真正重要的提交节奏。
 
 ## 自动修复边界
@@ -295,4 +297,4 @@ PASS / FAIL
 - 是否可提交：是 / 否
 ```
 
-只有当 P0 与 P1 都已解决或明确回退、P2 仅为轻微问题、编译与 PDF 检查完毕时，才写 `PASS`。
+只有当 P0 与 P1 均已清零、P2 仅为轻微问题、编译与 PDF 检查完毕时，才写 `PASS`。若存在尚未修复的回退事项，结论必须为 `FAIL` / `blocked`；修复完成后必须重新执行 `6verity`。

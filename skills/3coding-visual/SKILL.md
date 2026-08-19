@@ -38,7 +38,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ### Step 1: 代码结构
 
-按 `plan.md` 中"项目目录结构"创建 `code/` 和 `figures/` 骨架，再开始写代码。子问题数不一定是 3，按赛题实际数量调整。
+按 `plan.md` 中"项目目录结构"创建 `code/`、`code/outputs/`、`results/` 和 `figures/` 骨架，再开始写代码。子问题数不一定是 3，按赛题实际数量调整。
 
 
 ### Step 2: 逐子问题实现
@@ -58,7 +58,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 ### Step 3: 结果文件格式
 
-AI 在实现、求解和作图过程中，必须把关键中间过程保存成数据并做好记录，例如清洗后的数据摘要、模型参数、迭代历史、约束检查、灵敏度分析过程、图表所用数据和运行日志。中间数据优先保存到 `figures/` 或 `code/outputs/`，并在 `reports/RESULTS_REPORT.md` 中说明文件用途。
+AI 在实现、求解和作图过程中，必须把关键过程保存成数据并做好记录，例如清洗后的数据摘要、模型参数、迭代历史、约束检查、灵敏度分析过程、图表所用数据和运行日志。最终或结构化结果数据、关键指标及可供后续阶段直接引用的数据文件保存到 `results/`；运行中间产物、调试输出、模型日志和临时计算结果保存到 `code/outputs/`；`figures/` 只保存论文可用图表及必要图源，不保存普通结果数据。各文件用途应在 `reports/RESULTS_REPORT.md` 中说明。
 
 `reports/RESULTS_REPORT.md` 最小交付内容：
 
