@@ -40,6 +40,8 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 按 `plan.md` 中"项目目录结构"创建 `code/`、`code/outputs/`、`results/` 和 `figures/` 骨架，再开始写代码。子问题数不一定是 3，按赛题实际数量调整。
 
+优先复用用户已配置且满足当前任务的长期数学建模 Python 环境（当前用户可优先使用 `cumcm`），不要为每个赛题重复创建项目级 `.venv` 或重复安装已有公共依赖。对 Conda 环境，优先在已正确激活的 shell 中执行，或使用 `conda run -n <env> --no-capture-output python ...`；不要默认认为直接调用环境目录中的 `python.exe` 等价于完整激活 Conda 运行环境。新建长期环境或进行重大依赖变更后，除 import 检查外，至少执行少量 NumPy 基本运算、线性代数、SciPy 和所需统计模型的真实计算 smoke test；该验证只在环境首次建立或重大变化后执行，不得为每道赛题重复运行。运行前将实际 Python 解释器路径、Python 版本和调用方式写入 `reports/RESULTS_REPORT.md` 的“运行环境”。缺少题目特有依赖时只补充必要依赖；若必须创建或修改环境、进行较大的依赖变更，应先告知用户，且不得把环境管理变成正常工作流中的重复耗时步骤。
+
 
 ### Step 2: 逐子问题实现
 
