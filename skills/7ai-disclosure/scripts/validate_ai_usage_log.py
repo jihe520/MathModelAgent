@@ -19,35 +19,22 @@ SECRET_PATTERNS = {
     "环境变量密钥": re.compile(r"\b[A-Z][A-Z0-9_]*(?:API_KEY|TOKEN|SECRET)\s*=\s*\S+"),
 }
 
-REQUIRED_HEADINGS = (
-    "基本信息",
-    "AI 工具目录",
-    "分阶段使用记录",
-    "典型交互示例",
-    "未采纳的重要 AI 建议或结果",
-    "最终确认",
-)
-REQUIRED_BASIC = ("竞赛名称", "赛题编号或名称", "参赛队号", "记录起止时间")
-REQUIRED_TOOL = ("工具名称", "提供方", "版本或模型", "使用入口或方式", "信息来源及确认状态")
+REQUIRED_HEADINGS = ("AI 工具目录", "AI 使用记录")
+REQUIRED_TOOL = ("工具名称", "版本或型号")
 REQUIRED_RECORD = (
-    "使用阶段",
     "工具编号",
-    "使用目的",
-    "主要提示方式或代表性提示摘要",
-    "使用过程摘要",
+    "使用环节",
+    "具体使用目的",
+    "是否仅用于语言润色",
+    "主要提示方式",
+    "使用过程说明",
     "AI 输出采纳情况",
-    "人工修改内容",
-    "人工核验方法与结果",
     "对应证据文件或产物",
-    "负责确认的队员",
     "当前状态",
 )
-REQUIRED_FINAL = (
-    "核心建模与分析由参赛队主导",
-    "所有记录已逐项人工审查",
-    "仍有待核实内容",
-    "队员确认",
-)
+REQUIRED_HUMAN_REVIEW = ("人工修改内容", "人工核验方法与结果")
+REQUIRED_EXAMPLE = ("对应记录", "代表性提示摘要", "AI 输出摘要", "队员处理")
+ID_PATTERN = re.compile(r"^###\s+((?:TOOL-\d{2})|(?:AI-\d{3})|(?:EX-\d{3}))\s*$", re.M)
 
 
 def parse_fields(text: str) -> dict[str, list[str]]:
@@ -59,8 +46,8 @@ def parse_fields(text: str) -> dict[str, list[str]]:
     return fields
 
 
-def sections_by_id(text: str, pattern: str) -> list[tuple[str, str]]:
-    matches = list(re.finditer(pattern, text, flags=re.M))
+def id_sections(text: str) -> list[tuple[str, str]]:
+    matches = list(ID_PATTERN.finditer(text))
     result: list[tuple[str, str]] = []
     for index, match in enumerate(matches):
         end = matches[index + 1].start() if index + 1 < len(matches) else len(text)
@@ -79,129 +66,126 @@ def is_pending(value: str) -> bool:
 
 
 def validate(path: Path, mode: str) -> list[str]:
-    errors: list[str] = []
     if not path.is_file():
         return [f"日志不存在：{path}"]
-    text = path.read_text(encoding="utf-8-sig")
 
-    for name in REQUIRED_HEADINGS:
-        if not re.search(rf"^##\s+{re.escape(name)}\s*$", text, flags=re.M):
-            errors.append(f"缺少二级标题：{name}")
+    text = path.read_text(encoding="utf-8-sig")
+    errors: list[str] = []
+
+    for heading in REQUIRED_HEADINGS:
+        if not re.search(rf"^##\s+{re.escape(heading)}\s*$", text, flags=re.M):
+            errors.append(f"缺少二级标题：{heading}")
 
     for label, pattern in SECRET_PATTERNS.items():
         if pattern.search(text):
             errors.append(f"检测到疑似{label}，请删除或脱敏")
 
-    fields = parse_fields(text)
-    for name in missing_fields(fields, REQUIRED_BASIC):
-        errors.append(f"基本信息缺少字段或值：{name}")
-    for name in missing_fields(fields, REQUIRED_FINAL):
-        errors.append(f"最终确认缺少字段或值：{name}")
-
-    tools = sections_by_id(text, r"^###\s+(TOOL-\d+)\s*$")
-    records = sections_by_id(text, r"^###\s+(AI-\d+)\s*$")
+    sections = id_sections(text)
+    tools = [(item_id, block) for item_id, block in sections if item_id.startswith("TOOL-")]
+    records = [(item_id, block) for item_id, block in sections if item_id.startswith("AI-")]
+    examples = [(item_id, block) for item_id, block in sections if item_id.startswith("EX-")]
     tool_ids = [item_id for item_id, _ in tools]
     record_ids = [item_id for item_id, _ in records]
+    example_ids = [item_id for item_id, _ in examples]
 
-    if len(tool_ids) != len(set(tool_ids)):
-        errors.append("AI 工具编号重复")
-    if len(record_ids) != len(set(record_ids)):
-        errors.append("阶段记录编号重复")
     if not tools:
         errors.append("至少需要一个 TOOL-xx 工具条目")
     if not records:
-        errors.append("至少需要一个 AI-xxx 阶段记录")
+        errors.append("至少需要一个 AI-xxx 使用记录")
+    for label, ids in (("工具", tool_ids), ("使用记录", record_ids), ("典型交互", example_ids)):
+        if len(ids) != len(set(ids)):
+            errors.append(f"{label}编号重复")
 
     for tool_id, block in tools:
-        tool_fields = parse_fields(block)
-        for name in missing_fields(tool_fields, REQUIRED_TOOL):
+        fields = parse_fields(block)
+        for name in missing_fields(fields, REQUIRED_TOOL):
             errors.append(f"{tool_id} 缺少字段或值：{name}")
 
     for record_id, block in records:
-        record_fields = parse_fields(block)
-        for name in missing_fields(record_fields, REQUIRED_RECORD):
+        fields = parse_fields(block)
+        for name in missing_fields(fields, REQUIRED_RECORD):
             errors.append(f"{record_id} 缺少字段或值：{name}")
-        refs = record_fields.get("工具编号", [])
-        referenced = re.findall(r"TOOL-\d+", " ".join(refs))
-        if not referenced:
+
+        references = re.findall(r"TOOL-\d{2}", " ".join(fields.get("工具编号", [])))
+        if not references:
             errors.append(f"{record_id} 未引用 TOOL-xx")
-        for ref in referenced:
-            if ref not in tool_ids:
-                errors.append(f"{record_id} 引用了不存在的工具：{ref}")
-        status = " ".join(record_fields.get("当前状态", []))
+        for reference in references:
+            if reference not in tool_ids:
+                errors.append(f"{record_id} 引用了不存在的工具：{reference}")
+
+        language_only = " ".join(fields.get("是否仅用于语言润色", []))
+        if language_only and language_only not in {"是", "否", "待队员确认"}:
+            errors.append(f"{record_id} “是否仅用于语言润色”只能是“是”“否”或“待队员确认”")
+        if language_only != "是":
+            for name in missing_fields(fields, REQUIRED_HUMAN_REVIEW):
+                errors.append(f"{record_id} 非纯语言润色，缺少字段或值：{name}")
+
+        status = " ".join(fields.get("当前状态", []))
         if status and status not in {"已确认", "待队员确认"}:
             errors.append(f"{record_id} 当前状态只能是“已确认”或“待队员确认”")
 
+    for example_id, block in examples:
+        fields = parse_fields(block)
+        for name in missing_fields(fields, REQUIRED_EXAMPLE):
+            errors.append(f"{example_id} 缺少字段或值：{name}")
+        references = re.findall(r"AI-\d{3}", " ".join(fields.get("对应记录", [])))
+        if not references:
+            errors.append(f"{example_id} 未引用 AI-xxx")
+        for reference in references:
+            if reference not in record_ids:
+                errors.append(f"{example_id} 引用了不存在的记录：{reference}")
+
     if mode == "finalize":
-        for field_name, values in fields.items():
+        for field_name, values in parse_fields(text).items():
             for value in values:
                 if is_pending(value):
                     errors.append(f"最终生成前仍有待确认或占位内容：{field_name}")
         for record_id, block in records:
-            status = " ".join(parse_fields(block).get("当前状态", []))
-            if status != "已确认":
+            fields = parse_fields(block)
+            if " ".join(fields.get("当前状态", [])) != "已确认":
                 errors.append(f"{record_id} 尚未标记为“已确认”")
-        final_values = {name: fields.get(name, [""])[-1].strip() for name in REQUIRED_FINAL}
-        if final_values["核心建模与分析由参赛队主导"] != "是":
-            errors.append("最终确认必须明确“核心建模与分析由参赛队主导：是”")
-        if final_values["所有记录已逐项人工审查"] != "是":
-            errors.append("最终确认必须明确“所有记录已逐项人工审查：是”")
-        if final_values["仍有待核实内容"] != "否":
-            errors.append("最终确认必须明确“仍有待核实内容：否”")
-        if not final_values["队员确认"] or is_pending(final_values["队员确认"]):
-            errors.append("缺少有效的队员确认")
 
     return list(dict.fromkeys(errors))
 
 
 VALID_SAMPLE = """# AI 工具使用过程记录
-## 基本信息
-- 竞赛名称：全国大学生数学建模竞赛
-- 赛题编号或名称：A 题
-- 参赛队号：20260001
-- 记录起止时间：2026-09-10 至 2026-09-13
 ## AI 工具目录
 ### TOOL-01
 - 工具名称：示例工具
-- 提供方：示例提供方
-- 版本或模型：示例模型 1
-- 使用入口或方式：网页端
-- 信息来源及确认状态：界面显示，已确认
-## 分阶段使用记录
+- 版本或型号：示例模型 1
+## AI 使用记录
 ### AI-001
-- 使用阶段：代码复核
 - 工具编号：TOOL-01
-- 使用目的：检查边界条件
-- 主要提示方式或代表性提示摘要：给出代码和约束，请列出边界风险
-- 使用过程摘要：模型给出检查清单，队员逐项验证
+- 使用环节：代码复核
+- 具体使用目的：检查边界条件
+- 是否仅用于语言润色：否
+- 主要提示方式：提供代码和约束，请列出边界风险
+- 使用过程说明：模型给出检查清单，队员逐项验证
 - AI 输出采纳情况：部分采纳
 - 人工修改内容：删除不适用建议并补充测试
 - 人工核验方法与结果：运行边界测试，全部通过
 - 对应证据文件或产物：tests/test_boundary.py
-- 负责确认的队员：队员甲
 - 当前状态：已确认
-## 典型交互示例
+## 典型交互示例（可选）
 ### EX-001
 - 对应记录：AI-001
 - 代表性提示摘要：检查边界条件
-- AI 结果摘要：列出三类风险
+- AI 输出摘要：列出三类风险
 - 队员处理：逐项测试后采纳两项
-## 未采纳的重要 AI 建议或结果
-- 建议更换模型，经对比后未采纳
-## 最终确认
-- 核心建模与分析由参赛队主导：是
-- 所有记录已逐项人工审查：是
-- 仍有待核实内容：否
-- 队员确认：队员甲、队员乙、队员丙已共同确认
 """
 
 
 def self_test() -> int:
+    language_sample = VALID_SAMPLE.replace("- 是否仅用于语言润色：否", "- 是否仅用于语言润色：是")
+    language_sample = language_sample.replace("- 人工修改内容：删除不适用建议并补充测试\n", "")
+    language_sample = language_sample.replace("- 人工核验方法与结果：运行边界测试，全部通过\n", "")
     cases = [
         ("valid", VALID_SAMPLE, "finalize", False),
-        ("pending", VALID_SAMPLE.replace("队员甲、队员乙、队员丙已共同确认", "待队员确认"), "finalize", True),
+        ("language_only", language_sample, "finalize", False),
+        ("pending", VALID_SAMPLE.replace("- 当前状态：已确认", "- 当前状态：待队员确认"), "finalize", True),
         ("bad_ref", VALID_SAMPLE.replace("- 工具编号：TOOL-01", "- 工具编号：TOOL-99"), "record", True),
         ("secret", VALID_SAMPLE + "\n- 备注：sk-abcdefghijklmnopqrstuvwxyz\n", "record", True),
+        ("missing_review", VALID_SAMPLE.replace("- 人工核验方法与结果：运行边界测试，全部通过\n", ""), "record", True),
     ]
     with tempfile.TemporaryDirectory() as tmpdir:
         for name, content, mode, should_fail in cases:
