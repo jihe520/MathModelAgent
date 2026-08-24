@@ -1,5 +1,5 @@
 % !TeX program = xelatex
-% 按真实记录增删工具和使用记录；第二至第四部分统一引用 TOOL-xx。
+% 由 generate_ai_usage_pdf.py 根据已确认日志填充；不要直接提交本源文件。
 \documentclass[UTF8,a4paper,11pt]{ctexart}
 \usepackage[a4paper,top=2.0cm,bottom=2.0cm,left=2.15cm,right=2.15cm]{geometry}
 \usepackage{array,booktabs,longtable,fancyhdr,lastpage}
@@ -11,8 +11,7 @@
 \definecolor{tablehead}{HTML}{E4EDF3}
 \definecolor{rulegray}{HTML}{AAB8C2}
 \definecolor{bodytext}{HTML}{263746}
-\definecolor{placeholder}{HTML}{667580}
-\newcommand{\fillin}[1]{\textcolor{placeholder}{【#1】}}
+\definecolor{mutedtext}{HTML}{667580}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 \newcommand{\sectiontitle}[1]{%
   \par\vspace{0.65em}\noindent
@@ -35,7 +34,7 @@
 \addtolength{\topmargin}{-7pt}
 \fancyhf{}
 \fancyhead[L]{\textcolor{accent}{\bfseries AI 工具使用详情}}
-\fancyfoot[C]{\textcolor{placeholder}{第 \thepage\ 页，共 \pageref{LastPage} 页}}
+\fancyfoot[C]{\textcolor{mutedtext}{第 \thepage\ 页，共 \pageref{LastPage} 页}}
 \renewcommand{\headrulewidth}{0pt}
 \renewcommand{\headrule}{\hbox to\headwidth{\color{accent}\leaders\hrule height 0.6pt\hfill}}
 \renewcommand{\footrulewidth}{0pt}
@@ -59,7 +58,7 @@
 \rowcolor{tablehead}\textcolor{accent}{\textbf{编号}} & \textcolor{accent}{\textbf{AI 工具名称}} & \textcolor{accent}{\textbf{版本或型号}} \\
 \midrule
 \endhead
-TOOL-01 & \fillin{工具名称} & \fillin{版本或型号} \\
+%%__TOOLS_ROWS__%%
 \bottomrule
 \end{longtable}
 
@@ -73,31 +72,14 @@ TOOL-01 & \fillin{工具名称} & \fillin{版本或型号} \\
 \rowcolor{tablehead}\textcolor{accent}{\textbf{工具编号}} & \textcolor{accent}{\textbf{使用环节}} & \textcolor{accent}{\textbf{具体使用目的}} \\
 \midrule
 \endhead
-TOOL-01 & \fillin{使用环节} & \fillin{概括使用该工具解决的具体问题及范围} \\
+%%__PURPOSE_ROWS__%%
 \bottomrule
 \end{longtable}
 
 \sectiontitle{三、主要提示方式与使用过程说明}
-\recordheading{1}{TOOL-01}
-\textbf{主要提示方式：}\fillin{概括输入材料、角色要求、约束条件和输出格式}。
-
-\textbf{使用过程：}\fillin{概括主要步骤、必要迭代和队员参与过程}。
-
-\medskip
-\noindent\textbf{典型交互示例（可选）}
-
-\textbf{代表性提示摘要：}\fillin{只写代表性提示摘要，不复制完整聊天}。
-
-\textbf{AI 输出摘要：}\fillin{概括关键建议或结果}。
-
-\textbf{队员处理：}\fillin{说明如何判断、筛选或继续验证}。
+%%__PROCESS_BLOCKS__%%
 
 \sectiontitle{四、对 AI 输出的采纳、人工修改和核验的主要情况}
-\recordheading{1}{TOOL-01}
-\textbf{采纳情况：}\fillin{说明完全采纳、部分采纳或未采纳的范围}。
-
-\textbf{人工修改：}\fillin{说明队员所作实质修改；仅语言润色可写“不适用”}。
-
-\textbf{人工核验：}\fillin{说明复算、测试、交叉验证或文献核查的方法与结果；仅语言润色可写“不适用”}。
+%%__ADOPTION_BLOCKS__%%
 
 \end{document}

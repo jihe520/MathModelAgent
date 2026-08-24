@@ -9,13 +9,12 @@ import sys
 import tempfile
 from pathlib import Path
 
-
 PENDING_MARKERS = ("待队员确认", "请填写", "TODO", "PLACEHOLDER")
 SECRET_PATTERNS = {
     "OpenAI 风格密钥": re.compile(r"\bsk-[A-Za-z0-9_-]{12,}\b"),
     "GitHub 令牌": re.compile(r"\b(?:ghp|github_pat)_[A-Za-z0-9_]{12,}\b"),
     "Tavily 密钥": re.compile(r"\btvly-[A-Za-z0-9_-]{12,}\b"),
-    "Bearer 令牌": re.compile(r"\bBearer\s+[A-Za-z0-9._~+/-]{12,}", re.I),
+    "Bearer 令牌": re.compile(r"\bBearer\s+[A-Za-z0-9._~+/-]{12,}", re.IGNORECASE),
     "环境变量密钥": re.compile(r"\b[A-Z][A-Z0-9_]*(?:API_KEY|TOKEN|SECRET)\s*=\s*\S+"),
 }
 
@@ -34,7 +33,9 @@ REQUIRED_RECORD = (
 )
 REQUIRED_HUMAN_REVIEW = ("人工修改内容", "人工核验方法与结果")
 REQUIRED_EXAMPLE = ("对应记录", "代表性提示摘要", "AI 输出摘要", "队员处理")
-ID_PATTERN = re.compile(r"^###\s+((?:TOOL-\d{2})|(?:AI-\d{3})|(?:EX-\d{3}))\s*$", re.M)
+ID_PATTERN = re.compile(
+    r"^###\s+((?:TOOL-\d{2})|(?:AI-\d{3})|(?:EX-\d{3}))\s*$", re.MULTILINE
+)
 
 
 def parse_fields(text: str) -> dict[str, list[str]]:
@@ -55,14 +56,23 @@ def id_sections(text: str) -> list[tuple[str, str]]:
     return result
 
 
-def missing_fields(fields: dict[str, list[str]], required: tuple[str, ...]) -> list[str]:
+def missing_fields(
+    fields: dict[str, list[str]], required: tuple[str, ...]
+) -> list[str]:
     return [name for name in required if name not in fields or not any(fields[name])]
 
 
 def is_pending(value: str) -> bool:
-    return not value.strip() or any(marker.casefold() in value.casefold() for marker in PENDING_MARKERS) or bool(
-        re.search(r"【[^】]*】", value)
+    return (
+        not value.strip()
+        or any(marker.casefold() in value.casefold() for marker in PENDING_MARKERS)
+        or bool(re.search(r"【[^】]*】", value))
     )
+
+
+def expected_ids(prefix: str, count: int, width: int) -> list[str]:
+    """Build the required contiguous identifiers for one entry type."""
+    return [f"{prefix}-{index:0{width}d}" for index in range(1, count + 1)]
 
 
 def validate(path: Path, mode: str) -> list[str]:
@@ -73,7 +83,7 @@ def validate(path: Path, mode: str) -> list[str]:
     errors: list[str] = []
 
     for heading in REQUIRED_HEADINGS:
-        if not re.search(rf"^##\s+{re.escape(heading)}\s*$", text, flags=re.M):
+        if not re.search(rf"^##\s+{re.escape(heading)}\s*$", text, flags=re.MULTILINE):
             errors.append(f"缺少二级标题：{heading}")
 
     for label, pattern in SECRET_PATTERNS.items():
@@ -81,9 +91,15 @@ def validate(path: Path, mode: str) -> list[str]:
             errors.append(f"检测到疑似{label}，请删除或脱敏")
 
     sections = id_sections(text)
-    tools = [(item_id, block) for item_id, block in sections if item_id.startswith("TOOL-")]
-    records = [(item_id, block) for item_id, block in sections if item_id.startswith("AI-")]
-    examples = [(item_id, block) for item_id, block in sections if item_id.startswith("EX-")]
+    tools = [
+        (item_id, block) for item_id, block in sections if item_id.startswith("TOOL-")
+    ]
+    records = [
+        (item_id, block) for item_id, block in sections if item_id.startswith("AI-")
+    ]
+    examples = [
+        (item_id, block) for item_id, block in sections if item_id.startswith("EX-")
+    ]
     tool_ids = [item_id for item_id, _ in tools]
     record_ids = [item_id for item_id, _ in records]
     example_ids = [item_id for item_id, _ in examples]
@@ -92,9 +108,20 @@ def validate(path: Path, mode: str) -> list[str]:
         errors.append("至少需要一个 TOOL-xx 工具条目")
     if not records:
         errors.append("至少需要一个 AI-xxx 使用记录")
-    for label, ids in (("工具", tool_ids), ("使用记录", record_ids), ("典型交互", example_ids)):
+    for label, ids in (
+        ("工具", tool_ids),
+        ("使用记录", record_ids),
+        ("典型交互", example_ids),
+    ):
         if len(ids) != len(set(ids)):
             errors.append(f"{label}编号重复")
+    for label, ids, prefix, width in (
+        ("工具", tool_ids, "TOOL", 2),
+        ("使用记录", record_ids, "AI", 3),
+        ("典型交互", example_ids, "EX", 3),
+    ):
+        if ids and ids != expected_ids(prefix, len(ids), width):
+            errors.append(f"{label}编号必须从 1 开始连续递增")
 
     for tool_id, block in tools:
         fields = parse_fields(block)
@@ -115,7 +142,9 @@ def validate(path: Path, mode: str) -> list[str]:
 
         language_only = " ".join(fields.get("是否仅用于语言润色", []))
         if language_only and language_only not in {"是", "否", "待队员确认"}:
-            errors.append(f"{record_id} “是否仅用于语言润色”只能是“是”“否”或“待队员确认”")
+            errors.append(
+                f"{record_id} “是否仅用于语言润色”只能是“是”“否”或“待队员确认”"
+            )
         if language_only != "是":
             for name in missing_fields(fields, REQUIRED_HUMAN_REVIEW):
                 errors.append(f"{record_id} 非纯语言润色，缺少字段或值：{name}")
@@ -176,16 +205,43 @@ VALID_SAMPLE = """# AI 工具使用过程记录
 
 
 def self_test() -> int:
-    language_sample = VALID_SAMPLE.replace("- 是否仅用于语言润色：否", "- 是否仅用于语言润色：是")
-    language_sample = language_sample.replace("- 人工修改内容：删除不适用建议并补充测试\n", "")
-    language_sample = language_sample.replace("- 人工核验方法与结果：运行边界测试，全部通过\n", "")
+    language_sample = VALID_SAMPLE.replace(
+        "- 是否仅用于语言润色：否", "- 是否仅用于语言润色：是"
+    )
+    language_sample = language_sample.replace(
+        "- 人工修改内容：删除不适用建议并补充测试\n", ""
+    )
+    language_sample = language_sample.replace(
+        "- 人工核验方法与结果：运行边界测试，全部通过\n", ""
+    )
     cases = [
         ("valid", VALID_SAMPLE, "finalize", False),
         ("language_only", language_sample, "finalize", False),
-        ("pending", VALID_SAMPLE.replace("- 当前状态：已确认", "- 当前状态：待队员确认"), "finalize", True),
-        ("bad_ref", VALID_SAMPLE.replace("- 工具编号：TOOL-01", "- 工具编号：TOOL-99"), "record", True),
-        ("secret", VALID_SAMPLE + "\n- 备注：sk-abcdefghijklmnopqrstuvwxyz\n", "record", True),
-        ("missing_review", VALID_SAMPLE.replace("- 人工核验方法与结果：运行边界测试，全部通过\n", ""), "record", True),
+        (
+            "pending",
+            VALID_SAMPLE.replace("- 当前状态：已确认", "- 当前状态：待队员确认"),
+            "finalize",
+            True,
+        ),
+        (
+            "bad_ref",
+            VALID_SAMPLE.replace("- 工具编号：TOOL-01", "- 工具编号：TOOL-99"),
+            "record",
+            True,
+        ),
+        (
+            "secret",
+            VALID_SAMPLE + "\n- 备注：sk-abcdefghijklmnopqrstuvwxyz\n",
+            "record",
+            True,
+        ),
+        (
+            "missing_review",
+            VALID_SAMPLE.replace("- 人工核验方法与结果：运行边界测试，全部通过\n", ""),
+            "record",
+            True,
+        ),
+        ("non_contiguous", VALID_SAMPLE.replace("TOOL-01", "TOOL-02"), "record", True),
     ]
     with tempfile.TemporaryDirectory() as tmpdir:
         for name, content, mode, should_fail in cases:

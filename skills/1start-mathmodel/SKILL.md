@@ -1,7 +1,7 @@
 ---
 name: 1start-mathmodel
 description: "数学建模竞赛工作流入口。用于启动完整建模流程：询问用户偏好，生成 plan.md 和 todo.md，并按阶段调用赛题分析、建模、代码与图表、流程图、论文撰写、验证验收及 AI 使用披露等 skills。"
-allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetch
+allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, AskUserQuestion, WebSearch, WebFetch
 ---
 
 # 数学建模工作流
@@ -12,13 +12,20 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 如需领域判断，读取 `../_references/math_modeling_norms.md`。该文件只提供数学建模基本规范和防错知识，不改变本 skill 的阶段顺序和产出约定。
 
+## 国赛识别与强制披露
+
+- 用户选择 `CHINA`、国赛、CUMCM 或全国大学生数学建模竞赛时，立即将任务标记为国赛，并强制加载 `7ai-disclosure`。
+- 明确为其他赛事时，不生成国赛专用的 `AI 工具使用详情.pdf`。
+- 无法判断赛事时，在开始阶段询问一次赛事类型，不得等到论文完成后再判断。
+- 桌面 Agent 正在参与论文生成时，视为实际使用了 AI，不得走“全程未使用 AI”分支。
+
 ## 必须产出
 
 在当前工作目录中创建或更新以下文件：
 
 - `plan.md`：整体流程方案、建模方向、阶段顺序、预期产物和风险控制。
 - `todo.md`：具体待办事项列表，记录每个阶段的任务和状态。
-- `reports/AI_USAGE_LOG.md`：赛中持续维护的 AI 工具使用过程记录；未知内容明确标记为“待队员确认”。
+- 国赛任务的 `reports/AI_USAGE_LOG.md`：赛中持续维护的 AI 工具使用过程记录；未知内容明确标记为“待队员确认”。
 
 ## 工作流
 
@@ -58,7 +65,7 @@ workflow:
 3. 流程与架构图绘制 - `4drawio`
 4. 竞赛论文撰写 - `5writing`
 5. 验证和验收 - `6verity`
-6. AI 使用详情终检与生成 - `7ai-disclosure`
+6. AI 使用详情终检与生成 - `7ai-disclosure`（仅国赛强制）
 ```
 
 ## 项目目录结构
@@ -74,7 +81,7 @@ workflow:
 │   ├── RESULTS_REPORT.md            # 2: 结果报告（3coding-visual）
 │   ├── DRAWIO_REPORT.md             # 3: 非数据图说明（4drawio）
 │   ├── VERIFY_REPORT.md             # 5: 验收报告（6verity）
-│   └── AI_USAGE_LOG.md               # 全程: AI 使用记录（7ai-disclosure）
+│   └── AI_USAGE_LOG.md               # 国赛全程: AI 使用记录（7ai-disclosure）
 ├── code/                        # 2: 代码（3coding-visual）
 │   ├── problem1.py
 │   ├── problem2.py
@@ -107,7 +114,7 @@ workflow:
 - [ ] 3. 流程与架构图绘制 - `4drawio`
 - [ ] 4. 竞赛论文撰写 - `5writing`
 - [ ] 5. 验证和验收 - `6verity`
-- [ ] 6. AI 使用详情终检与生成 - `7ai-disclosure`
+- [ ] 6. AI 使用详情终检与生成 - `7ai-disclosure`（仅国赛强制）
 ```
 
 每完成一个阶段，都要更新 `todo.md` 中对应任务的状态。
@@ -123,15 +130,20 @@ workflow:
 | 流程与架构图绘制 | `4drawio` | 在论文确实需要时，绘制方法流程图、架构图和非数据型概念图。 | `figures/*.drawio`, `figures/*.pdf`, `DRAWIO_REPORT.md` |
 | 竞赛论文撰写 | `5writing` | 基于分析、建模、代码结果和图表撰写最终竞赛论文，并按章节直接插入图表。 | `paper/` |
 | 验证和验收 | `6verity` | 检查可复现性、一致性、产物完整性、格式规范和提交就绪状态。 | `VERIFY_REPORT.md` |
-| AI 使用详情终检与生成 | `7ai-disclosure` | 校验全过程记录，生成并验收赛事要求的 AI 使用支撑材料。 | `AI_USAGE_LOG.md`, `AI 工具使用详情.pdf` |
+| AI 使用详情终检与生成（仅国赛强制） | `7ai-disclosure` | 校验全过程记录，生成并验收赛事要求的 AI 使用支撑材料。 | `AI_USAGE_LOG.md`, `AI 工具使用详情.pdf` |
 
 ## AI 使用记录衔接
 
-- 工作流启动时，从 `7ai-disclosure/templates/AI_USAGE_LOG.md` 初始化 `reports/AI_USAGE_LOG.md`。
-- 每完成一个阶段，立即调用 `7ai-disclosure` 的 `record` 模式，根据真实对话和产物追加阶段级记录；不得等到赛后凭记忆补造。
-- `6verity` 完成论文验收后，调用 `7ai-disclosure` 的 `finalize` 模式。存在“待队员确认”时必须暂停生成并请队员补齐。
-- 若记录表明使用过 AI，但名称完全一致的 `supporting_materials/AI 工具使用详情.pdf` 尚未生成并通过检查，则整个提交包不得标记为最终 `PASS`。
-- 若队伍确认全程未使用 AI，不生成空白详情 PDF，并在验收报告中记录确认依据。
+以下规则只对国赛任务强制执行：
+
+1. 启动时加载 `7ai-disclosure`，从其模板初始化 `reports/AI_USAGE_LOG.md`。优先根据本次任务的真实模型配置创建工具条目；无法确认的版本留到最终一次性确认。
+2. `2analysis-modeling`、`3coding-visual`、`4drawio`、`5writing` 和 `6verity` 每个阶段结束后，立即调用 `7ai-disclosure record`，根据真实对话、模型配置和产物追加记录；不得等到赛后凭记忆补造。
+3. `6verity` 首先完成论文验收并得到 `PAPER_PASS`。此状态只表示论文通过，不能表示整个国赛提交包已经完成。
+4. 随后调用 `7ai-disclosure finalize`。它必须把工具版本、采纳情况、非语言润色类人工修改和人工核验等全部未知项合并为一条消息，只向队员集中确认一次。
+5. 队员回复后更新日志并运行确定性生成脚本。若回复仍缺少必填信息，应指出缺失项并停止，不得生成带占位符的提交版 PDF。
+6. 只有 `paper/main.pdf` 与名称完全一致的 `supporting_materials/AI 工具使用详情.pdf` 都存在并通过检查，才把 `todo.md` 的最后一步标记完成，并在 `reports/VERIFY_REPORT.md` 写最终 `PASS`。
+
+若不是桌面 Agent 参与生成、且队伍能够确认全程未使用任何 AI，才允许不生成空白详情 PDF，并在验收报告中写明确认依据。
 
 ## 阶段边界
 
