@@ -1,0 +1,144 @@
+% !TeX program = xelatex
+% 本模板用于全国大学生数学建模竞赛 AI 工具使用支撑材料。
+% 仅填写真实、经队员审核的内容；按实际条目增删表格行和记录块。
+\documentclass[UTF8,a4paper,11pt]{ctexart}
+\usepackage[a4paper,top=2.2cm,bottom=2.2cm,left=2.15cm,right=2.15cm]{geometry}
+\usepackage{array,booktabs,longtable,tabularx,fancyhdr,lastpage,enumitem}
+\usepackage[table]{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{rulegray}{HTML}{B7BDC5}
+\definecolor{headgray}{HTML}{EEF1F4}
+\definecolor{placeholder}{HTML}{666666}
+\newcommand{\fillin}[1]{\textcolor{placeholder}{【#1】}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\renewcommand{\arraystretch}{1.35}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.25em}
+\setlist[itemize]{leftmargin=2em,itemsep=0.2em,topsep=0.3em}
+
+\pagestyle{fancy}
+\setlength{\headheight}{15pt}
+\fancyhf{}
+\fancyhead[L]{全国大学生数学建模竞赛支撑材料}
+\fancyhead[R]{AI 工具使用详情}
+\fancyfoot[C]{第 \thepage\ 页，共 \pageref{LastPage} 页}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\begin{document}
+
+\begin{center}
+  {\zihao{2}\bfseries AI 工具使用详情}\par
+  \vspace{0.4em}
+  {\zihao{5}\color{placeholder}填写模板（提交前删除本行）}
+\end{center}
+
+\section*{一、基本信息}
+\noindent
+\begin{tabularx}{\textwidth}{L{3.6cm}Y}
+\toprule
+\rowcolor{headgray}\textbf{项目} & \textbf{填写内容} \\
+\midrule
+竞赛名称 & \fillin{填写竞赛全称} \\
+赛题编号或名称 & \fillin{填写赛题编号或名称} \\
+参赛队号 & \fillin{填写参赛队号} \\
+记录起止时间 & \fillin{年/月/日—年/月/日} \\
+材料生成日期 & \fillin{年/月/日} \\
+\bottomrule
+\end{tabularx}
+
+\section*{二、责任说明与填写原则}
+\noindent
+\fcolorbox{rulegray}{headgray}{%
+\parbox{0.94\textwidth}{
+本材料记录本队在竞赛过程中实际使用的 AI 工具及处理方式。核心建模与分析由参赛队主导；AI 生成或建议内容均须由队员人工审查、修改并验证。不得写入 API 密钥、账号密码、完整聊天记录、模型私有思维链或无关个人信息。
+}}
+
+\section*{三、AI 工具目录}
+\begin{longtable}{@{}L{1.4cm}L{3.0cm}L{3.0cm}L{3.2cm}L{4.0cm}@{}}
+\toprule
+\rowcolor{headgray}\textbf{编号} & \textbf{工具名称} & \textbf{提供方} & \textbf{版本或模型} & \textbf{使用入口或方式} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{headgray}\textbf{编号} & \textbf{工具名称} & \textbf{提供方} & \textbf{版本或模型} & \textbf{使用入口或方式} \\
+\midrule
+\endhead
+TOOL-01 & \fillin{名称} & \fillin{提供方} & \fillin{界面或官方信息所示版本/模型} & \fillin{网页端、客户端、API 等} \\
+\bottomrule
+\end{longtable}
+
+\section*{四、分阶段使用记录}
+\subsection*{AI-001：\fillin{阶段名称}}
+\noindent
+\begin{tabularx}{\textwidth}{L{4.2cm}Y}
+\toprule
+\rowcolor{headgray}\textbf{记录项} & \textbf{真实使用情况} \\
+\midrule
+所用工具编号 & \fillin{如 TOOL-01} \\
+使用目的 & \fillin{说明该阶段为何使用 AI} \\
+主要提示方式或代表性提示摘要 & \fillin{概括提示结构和关键约束，不复制全部对话} \\
+使用过程摘要 & \fillin{说明主要步骤、迭代和人工参与} \\
+AI 输出采纳情况 & \fillin{完全采纳、部分采纳或未采纳，并说明范围} \\
+人工修改内容 & \fillin{说明队员做出的实质修改} \\
+人工核验方法与结果 & \fillin{说明复算、对照、测试、文献核查等方法及结果} \\
+对应证据文件或产物 & \fillin{填写可定位的文件、图表、日志或章节} \\
+负责确认的队员与状态 & \fillin{队员；已确认} \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.6em}
+{\small\color{placeholder}如有多个阶段，复制以上记录块并依次编号为 AI-002、AI-003……}
+
+\section*{五、典型交互示例}
+\begin{longtable}{L{1.6cm}L{4.2cm}L{4.2cm}L{4.2cm}}
+\toprule
+\rowcolor{headgray}\textbf{对应记录} & \textbf{代表性提示摘要} & \textbf{AI 结果摘要} & \textbf{队员处理} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{headgray}\textbf{对应记录} & \textbf{代表性提示摘要} & \textbf{AI 结果摘要} & \textbf{队员处理} \\
+\midrule
+\endhead
+AI-001 & \fillin{摘要} & \fillin{摘要} & \fillin{采纳、修改与核验} \\
+\bottomrule
+\end{longtable}
+
+\section*{六、未采纳的重要 AI 建议或结果}
+\begin{itemize}
+  \item \fillin{说明未采纳内容、原因及人工判断；如无则填写“无”}
+\end{itemize}
+
+\section*{七、人工修改与验证汇总}
+\noindent
+\begin{tabularx}{\textwidth}{L{3.6cm}Y}
+\toprule
+\rowcolor{headgray}\textbf{项目} & \textbf{说明} \\
+\midrule
+主要人工修改 & \fillin{汇总队员对 AI 输出所作修改} \\
+主要核验方法 & \fillin{汇总复算、代码测试、交叉验证、文献核对等} \\
+核验依据或证据 & \fillin{列出关键证据文件和结果} \\
+仍有待核实内容 & \fillin{提交前应为“无”} \\
+\bottomrule
+\end{tabularx}
+
+\section*{八、最终确认}
+\noindent
+\begin{tabularx}{\textwidth}{L{7.2cm}Y}
+\toprule
+\rowcolor{headgray}\textbf{确认事项} & \textbf{确认结果} \\
+\midrule
+核心建模与分析由参赛队主导 & \fillin{是/否} \\
+所有记录已逐项人工审查 & \fillin{是/否} \\
+仍有待核实内容 & \fillin{是/否；如是请说明} \\
+队员共同确认 & \fillin{填写确认方式或队员姓名} \\
+确认日期 & \fillin{年/月/日} \\
+\bottomrule
+\end{tabularx}
+
+\vfill
+{\small\color{placeholder}提交前检查：文件名必须为“AI 工具使用详情.pdf”；删除模板提示；确认无占位符、密钥和未经审核的陈述。}
+
+\end{document}

@@ -1,6 +1,6 @@
 ---
 name: 1start-mathmodel
-description: "数学建模竞赛工作流入口。用于启动完整建模流程：询问用户偏好，生成 plan.md 和 todo.md，并按阶段调用赛题分析、建模、代码与图表、流程图、论文撰写、验证验收等 skills。"
+description: "数学建模竞赛工作流入口。用于启动完整建模流程：询问用户偏好，生成 plan.md 和 todo.md，并按阶段调用赛题分析、建模、代码与图表、流程图、论文撰写、验证验收及 AI 使用披露等 skills。"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetch
 ---
 
@@ -18,6 +18,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 - `plan.md`：整体流程方案、建模方向、阶段顺序、预期产物和风险控制。
 - `todo.md`：具体待办事项列表，记录每个阶段的任务和状态。
+- `reports/AI_USAGE_LOG.md`：赛中持续维护的 AI 工具使用过程记录；未知内容明确标记为“待队员确认”。
 
 ## 工作流
 
@@ -57,6 +58,7 @@ workflow:
 3. 流程与架构图绘制 - `4drawio`
 4. 竞赛论文撰写 - `5writing`
 5. 验证和验收 - `6verity`
+6. AI 使用详情终检与生成 - `7ai-disclosure`
 ```
 
 ## 项目目录结构
@@ -72,6 +74,7 @@ workflow:
 │   ├── RESULTS_REPORT.md            # 2: 结果报告（3coding-visual）
 │   ├── DRAWIO_REPORT.md             # 3: 非数据图说明（4drawio）
 │   ├── VERIFY_REPORT.md             # 5: 验收报告（6verity）
+│   └── AI_USAGE_LOG.md               # 全程: AI 使用记录（7ai-disclosure）
 ├── code/                        # 2: 代码（3coding-visual）
 │   ├── problem1.py
 │   ├── problem2.py
@@ -85,6 +88,9 @@ workflow:
 ├── paper/                       # 4: 论文（5writing）
 │   ├── main.typ / main.tex      #     论文主文件（按用户选择的引擎）
 │   └── sections/                #     各节文件（.typ 或 .tex）
+└── supporting_materials/        # 6: AI 使用支撑材料（确有使用 AI 时）
+    ├── AI 工具使用详情.tex
+    └── AI 工具使用详情.pdf
 ```
 
 方案必须明确每个阶段由哪个下游 skill 负责，以及该阶段应产出什么文件。
@@ -101,6 +107,7 @@ workflow:
 - [ ] 3. 流程与架构图绘制 - `4drawio`
 - [ ] 4. 竞赛论文撰写 - `5writing`
 - [ ] 5. 验证和验收 - `6verity`
+- [ ] 6. AI 使用详情终检与生成 - `7ai-disclosure`
 ```
 
 每完成一个阶段，都要更新 `todo.md` 中对应任务的状态。
@@ -116,6 +123,15 @@ workflow:
 | 流程与架构图绘制 | `4drawio` | 在论文确实需要时，绘制方法流程图、架构图和非数据型概念图。 | `figures/*.drawio`, `figures/*.pdf`, `DRAWIO_REPORT.md` |
 | 竞赛论文撰写 | `5writing` | 基于分析、建模、代码结果和图表撰写最终竞赛论文，并按章节直接插入图表。 | `paper/` |
 | 验证和验收 | `6verity` | 检查可复现性、一致性、产物完整性、格式规范和提交就绪状态。 | `VERIFY_REPORT.md` |
+| AI 使用详情终检与生成 | `7ai-disclosure` | 校验全过程记录，生成并验收赛事要求的 AI 使用支撑材料。 | `AI_USAGE_LOG.md`, `AI 工具使用详情.pdf` |
+
+## AI 使用记录衔接
+
+- 工作流启动时，从 `7ai-disclosure/templates/AI_USAGE_LOG.md` 初始化 `reports/AI_USAGE_LOG.md`。
+- 每完成一个阶段，立即调用 `7ai-disclosure` 的 `record` 模式，根据真实对话和产物追加阶段级记录；不得等到赛后凭记忆补造。
+- `6verity` 完成论文验收后，调用 `7ai-disclosure` 的 `finalize` 模式。存在“待队员确认”时必须暂停生成并请队员补齐。
+- 若记录表明使用过 AI，但名称完全一致的 `supporting_materials/AI 工具使用详情.pdf` 尚未生成并通过检查，则整个提交包不得标记为最终 `PASS`。
+- 若队伍确认全程未使用 AI，不生成空白详情 PDF，并在验收报告中记录确认依据。
 
 ## 阶段边界
 

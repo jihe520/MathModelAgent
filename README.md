@@ -148,6 +148,7 @@ codex: $start-mathmodel 完成这个数学建模任务
 ```
 /doctor:  检查环境配置
 /typst-author: typst 知识
+/7ai-disclosure: 持续记录 AI 使用并生成“AI 工具使用详情.pdf”
 ```
 
 

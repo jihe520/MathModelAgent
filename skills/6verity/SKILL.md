@@ -1,12 +1,12 @@
 ---
 name: 6verity
-description: "数学建模竞赛最终验证和验收阶段，支持 Typst 和 LaTeX 双引擎。用于论文写完后检查章节数量、标题顺序、图表引用、数值一致性、占位符、内部文件泄露、参考文献、代码可复现性、编译和提交就绪状态。"
+description: "数学建模竞赛论文验证和验收阶段，支持 Typst 和 LaTeX 双引擎。用于论文写完后检查章节数量、标题顺序、图表引用、数值一致性、占位符、内部文件泄露、参考文献、代码可复现性、编译、AI 支撑材料状态和提交就绪状态。"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetch
 ---
 
 # 验证和验收（Typst / LaTeX）
 
-本 skill 是完整工作流的最后一关。它不重新建模、不生成新结果、不代替写作阶段重写论文；它负责发现硬错误、修复可直接修复的问题，并输出 `reports/VERIFY_REPORT.md`。
+本 skill 是论文与项目产物的验收门禁。它不重新建模、不生成新结果、不代替写作阶段重写论文；它负责发现硬错误、修复可直接修复的问题，并输出 `reports/VERIFY_REPORT.md`。若项目使用过 AI，随后还必须由 `7ai-disclosure` 完成支撑材料终检与生成。
 
 ## 数学建模规范参考
 
@@ -16,6 +16,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 - 本阶段负责：结构验收、文本质量门禁、图表引用检查、结果一致性检查、Typst/LaTeX 编译检查、PDF 视觉检查、提交清单。
 - 本阶段不负责：重新设计模型、重新跑大规模实验、重新组织整篇论文。
+- 本阶段只核对 AI 使用日志和支撑材料状态，不补写、猜测或代替队员确认 AI 使用记录。
 - 发现硬错误时，优先做小范围修复；如果需要回到前序阶段，写入 `reports/VERIFY_REPORT.md` 并标记为未通过。
 
 ## 输入
@@ -29,6 +30,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 5. 图表目录
 6. 可复现代码目录。
 7. 编译后的 PDF，或可由入口文件编译得到的输出 PDF。
+8. 若存在：`reports/AI_USAGE_LOG.md`、`supporting_materials/AI 工具使用详情.tex` 和 `supporting_materials/AI 工具使用详情.pdf`。
 
 不要假设论文目录一定叫 `paper/`，也不要假设结果文件一定在项目根。若项目使用不同命名，按实际结构传参并在 `reports/VERIFY_REPORT.md` 中说明。
 
@@ -185,7 +187,15 @@ fi
 
 如果模型没有视觉能力，必须在 `reports/VERIFY_REPORT.md` 中明确写出“未执行视觉检查”的原因，并至少完成 PDF 非空、页数、页面尺寸等可程序化检查。
 
-### Step 9: 写验收报告
+### Step 9: 检查 AI 使用支撑材料状态
+
+- 若存在 `reports/AI_USAGE_LOG.md`，运行 `7ai-disclosure/scripts/validate_ai_usage_log.py`。赛中可用 `record` 模式；声称提交就绪时必须用 `finalize` 模式。
+- 日志表明使用过 AI 时，检查 `supporting_materials/AI 工具使用详情.pdf` 是否存在且文件名完全一致。
+- 检查该 PDF 非空、可提取文本、页面为 A4，并逐页查看是否越界、重叠、裁切或乱码。
+- 若日志仍有“待队员确认”或 PDF 尚未最终生成，本阶段可以完成论文验收，但整体提交状态不得写 `PASS`。
+- 若队伍确认未使用 AI，在报告中写明确认依据；不要生成空白详情 PDF。
+
+### Step 10: 写验收报告
 
 创建 `reports/VERIFY_REPORT.md`：
 
@@ -211,6 +221,8 @@ PASS / FAIL
 
 ## PDF 视觉检查
 
+## AI 工具使用支撑材料
+
 ## 仍需处理的问题
 ```
 
@@ -232,6 +244,8 @@ PASS / FAIL
 - 编译器可用但论文编译失败。
 - 编译后的 PDF 为空、缺页、页数异常或页面尺寸异常且无法解释。
 - 视觉检查发现正文、表格、图片、公式、页眉页脚、页码等关键元素重叠、裁切、越界或乱码。
+- 日志表明使用过 AI，但最终提交缺少名称完全一致的 `AI 工具使用详情.pdf`。
+- AI 使用日志仍有“待队员确认”、未完成逐项人工审查或存在疑似密钥，却将整体提交状态标记为 `PASS`。
 
 ## 警告标准
 
