@@ -26,7 +26,7 @@
 
 The desktop app bundles Claude Code and the full set of MathModelAgent SKILLS. No Python / Node.js / Redis installation and no manual SKILL setup — install it, add one model API key, and start modeling.
 
-For CUMCM tasks, the workflow records actual AI use throughout the run, asks the team for one consolidated confirmation after the paper review, and requires both `paper/main.pdf` and `supporting_materials/AI 工具使用详情.pdf` before reporting final completion.
+For CUMCM tasks, the workflow records actual AI use throughout the run, automatically summarizes evidence-backed adoption, revisions, and checks without exposing core modeling details, and requires both `paper/main.pdf` and `supporting_materials/AI 工具使用详情.pdf` before reporting final completion.
 
 | OS | File |
 |----|------|

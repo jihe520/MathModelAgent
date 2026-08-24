@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from validate_ai_usage_log import (
+    NO_HUMAN_RECORD_PHRASES,
     PENDING_MARKERS,
     SECRET_PATTERNS,
     id_sections,
@@ -58,8 +59,9 @@ class UsageRecord:
     prompt_method: str
     process: str
     adoption: str
+    iteration: str
+    verification: str
     human_edit: str
-    human_check: str
 
 
 @dataclass(frozen=True)
@@ -70,7 +72,7 @@ class InteractionExample:
     record_ids: tuple[str, ...]
     prompt_summary: str
     output_summary: str
-    team_action: str
+    process_result: str
 
 
 @dataclass(frozen=True)
@@ -126,12 +128,9 @@ def parse_log(path: Path) -> DisclosureLog:
                     prompt_method=_field(fields, "主要提示方式"),
                     process=_field(fields, "使用过程说明"),
                     adoption=_field(fields, "AI 输出采纳情况"),
-                    human_edit=_field(fields, "人工修改内容", "不适用（仅语言润色）"),
-                    human_check=_field(
-                        fields,
-                        "人工核验方法与结果",
-                        "不适用（仅语言润色）",
-                    ),
+                    iteration=_field(fields, "迭代修正情况"),
+                    verification=_field(fields, "核验方法与结果"),
+                    human_edit=_field(fields, "人工修改内容"),
                 )
             )
         elif item_id.startswith("EX-"):
@@ -144,7 +143,7 @@ def parse_log(path: Path) -> DisclosureLog:
                     record_ids=record_ids,
                     prompt_summary=_field(fields, "代表性提示摘要"),
                     output_summary=_field(fields, "AI 输出摘要"),
-                    team_action=_field(fields, "队员处理"),
+                    process_result=_field(fields, "处理结果"),
                 )
             )
 
@@ -155,7 +154,7 @@ def latex_escape(value: str) -> str:
     """Escape untrusted log text for LaTeX text mode.
 
     Args:
-        value: Plain text from the confirmed usage log.
+        value: Plain text from the automatically summarized usage log.
 
     Returns:
         A single-line LaTeX-safe string.
@@ -217,7 +216,7 @@ def _process_blocks(data: DisclosureLog) -> str:
                     "",
                     rf"\textbf{{AI 输出摘要：}}{latex_escape(example.output_summary)}。",
                     "",
-                    rf"\textbf{{队员处理：}}{latex_escape(example.team_action)}。",
+                    rf"\textbf{{处理结果：}}{latex_escape(example.process_result)}。",
                 ]
             )
         blocks.append("\n".join(lines))
@@ -230,20 +229,25 @@ def _adoption_blocks(data: DisclosureLog) -> str:
         if record.language_only:
             continue
         tool_ids = "、".join(record.tool_ids)
-        blocks.append(
-            "\n".join(
-                [
-                    rf"\recordheading{{{record.record_id}}}{{{latex_escape(tool_ids)}}}",
-                    rf"\textbf{{采纳情况：}}{latex_escape(record.adoption)}。",
-                    "",
-                    rf"\textbf{{人工修改：}}{latex_escape(record.human_edit)}。",
-                    "",
-                    rf"\textbf{{人工核验：}}{latex_escape(record.human_check)}。",
-                ]
+        lines = [
+            rf"\recordheading{{{record.record_id}}}{{{latex_escape(tool_ids)}}}",
+            rf"\textbf{{采纳情况：}}{latex_escape(record.adoption)}。",
+        ]
+        if record.human_edit:
+            lines.extend(
+                ["", rf"\textbf{{人工修改：}}{latex_escape(record.human_edit)}。"]
             )
-        )
+        if record.iteration:
+            lines.extend(
+                ["", rf"\textbf{{迭代修正：}}{latex_escape(record.iteration)}。"]
+            )
+        if record.verification:
+            lines.extend(
+                ["", rf"\textbf{{核验情况：}}{latex_escape(record.verification)}。"]
+            )
+        blocks.append("\n".join(lines))
     if not blocks:
-        return "除语言润色外，无其他需说明的 AI 输出采纳、人工修改和核验记录。"
+        return "本次记录仅涉及语言表达辅助，第四部分不作展开。"
     return "\n\n".join(blocks)
 
 
@@ -288,6 +292,9 @@ def render_tex(log_path: Path, template_path: Path, tex_path: Path) -> Path:
     for marker in PENDING_MARKERS:
         if marker.casefold() in rendered.casefold():
             raise GenerationError(f"生成后的 TeX 仍含待确认或占位内容：{marker}")
+    for phrase in NO_HUMAN_RECORD_PHRASES:
+        if phrase in rendered:
+            raise GenerationError(f"生成后的 TeX 含禁止的无人工记录提示：{phrase}")
     for label, pattern in SECRET_PATTERNS.items():
         if pattern.search(rendered):
             raise GenerationError(f"生成后的 TeX 检测到疑似{label}")
@@ -444,6 +451,12 @@ def inspect_pdf(pdf_path: Path, source_tex: Path | None = None) -> list[str]:
     for marker in PENDING_MARKERS:
         if marker.casefold() in text.casefold():
             errors.append(f"最终 PDF 仍含待确认或占位内容：{marker}")
+    inspection_text = text
+    if source_tex is not None and source_tex.is_file():
+        inspection_text += "\n" + source_tex.read_text(encoding="utf-8-sig")
+    for phrase in NO_HUMAN_RECORD_PHRASES:
+        if phrase in inspection_text:
+            errors.append(f"最终 PDF 含禁止的无人工记录提示：{phrase}")
     for label, pattern in SECRET_PATTERNS.items():
         if pattern.search(text):
             errors.append(f"最终 PDF 检测到疑似{label}")
@@ -452,7 +465,7 @@ def inspect_pdf(pdf_path: Path, source_tex: Path | None = None) -> list[str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="根据已确认的 AI 使用日志生成国赛 AI 工具使用详情 PDF"
+        description="根据自动归纳的 AI 使用日志生成国赛 AI 工具使用详情 PDF"
     )
     parser.add_argument("log_path", type=Path, help="reports/AI_USAGE_LOG.md 路径")
     parser.add_argument(
