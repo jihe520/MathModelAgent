@@ -64,33 +64,16 @@
   keywords-cn(keywords)
   pagebreak()
 }
-#let toc-page() = {
-  show outline.entry.where(level: 1): it => link(
-    it.element.location(),
-    block(above: 7pt)[
-      #text(font: hei-font, size: 12pt, weight: "bold")[
-        #grid(
-          columns: (auto, 1fr, auto),
-          column-gutter: 0.5em,
-          [#it.prefix()#it.body()],
-          [#repeat[.]],
-          [#it.page()],
-        )
-      ]
-    ],
-  )
-  outline(
-    title: align(center)[#text(font: hei-font, size: 17.3pt, weight: "bold")[目录]],
-    depth: 3,
-  )
-  pagebreak()
-}
+#let ai-usage-declaration(body) = [
+#heading(numbering: none, outlined: false)[AI工具使用声明]
+#body
+]
 #let references-cn() = [
 #heading(numbering: none, outlined: true)[参考文献]
 #{ set par(first-line-indent: 0pt, spacing: 0.35em); include("references.typ") }
 ]
 #let appendix-cn(file: "sections/A_code.typ") = [
-#heading(numbering: none, outlined: true)[附录 A #h(1em) 核心代码]
+#heading(numbering: none, outlined: true)[附录]
 #include(file)
 ]
 
@@ -131,8 +114,6 @@
   [关键词1] #h(1em) [关键词2] #h(1em) [关键词3]
 ]
 
-#toc-page()
-
 #include("sections/1_restatement.typ")
 #include("sections/2_analysis.typ")
 #include("sections/3_assumptions.typ")
@@ -143,6 +124,8 @@
 #include("sections/8_sensitivity.typ")
 #include("sections/9_evaluation.typ")
 
+#pagebreak()
+#ai-usage-declaration[本参赛队在竞赛过程中使用了AI工具，主要用于〖按真实情况填写简要用途〗，详细使用情况见支撑材料。]
 #pagebreak()
 #references-cn()
 #pagebreak()

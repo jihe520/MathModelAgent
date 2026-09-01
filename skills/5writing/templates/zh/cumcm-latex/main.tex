@@ -10,7 +10,7 @@
 %    - 若系统已安装 SimSun/SimHei/KaiTi（如 Windows 或手动安装），可将下方
 %      \documentclass 选项 fontset=mac 改为 fontset=windows，即可使用规范字体。
 %    - 西文正文：Times New Roman；代码等宽：Menlo（缺失时回退到默认字体）。
-%  编译方式：xelatex main.tex （需运行两遍以生成目录）
+%  编译方式：xelatex main.tex （需运行两遍以生成交叉引用）
 % =============================================================================
 \documentclass[fontset=mac, 12pt, a4paper]{ctexart}
 
@@ -55,14 +55,6 @@
 \titlespacing{\subsection}    {0pt}{1.15em}{0.55em}
 \titlespacing{\subsubsection} {0pt}{1.15em}{0.55em}
 
-% ---------- 目录（tocloft 点线引导） ----------
-\usepackage{tocloft}
-\renewcommand{\cftsecfont}{\heiti\bfseries}
-\renewcommand{\cftsecpagefont}{\heiti\bfseries}
-\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
-\renewcommand{\cftsubsecleader}{\cftdotfill{\cftdotsep}}
-\renewcommand{\cftsubsubsecleader}{\cftdotfill{\cftdotsep}}
-
 % ---------- 表格与代码 ----------
 \usepackage{booktabs}
 \usepackage{array}
@@ -87,7 +79,6 @@
 % ---------- 自定义命令（对应 Typst 函数） ----------
 % \papertitle{标题}：居中 17.3pt 加粗标题
 \newcommand{\papertitle}[1]{%
-  \thispagestyle{empty}%
   \begin{center}
     {\fontsize{17.3pt}{22pt}\bfseries #1}
   \end{center}
@@ -95,34 +86,23 @@
 }
 % \abstractcn{摘要正文}{关键词}：居中“摘要”标题（14pt 加粗）+ 正文 + “关键字：”加粗 + 关键词 + 换页
 \newcommand{\abstractcn}[2]{%
-  \thispagestyle{empty}%
   \begin{center}{\fontsize{14pt}{17pt}\bfseries 摘要}\end{center}
   #1\par
   \vspace{1em}
   {\heiti\bfseries 关键字：}#2\par
   \newpage
 }
-% \tocpage：目录页，标题“目录”居中 17.3pt 黑体加粗，点线引导
-\makeatletter
-\newcommand{\tocpage}{%
-  \setcounter{page}{1}%
-  \begin{center}
-    {\fontsize{17.3pt}{20.8pt}\heiti\bfseries 目录}
-  \end{center}
-  \vspace{0.5em}
-  \@starttoc{toc}%
-  \newpage
-}
-\makeatother
-% \referencescn：参考文献节，标题“参考文献”（不带编号但进目录）
+% \referencescn：参考文献节，标题“参考文献”（不带编号）
 \newcommand{\referencescn}{%
-  \addcontentsline{toc}{section}{参考文献}%
   \input{references}%
 }
-% \appendixcn：附录节，标题“附录 A  核心代码”
+\newcommand{\aiusagedeclaration}[1]{%
+  \section*{AI工具使用声明}%
+  #1\par
+}
+% \appendixcn：附录节，包含支撑材料文件列表和完整源程序
 \newcommand{\appendixcn}{%
-  \section*{附录 A\quad 核心代码}%
-  \addcontentsline{toc}{section}{附录 A\quad 核心代码}%
+  \section*{附录}%
   \input{sections/A_code}%
 }
 % \threelinetable{标题}{列定义}{表头}{表格内容}：三线表，标题在表格上方居中 10.5pt 黑体加粗
@@ -153,8 +133,7 @@
   关键词1 \quad 关键词2 \quad 关键词3%
 }
 
-% 目录页（页码从 1 开始）
-\tocpage
+\setcounter{page}{1}
 
 \input{sections/1_restatement}
 \input{sections/2_analysis}
@@ -166,6 +145,8 @@
 \input{sections/8_sensitivity}
 \input{sections/9_evaluation}
 
+\newpage
+\aiusagedeclaration{本参赛队在竞赛过程中使用了AI工具，主要用于〖按真实情况填写简要用途〗，详细使用情况见支撑材料。}
 \newpage
 \referencescn
 \newpage

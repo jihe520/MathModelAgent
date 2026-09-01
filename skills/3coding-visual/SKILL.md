@@ -81,6 +81,8 @@ AI 在实现、求解和作图过程中，必须把关键过程保存成数据�
 
 若与 `ANALYSIS_MODELING_REPORT.md` 有任何偏差，必须显式说明；所有数据和图表结果都必须在 `RESULTS_REPORT.md` 中可追溯。
 
+CUMCM 使用 AI 时，同步更新 `reports/AI_USAGE_LOG.md` 的本阶段摘要，重点记录 AI 在代码/调试中的用途、关键建议的采纳或修改，以及核心数值如何通过程序复现、benchmark、诊断、约束回代或稳健性分析得到人工核验。完整可运行源程序、必要软件交互命令和自主查阅使用的数据资料须保留，以便 `5writing` 纳入附录及支撑材料；这不改变 `results/`、`code/outputs/`、`figures/` 的既有目录职责。
+
 ### Step 4: 生成数据驱动图表
 
 根据 `reports/ANALYSIS_MODELING_REPORT.md` 和 `reports/RESULTS_REPORT.md` 规划图表，生成 PDF 到 `figures/`。每张图必须回答一个明确问题，并支撑分析或论文中的某个结论；不要为了凑数量生成图。图表类型仍然限制在数据驱动图，不接管 `4drawio` 的流程图/架构图职责。

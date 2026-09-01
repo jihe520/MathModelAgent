@@ -18,6 +18,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 - `plan.md`：整体流程方案、建模方向、阶段顺序、预期产物和风险控制。
 - `todo.md`：具体待办事项列表，记录每个阶段的任务和状态。
+- CUMCM 工作流实际使用 Codex / AI Agent 时，创建 `reports/AI_USAGE_LOG.md`，从启动阶段开始维护轻量、真实的阶段级 AI 使用记录，供最终生成 `AI工具使用详情.pdf`；不保存完整聊天历史，也不逐次记录普通交互。
 
 ## 工作流
 
@@ -50,6 +51,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 - 竞赛类型：<国赛 / 华为杯 / MCM / ...>
 - 论文语言：<中文 / 英文>
 - 子问题数量：<已知 N 个 / 待分析确定>（可选）
+- AI 使用路径：<已使用 / 未使用；本工作流默认已使用>
 
 当前阶段：2analysis-modeling
 阶段推进：2analysis → 3coding → 4drawio（按需）→ 5writing → 6verity
@@ -75,6 +77,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 │   ├── RESULTS_REPORT.md            # 2: 结果报告（3coding-visual）
 │   ├── DRAWIO_REPORT.md             # 3: 非数据图说明（4drawio）
 │   ├── VERIFY_REPORT.md             # 5: 验收报告（6verity）
+│   ├── AI_USAGE_LOG.md              # CUMCM: 阶段级 AI 使用与人工核验留痕
 ├── code/                        # 2: 代码（3coding-visual）
 │   ├── problem1.py
 │   ├── problem2.py
@@ -90,6 +93,8 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 │   ├── main.typ / main.tex      #     论文主文件（按用户选择的引擎）
 │   └── sections/                #     各节文件（.typ 或 .tex）
 ```
+
+`AI_USAGE_LOG.md` 默认按阶段维护：每个 workflow stage 至少形成一条简洁阶段摘要；普通问答、措辞修改和小型调试不逐次记录。若 AI 对核心假设、模型路线、目标函数、关键算法、重要代码修复或关键结果解释产生实质影响，则在同一阶段下按需追加简洁的 material AI event，仅记录 purpose/context、major prompting approach、important AI suggestion/output、adopted/rejected/modified、human verification 和 related artifact/result。它不能由比赛结束时凭空补写，不保存完整聊天记录，不复制长 prompt/response，也不形成逐交互日志。现有阶段报告只描述各自的模型或结果事实，无法可靠承载跨阶段 AI 使用历史，因此使用这一个统一文件，不新增 workflow stage 或第二套运行日志。
 
 方案必须明确每个阶段由哪个下游 skill 负责，以及该阶段应产出什么文件。
 

@@ -1,3 +1,9 @@
+#heading(level: 2, numbering: none)[支撑材料文件列表]
+
+电子支撑材料与参赛论文分开提交；此处按最终支撑材料逐项列出文件名及用途。
+
+#heading(level: 2, numbering: none)[完整源程序]
+
 #v(1.1em)
 
 ```python

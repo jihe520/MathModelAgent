@@ -28,6 +28,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 - 不要求每个子问题都写完整的大型候选比较表；复杂或多路线问题写比较表，路线明显的问题可用简短说明解释为何无需额外候选。
 - 仅在关键缺失、歧义或冲突会影响模型路线时触发题面/附件阶段 checkpoint。
 - 在最终模型路线确定、即将进入 `3coding-visual` 前，固定触发一次用户确认 checkpoint；仅确认重大路线，不要求确认变量名、参数初始化、普通算法细节等小事项。
+- CUMCM 使用 AI 时，在该重大路线 checkpoint 中保留参赛者对核心假设、模型选择和关键指标解释的确认或修改痕迹，并在 `reports/AI_USAGE_LOG.md` 更新本阶段的一条摘要；不得把 AI 建议本身当作最终模型决策依据。
 - 所有新增内容继续写入 `reports/ANALYSIS_MODELING_REPORT.md`，不额外增加报告文件。
 
 ## 工作流程
