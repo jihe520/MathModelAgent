@@ -396,7 +396,7 @@ if problem_analysis and problem_analysis.exists():
 else:
     info("problem analysis file not supplied/found; skip subproblem count check")
 
-placeholder_re = re.compile(r"PLACEHOLDER|TODO|TBD|XXX|待补充|待续写|这里补|示例数据|待完善")
+placeholder_re = re.compile(r"CUMCM-TEMPLATE-PLACEHOLDER|PLACEHOLDER|TODO|TBD|XXX|待补充|待续写|这里补|示例数据|待完善")
 default_internal_terms = [
     "RESULTS_REPORT",
     "ANALYSIS_MODELING_REPORT.md",
@@ -498,6 +498,12 @@ for path in typ_files:
                 warn(f"many figures but little surrounding prose: {path.name}")
 
 paper_text = "\n".join(combined)
+
+if re.search(r"作者\s*[.。]\s*题名(?:\[|\s)", paper_text):
+    fail("CUMCM template demo bibliography remains in paper")
+demo_code_parts = ("RandomForestRegressor", "pd.read_csv('data.csv')", "data.drop('target'", "r2_score")
+if all(part in paper_text for part in demo_code_parts):
+    fail("CUMCM template demo RandomForest code remains in paper")
 
 if section_titles:
     info("section title order:")

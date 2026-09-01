@@ -14,7 +14,7 @@
   }
 }
 
-#set document(title: "[论文标题]", author: ())
+#set document(title: "CUMCM-TEMPLATE-PLACEHOLDER", author: ())
 #set page(
   paper: "a4",
   margin: (top: 2.5cm, bottom: 2.5cm, left: 2.5cm, right: 2.5cm),
@@ -106,12 +106,12 @@
 
 #counter(page).update(1)
 
-#paper-title[[论文标题]]
+#paper-title[CUMCM-TEMPLATE-PLACEHOLDER]
 
 #abstract-cn[
-  [中文摘要内容：问题概述 + 每个子问题的方法和数值结果 + 结论]
+  [CUMCM-TEMPLATE-PLACEHOLDER]
 ][
-  [关键词1] #h(1em) [关键词2] #h(1em) [关键词3]
+  [CUMCM-TEMPLATE-PLACEHOLDER]
 ]
 
 #include("sections/1_restatement.typ")
@@ -125,7 +125,7 @@
 #include("sections/9_evaluation.typ")
 
 #pagebreak()
-#ai-usage-declaration[本参赛队在竞赛过程中使用了AI工具，主要用于〖按真实情况填写简要用途〗，详细使用情况见支撑材料。]
+#ai-usage-declaration[本参赛队在竞赛过程中使用了AI工具，主要用于〖CUMCM-TEMPLATE-PLACEHOLDER〗，详细使用情况见支撑材料。]
 #pagebreak()
 #references-cn()
 #pagebreak()

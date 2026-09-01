@@ -53,7 +53,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 2. 实现模型或算法。
 3. 验证约束。
 4. 输出核心结果。
-5. 绘制丰富的图表。
+5. 只生成具有明确分析、诊断或论文论证价值的必要图表。
 6. 在 `reports/RESULTS_REPORT.md` 中写清楚方法、关键数值和校验结果。
 
 优化类问题必须先保证可行解，再优化目标值。预测类问题必须做训练/验证划分或合理误差评估。评价类问题必须说明指标方向、归一化方法和权重来源。
@@ -72,6 +72,7 @@ AI 在实现、求解和作图过程中，必须把关键过程保存成数据�
 ## 关键参数
 ## 核心结果
 ## 关键约束是否满足
+## 求解器状态与有效性（如适用）
 ## benchmark 对比结论（如适用）
 ## 敏感性 / 稳健性结论
 ## 图表清单与对应结论
@@ -80,6 +81,8 @@ AI 在实现、求解和作图过程中，必须把关键过程保存成数据�
 ```
 
 若与 `ANALYSIS_MODELING_REPORT.md` 有任何偏差，必须显式说明；所有数据和图表结果都必须在 `RESULTS_REPORT.md` 中可追溯。
+
+使用 optimization 或 numerical solver 时，不能把产生数值输出等同于得到有效解。根据实际 solver 能力记录并解释必要的 termination/status、feasible/infeasible/unbounded、timeout/iteration limit/numerical failure、optimality gap 和 convergence/termination reason；不要求跨库统一状态码。必须区分 implementation/environment failure、solver numerical failure、模型确实 infeasible/unbounded，以及经过核验的 feasible/optimal solution，只有最后一类有效状态才能支撑相应结果结论。
 
 CUMCM 使用 AI 时，同步更新 `reports/AI_USAGE_LOG.md` 的本阶段摘要，重点记录 AI 在代码/调试中的用途、关键建议的采纳或修改，以及核心数值如何通过程序复现、benchmark、诊断、约束回代或稳健性分析得到人工核验。完整可运行源程序、必要软件交互命令和自主查阅使用的数据资料须保留，以便 `5writing` 纳入附录及支撑材料；这不改变 `results/`、`code/outputs/`、`figures/` 的既有目录职责。
 

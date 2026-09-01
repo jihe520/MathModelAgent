@@ -169,6 +169,8 @@ generated / not needed
 
 不记录长篇画图过程，不写成工作日志。最终的 caption、图号、正文引用、插入位置和排版由 `5writing` 决定。
 
+CUMCM 使用 AI 时，无论生成图示还是判定 `not needed`，均在 `reports/AI_USAGE_LOG.md` 更新本阶段的一条简洁摘要；只有 AI 对图示结构或论文表达产生实质影响时才按现有 material AI event contract 追加，不记录普通绘图交互。
+
 ## 质量要求
 
 - 图示服务论文论证，不为装饰而画。
