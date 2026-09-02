@@ -172,6 +172,7 @@ bash "$SCRIPT_PATH" \
 - 对照 `ANALYSIS_MODELING_REPORT.md` 的 citation needs 与实际正文，检查核心外部方法、赛题外背景事实、非常规标准/阈值及外部数据资料是否具有必要引用，是否存在 unresolved citation need。
 - 正文引用标记（Typst 的 `@label`/`#super`，LaTeX 的 `\cite{}`）是否都有对应 bibliography entry，bibliography 中的文献是否实际被正文引用。
 - 核验可获得的题名、作者、年份、期刊/会议/出版社及已写入的 DOI/URL 是否存在明显矛盾或无法确认；外部数据和资料是否准确归因。
+- 仅当比赛产物声明或记录了实质参考、移植或改写的外部完整实现/源码时，核验其来源是否真实可追溯、实际参考范围是否如实记录、需要引用时 citation 是否真实且与 bibliography 对应、论文原创性表述是否未将该外部实现冒充完全自行开发，以及支撑材料代码与相关来源说明是否存在明显冲突。普通第三方依赖、标准库、软件包、solver，以及正常使用 NumPy、SciPy、pandas、sklearn、matplotlib、networkx、Gurobi 或 MATLAB toolbox，不因此自动触发 provenance blocker；不要求建立全依赖 provenance inventory 或代码许可证审计系统。
 - 检查是否错误地给本队推导、实验结果、参数搜索或数值输出添加外部来源。
 - 中文论文 caption、表题、摘要语言保持中文；英文论文保持英文。
 - 选定的模板入口是否保留所选比赛模板的必要封面、摘要、编号、页眉页脚或提交格式。
