@@ -42,6 +42,10 @@ C 只能将以下来源作为论文事实：
 - 缺数值、图表、benchmark、诊断或计算依据：请求 B 补充或修正正式 result artifact。
 - 正式来源变更后，C 更新受影响论文与材料，并重新执行必要验收。
 
+## Per-question Completion Report
+
+C 完成当前问题的正式写作阶段后，必须向人类报告：Question、使用的 modeling artifact、使用的 `RESULTS_REPORT.md` / results、使用的 figures/tables、missing upstream、A review status、B review status、writing freeze readiness 和 next Gate。未经 Human Question Gate activation，不得自动开始下一问的正式正文；这不限制 C 维护整篇论文骨架。
+
 ## 禁止事项
 
 严禁为了补齐论文自行创造模型、假设、数据、实验、参数、数值结果、图表结论或文献。

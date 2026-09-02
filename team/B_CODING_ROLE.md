@@ -35,6 +35,10 @@ B 主要执行 3coding-visual，并以 A 已经确认的 analysis/modeling artif
 
 若发现核心模型不可实现、数据不支持、solver failure、benchmark 失败或结果异常，且问题可能改变核心模型机制，B 必须向 A 报告并触发 rollback。B 可以诊断和修复实现问题，但不得以静默换模型掩盖路线问题。
 
+## Per-question Completion Report
+
+B 完成当前问题的正式计算阶段后，必须向人类报告：Question、computation status、valid / invalid result、validation / solver status、rollback risk、`B → C HANDOFF READY` 或 `SAFE FOR C`、blockers 和 next Gate。结果跑完不等于下一问自动开始；不得因当前问完成而自动开始下一问正式计算或进入 C 的写作职责。
+
 ## 禁止事项
 
 - 不擅自改变已经冻结的核心模型、假设、目标函数或评价机制。

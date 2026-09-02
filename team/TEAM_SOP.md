@@ -4,6 +4,8 @@
 
 全队只执行一套 CUMCM workflow，由三个角色分工推进，而不是让三台电脑上的三个 Codex 各自执行一套完整 workflow。除非人类明确要求切换角色，每个 Codex 只在当前角色范围内工作，并通过正式 artifacts 交接；不得越权覆盖其他角色维护的正式产物。
 
+Question activation 由人类控制，默认不得自动跨问或并行正式推进。`HANDOFF READY` 只表示交接条件满足，不等于目标角色获得执行授权或状态自动推进。当前角色可在已授权的 `Question + Role + state` 范围内自主完成正常工作；跨 Question、Role、Human Gate 或 Runtime state 时必须等待人类确认。每个当前问题的正式角色阶段结束后，必须向人类报告状态、handoff readiness、blocker 与 next Gate，再决定后续推进。
+
 ## 角色表
 
 | 角色 | 定位 | 主责阶段与产物 |

@@ -34,6 +34,10 @@
 
 A 可以根据发现的问题发起 workflow rollback；如果 rollback 导致核心模型路线发生实质变化，新路线必须重新经过人类团队的 major route checkpoint，A 的 Codex 不得自行批准或冻结新的核心路线。
 
+## Per-question Completion Report
+
+A 完成当前问题的正式建模阶段后，必须停止继续正式推进并向人类报告：Question、当前 state、frozen route/model、major assumptions、downstream computation needs、`A → B HANDOFF READY = YES / NO`、blockers/risks 和 next Gate。未经 Human Question Gate activation，不得自动开始下一问的正式 MODELING；可以记录下一问的依赖、风险和建议。
+
 ## 禁止事项
 
 - 不把临时计算或未经 3coding 验证的数字作为正式论文结果。

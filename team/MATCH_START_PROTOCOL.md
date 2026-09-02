@@ -12,6 +12,20 @@
 
 若人类未说明当前 Phase/state，Codex 应先根据现有正式 artifacts 判断；无法可靠判断时询问人类，不得自行推进完整 workflow。
 
+## Human Question Gate
+
+A/B/C 可以在比赛开始阶段完整阅读全部赛题，识别所有问题及依赖关系；但读过或理解某问，不表示该问已经获得正式执行授权。默认一次只激活一个由人类明确授权的正式 Question；多问并行只有在人类明确批准时才允许。
+
+当前 Question 完成后，可以报告下一问、记录依赖并提出建议，但未经人类明确 activation，不得把下一 Question 自动切换为正式执行对象。上一问完成、下一问 artifact 或 Git 文件已经存在、`HANDOFF READY`，以及当前角色有空继续，均不能自动构成 Question activation。未激活问题只允许非正式依赖识别、待办记录和建议，不得形成正式 frozen modeling、result 或 writing artifact。
+
+在已激活的 `Question + Role + Phase/state` 范围内，当前角色可以自主完成该阶段的正常工作，不需要为每个命令、代码运行或文件修改重复请求批准；跨越 Question、Role、Human Gate 或 Runtime state 时，必须停止并等待人类确认。
+
+## Session Recovery
+
+新开 Codex 会话、上下文压缩后、长时间中断后、无法可靠回忆 startup prompt，或对当前 Question / Phase / state / Gate 不确定时，不得依赖聊天记忆恢复权限。聊天记忆和旧 startup prompt 不是持久状态的最终事实源。
+
+恢复时必须从仓库正式事实重新确认：repository root；Git branch / status；`SNAPSHOT_VERSION.md`；`TEAM_SOP.md`；当前角色文件；本 `MATCH_START_PROTOCOL.md`；当前任务所需 Skill；以及现有正式 artifacts。随后确认当前 Question、Phase、per-question state、已通过 Gate、正式 upstream、当前角色权限及是否存在 STALE/blocker。若仍无法可靠判断，必须询问人类，不得自行假设 Gate 或 Question activation 已通过。
+
 ## Phase 0 — Workspace Ready
 
 **建议时间：比赛开始约 0–15 min**
@@ -83,11 +97,17 @@ A 向人类团队说明各问的模型路线、核心假设、benchmark、valida
 
 稳态流水线：
 
-- A：研究下一问；
+- A：研究已由人类 activation 的下一问；若下一问尚未激活，只能做非正式依赖识别、待办记录和建议，不得形成正式 frozen modeling artifact；
 - B：计算当前已冻结问；
 - C：撰写已有正式上游事实的部分。
 
 A → B handoff 必须基于正式 modeling artifact。B 不得依据聊天中的临时想法自行改变正式模型。
+
+## Handoff Semantics
+
+`HANDOFF READY` 仅表示当前角色已满足正式交接条件，对应 artifact 可以提交给下游审阅或接收；它不表示源角色可以切换身份继续下游工作、目标角色已经获得执行授权、当前 Question 自动进入下一状态，或下一 Question 自动激活。
+
+目标角色正式开始工作前，当前 Question 必须已经 activation，对应 Runtime state / Gate 必须允许，并满足 Team Mode 所要求的人类授权。READY 后的接受和实际执行仍受这些权限约束，不另建复杂审批系统。
 
 ## Phase 6 — First Result Handoff
 
