@@ -34,6 +34,8 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 将用户的选择记录到 `plan.md` 的"方案"小节中。
 
+**交互注意**：使用 AskUserQuestion 向用户提问时，始终允许用户输入“其他”自定义偏好或模型选型，不强行限制用户只能选择预设候选项。如果用户输入了自定义选项，忠实记录到 `plan.md` 中。
+
 
 ### 2. 制定方案
 

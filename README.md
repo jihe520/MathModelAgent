@@ -220,8 +220,8 @@ Harness SKILL 的优化需要大量黑盒测试和调优.
 
 
 提供三种部署方式，请选择最适合你的方案：
-1. [docker(最简单)](#-方案一docker-部署推荐最简单)
-2. [本地部署](#-方案二-本地部署)
+1. [docker(最简单)](#-方案一docker-部署推荐安全简单)
+2. [本地部署](#-方案二-本地部署推荐项目开发者部署)
 3. [脚本本地部署(社区)](#-方案三自动脚本部署来自社区)
 
 
@@ -297,7 +297,7 @@ $env:ENV="DEV"
 $env:REDIS_URL="redis://localhost:6379/0"
 # 2. 设置 PowerShell 执行策略策略为 RemoteSigned
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-# 3. 创建虚拟环境
+# 3. 创建虚拟环境（若已执行过 uv sync 则可跳过本步，其虚拟环境为 .venv；win_start.bat 会自动探测两者）
 python -m venv venv
 ```
 
@@ -329,11 +329,11 @@ source .venv/bin/activate
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
 ```
 
-```bash
+```powershell
 # ============ Windows PowerShell 安装命令 ============
 # 1. 切换到 backend 目录
 cd .\backend\
-# 2. 激活虚拟环境
+# 2. 激活虚拟环境（uv sync 用户路径为 .\.venv\Scripts\Activate.ps1）
 .\venv\Scripts\Activate.ps1
 # 3. 启动后端服务
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
@@ -427,6 +427,15 @@ Thanks to the following projects:
 - [ai-manus](https://github.com/Simpleyyt/ai-manus)
 
 ## 其他
+
+### ⚙️ 常见配置说明 (Configuration)
+
+在 `backend/.env.dev`（从 `backend/.env.example` 复制）中可按需调整高级运行参数：
+
+- **对话轮次上限** (`MAX_CHAT_TURNS`): 默认无限制。如需限制代码手调试轮次，或在复杂论文创作中防止过早触发上限，可显式设置数字（如 `MAX_CHAT_TURNS=50`）。
+- **重试反思次数** (`MAX_RETRIES`): 代码执行报错后的自动反思重试次数（默认 3 次）。
+- **CORS 跨域允许源** (`CORS_ALLOW_ORIGINS`): 默认 `*`，支持以逗号分隔配置多个前端来源（如 `http://localhost:5173,https://yourdomain.com`）。
+- **API Base URL 格式**: 各平台兼容 OpenAI 规范时，请填写接口 Base URL（例如 DeepSeek 为 `https://api.deepseek.com/v1`，Gemini 为 `https://generativelanguage.googleapis.com/v1beta/openai/`），系统会自动处理多余的 `/chat/completions` 后缀。
 
 ### 💖 Sponsor
 

@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -u
 
+# Windows (python.org installer / Git Bash) usually only provides `python`,
+# while Linux/macOS provide `python3`. Pick whichever exists.
+PYTHON_BIN="$(command -v python3 || command -v python || true)"
+if [ -z "$PYTHON_BIN" ]; then
+  echo "ERROR: python3 (or python) not found in PATH" >&2
+  exit 2
+fi
+
 usage() {
   cat <<'EOF'
 Usage:
@@ -27,6 +35,11 @@ the actual files it wants checked.
 EOF
 }
 
+die_missing_value() {
+  echo "ERROR: $1 requires a value" >&2
+  exit 2
+}
+
 PAPER_DIR="${PAPER_DIR:-}"
 ROOT_DIR="${ROOT_DIR:-}"
 MAIN_FILE="${MAIN_FILE:-}"
@@ -43,43 +56,53 @@ POSITIONAL=()
 while [ "$#" -gt 0 ]; do
   case "$1" in
     --paper-dir)
-      PAPER_DIR="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      PAPER_DIR="$2"
       shift 2
       ;;
     --root-dir)
-      ROOT_DIR="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      ROOT_DIR="$2"
       shift 2
       ;;
     --main)
-      MAIN_FILE="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      MAIN_FILE="$2"
       shift 2
       ;;
     --sections-dir)
-      SECTIONS_DIR="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      SECTIONS_DIR="$2"
       shift 2
       ;;
     --references)
-      REFERENCES_FILE="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      REFERENCES_FILE="$2"
       shift 2
       ;;
     --figures-dir)
-      FIGURES_DIR="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      FIGURES_DIR="$2"
       shift 2
       ;;
     --results-file)
-      RESULTS_FILE="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      RESULTS_FILE="$2"
       shift 2
       ;;
     --problem-analysis)
-      PROBLEM_ANALYSIS_FILE="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      PROBLEM_ANALYSIS_FILE="$2"
       shift 2
       ;;
     --all-results)
-      ALL_RESULTS_FILE="${2:-}"
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      ALL_RESULTS_FILE="$2"
       shift 2
       ;;
     --internal-term)
-      EXTRA_INTERNAL_TERMS+=("${2:-}")
+      [ "$#" -ge 2 ] || die_missing_value "$1"
+      EXTRA_INTERNAL_TERMS+=("$2")
       shift 2
       ;;
     --no-internal-check)
@@ -185,7 +208,7 @@ else
 fi
 export EXTRA_INTERNAL_TERMS_STR
 
-python3 - <<'PY'
+"$PYTHON_BIN" - <<'PY'
 import json
 import os
 import re
@@ -605,6 +628,23 @@ if all_results and all_results.exists():
         warn(f"cannot parse all-results JSON: {exc}")
 else:
     info("all-results JSON not supplied/found; skip JSON numeric scan")
+
+if is_typst:
+    latex_leak_patterns = [
+        (re.compile(r"\\text\{[^}]*\}"), r"\text{...} 应转为 \"...\""),
+        (re.compile(r"\\times\b"), r"\times 应转为 times"),
+        (re.compile(r"\\degree\b"), r"\degree 应转为 ° 或 deg"),
+        (re.compile(r"\\approx\b"), r"\approx 应转为 approx"),
+        (re.compile(r"\\cdot\b"), r"\cdot 应转为 dot"),
+        (re.compile(r"\\frac\{"), r"\frac{a}{b} 应转为 (a)/(b)"),
+    ]
+    typst_files_to_check = [p for p in (section_files + [main]) if p.exists() and p.suffix == ".typ"]
+    for typ_file in typst_files_to_check:
+        content = read(typ_file)
+        for pat, hint in latex_leak_patterns:
+            matches = pat.findall(content)
+            if matches:
+                warn(f"Typst 论文检测到疑似 LaTeX 语法残留 [{matches[0]}]: {rel(typ_file)} ({hint})")
 
 if exit_code == 0:
     print("PASS: writing text gate passed")

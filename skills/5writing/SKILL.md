@@ -338,6 +338,24 @@ A_code.typ
 
 在所有章节完成后撰写中文摘要或英文 Summary Sheet。必须包含每个子问题的方法和精确的数值结果。
 
+## Typst 写作与数学公式规范（严禁 LaTeX 语法残留）
+
+当选择 **Typst 引擎**时，必须严格使用 Typst 原生语法，**严禁混入 LaTeX 宏定义**。常见对应表：
+
+| 内容 | LaTeX 错误写法（严禁） | Typst 正确写法 | 说明 |
+| --- | --- | --- | --- |
+| 文本/单位 | `\text{km}`、`\text{m/s}` | `"km"`、`"m/s"` | Typst 公式中双引号表示文本 |
+| 乘号 | `\times` | `times` | Typst 内置符号，无反斜杠 |
+| 点乘 | `\cdot` | `dot` | Typst 内置符号 |
+| 角度 | `\degree` | `°` 或 `deg` | 直接使用摄氏度/角度符号 |
+| 约等于 | `\approx` | `approx` | Typst 内置符号 |
+| 希腊字母 | `\alpha`、`\beta`、`\theta`、`\lambda` | `alpha`、`beta`、`theta`、`lambda` | 无反斜杠 |
+| 大写希腊 | `\Delta` | `Delta` | 首字母大写 |
+| 科学计数 | `10^{-5}` | `10^(-5)` | Typst 指数使用圆括号包裹 |
+| 带文本下标 | `r_{\text{cov}}` | `r_"cov"` | 下标文本直接用 `_"..."` |
+| 分数 | `\frac{a}{b}` | `a / b` 或 `(a) / (b)` | 使用除号 |
+| 强调/加粗 | `\textbf{text}` | `*text*` 或 `#strong[text]` | Typst 标记语法 |
+
 ## LaTeX 写作要点
 
 以下要点供 **LaTeX 引擎**使用。Typst 引擎请调用 typst-author skill 获取语法帮助。
