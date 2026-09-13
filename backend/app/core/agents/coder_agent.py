@@ -106,8 +106,17 @@ class CoderAgent(Agent):
                 )
 
             self.current_chat_turns += 1
-            logger.info(f"当前对话轮次: {self.current_chat_turns}")
-            
+            turn_info = (
+                f"代码手进行第 {self.current_chat_turns}/{self.max_chat_turns} 轮交互"
+                if self.max_chat_turns is not None
+                else f"代码手进行第 {self.current_chat_turns} 轮交互"
+            )
+            logger.info(turn_info)
+            await redis_manager.publish_message(
+                self.task_id,
+                SystemMessage(content=turn_info, type="info"),
+            )
+
             try:
                 response = await self._chat(
                     history=self.chat_history,
@@ -213,7 +222,12 @@ class CoderAgent(Agent):
                     )
                     
             except Exception as e:
-                logger.error(f"执行过程中发生异常: {str(e)}")
+                error_desc = f"执行异常 (重试 {retry_count + 1}/{self.max_retries or '∞'}): {str(e)}"
+                logger.error(error_desc)
+                await redis_manager.publish_message(
+                    self.task_id,
+                    SystemMessage(content=error_desc, type="warning"),
+                )
                 retry_count += 1
                 last_error_message = str(e)
                 continue

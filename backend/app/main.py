@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from app.config.setting import settings
 from app.routers import modeling_router, ws_router, common_router, files_router
 from app.utils.log_util import logger
 from fastapi.staticfiles import StaticFiles
@@ -37,14 +38,32 @@ app.include_router(files_router.router)
 
 
 # 跨域 CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],  # 暴露所有响应头
+cors_origins = (
+    settings.CORS_ALLOW_ORIGINS
+    if isinstance(settings.CORS_ALLOW_ORIGINS, list)
+    else [settings.CORS_ALLOW_ORIGINS]
 )
+
+if "*" in cors_origins:
+    # Starlette CORS 中间件在 allow_credentials=True 时不能使用 "*" 作为 Access-Control-Allow-Origin
+    # 使用 allow_origin_regex 动态匹配请求源以合规传递凭据
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r".*",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
 
 app.mount(
     "/static",  # 这是访问时的前缀

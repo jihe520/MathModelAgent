@@ -131,7 +131,6 @@ class MathModelWorkFlow(WorkFlow):
             timeout=3000,
         )
         
-        assert settings.OPENALEX_EMAIL is not None, "OPENALEX_EMAIL 未配置"
         scholar = OpenAlexScholar(
             task_id=self.task_id,
             email=settings.OPENALEX_EMAIL,
