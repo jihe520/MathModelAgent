@@ -16,6 +16,7 @@ allowed-tools: Bash(*), Read, Write
 | --- | --- | --- |
 | `typst` | 论文编译（5writing、6verity，Typst 引擎） | `command -v typst` |
 | `xelatex` | 论文编译（5writing、6verity，LaTeX 引擎，中文模板必需） | `command -v xelatex` |
+| `tectonic` | AI 使用详情 PDF 的备用 LaTeX 编译器 | `command -v tectonic` |
 | `python3` | 数值计算与图表（3coding-visual） | `command -v python3` |
 | `drawio` / `draw.io` | DrawIO 流程图导出 PDF（4drawio） | `command -v drawio \|\| command -v draw.io` |
 | `pdftoppm` | PDF 转 PNG 视觉检查（6verity） | `command -v pdftoppm` |
@@ -32,6 +33,7 @@ allowed-tools: Bash(*), Read, Write
 | `matplotlib` | 图表生成 |
 | `scikit-learn` | 机器学习建模 |
 | `openpyxl` | 读写 Excel 数据附件 |
+| `PyMuPDF`（导入名 `fitz`） | 检查 AI 使用详情 PDF 的页数、A4 尺寸和文本层 |
 
 ## 工作流程
 
@@ -74,6 +76,7 @@ check_cmd() {
 
 check_cmd typst
 check_cmd xelatex
+check_cmd tectonic
 check_cmd python3 || check_cmd python   # Windows 上可能是 python
 command -v drawio >/dev/null 2>&1 || command -v draw.io >/dev/null 2>&1 \
   && echo "OK  drawio" || echo "MISS drawio"
@@ -81,21 +84,27 @@ check_cmd pdftoppm
 check_cmd mutool
 check_cmd magick
 
-python3 - <<'PYEOF'
+PYTHON_BIN="$(command -v python3 || command -v python)"
+if [ -n "$PYTHON_BIN" ]; then
+"$PYTHON_BIN" - <<'PYEOF'
 import importlib
-pkgs = ["numpy", "scipy", "pandas", "matplotlib", "sklearn", "openpyxl"]
+pkgs = ["numpy", "scipy", "pandas", "matplotlib", "sklearn", "openpyxl", "fitz"]
 for p in pkgs:
     try:
         importlib.import_module(p)
         import importlib.metadata as meta
         try:
-            ver = meta.version(p if p != "sklearn" else "scikit-learn")
+            dist = {"sklearn": "scikit-learn", "fitz": "PyMuPDF"}.get(p, p)
+            ver = meta.version(dist)
         except Exception:
             ver = "?"
         print(f"OK  {p} ({ver})")
     except ImportError:
         print(f"MISS {p}")
 PYEOF
+else
+  echo "MISS python3/python"
+fi
 ```
 
 ### Step 3：输出检查报告
@@ -112,7 +121,9 @@ PYEOF
 ...
 ```
 
-**必须项：** typst 或 xelatex（至少一个论文编译器）、python3、numpy、pandas、matplotlib  
+**通用必须项：** typst 或 xelatex（至少一个论文编译器）、python3、numpy、pandas、matplotlib
+
+**国赛 AI 支撑材料附加必须项：** `7ai-disclosure/SKILL.md` 与其模板、脚本完整，xelatex 或 tectonic 至少一个，PyMuPDF 可导入。
 **可选项：** drawio、pdftoppm/mutool/magick 三选一、scipy、scikit-learn、openpyxl
 
 ### Step 4：提供安装命令（按平台）
@@ -220,6 +231,7 @@ Doctor 检查完成（macOS）
   4drawio            ⚠ drawio 未安装，PDF 导出将跳过
   5writing           ✓（typst ✓，xelatex ✓）
   6verity            ⚠ 无 PDF 转 PNG 工具，视觉检查将跳过
+  7ai-disclosure     ✓（python ✓，xelatex ✓，PyMuPDF ✓）
 ```
 
 ## 注意事项
@@ -228,4 +240,5 @@ Doctor 检查完成（macOS）
 - Windows 下建议在 PowerShell（管理员）或 Git Bash 中运行，部分命令需要管理员权限。
 - Linux 的 `sudo` 命令会请求密码，执行前告知用户。
 - drawio 和 PDF 转 PNG 工具缺失不影响核心工作流，仅影响导出质量。
+- 国赛任务缺少 `7ai-disclosure`、xelatex/tectonic 或 PyMuPDF 时，不得报告最终提交包已完成。
 - 如平台检测为 unknown，打印所有平台命令供用户手动选择。

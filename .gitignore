@@ -24,3 +24,5 @@ skills/5writing/templates/**/missfont.log
 # LaTeX 模板编译生成的 PDF（保留 huaweibei 的 logo.pdf 和 title.pdf 模板资源）
 skills/5writing/templates/**/main.pdf
 
+__pycache__/
+*.py[cod]
