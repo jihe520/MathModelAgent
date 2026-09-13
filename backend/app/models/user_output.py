@@ -83,9 +83,10 @@ class UserOutput:
         Returns:
             替换引用为 UUID 后的文本。
         """
-        # 匹配引用内容，格式为 {[^数字]: 引用内容}
-        # 修改正则表达式，匹配大括号包裹的引用格式
-        references = re.findall(r"\{\[\^(\d+)\]:\s*(.*?)\}", text, re.DOTALL)
+        # 匹配引用内容，格式为 {[^数字]: 引用内容} 或 {[^数字] 引用内容}
+        # （writer 提示词给出的示例不带冒号，冒号必须可选，否则引用
+        # 收集失败，参考文献一节永远只有标题没有条目）
+        references = re.findall(r"\{\[\^(\d+)\](?::|\s)\s*(.*?)\}", text, re.DOTALL)
 
         for ref_num, ref_content in references:
             # 清理引用内容，去除末尾的空格和点号
@@ -101,7 +102,7 @@ class UserOutput:
             if existing_uuid:
                 # 如果已存在，使用现有的UUID
                 text = re.sub(
-                    rf"\{{\[\^{ref_num}\]:.*?\}}",
+                    rf"\{{\[\^{ref_num}\].*?\}}",
                     f"[{existing_uuid}]",
                     text,
                     flags=re.DOTALL,
@@ -113,7 +114,7 @@ class UserOutput:
                     "content": ref_content,
                 }
                 text = re.sub(
-                    rf"\{{\[\^{ref_num}\]:.*?\}}",
+                    rf"\{{\[\^{ref_num}\].*?\}}",
                     f"[{new_uuid}]",
                     text,
                     flags=re.DOTALL,
@@ -138,11 +139,15 @@ class UserOutput:
             # 找到[uuid]
             uuid_list = re.findall(r"\[([a-f0-9-]{36})\]", text)
             for uid in uuid_list:
-                text = text.replace(f"[{uid}]", f"[^{ref_index}]")
+                # 同一文献跨章节重复出现时必须复用首个编号，
+                # 否则正文出现 [2] 而参考文献列表只有 [1]
                 if self.footnotes[uid].get("number") is None:
                     self.footnotes[uid]["number"] = ref_index
-
-                ref_index += 1
+                    ref_index += 1
+                # 正文引用标记写成 [n] 而非 [^n]：后者是 markdown 脚注
+                # 引用，不支持的渲染器直接丢字面量，参考文献列表的
+                # [^n]: 定义也会被当作脚注而非条目
+                text = text.replace(f"[{uid}]", f"[{self.footnotes[uid]['number']}]")
             sort_res[seq_key] = {
                 "response_content": text,
             }
@@ -158,11 +163,15 @@ class UserOutput:
         Returns:
             附带参考文献的完整文本。
         """
-        text += "\n\n ## 参考文献"
+        # 标题必须顶格：行首带空格的 ` ## 参考文献` 在严格 markdown
+        # 渲染器（如 pandoc）里不识别为标题，直接输出字面文本；
+        # 条目写成普通 [n] 文本而非 [^n]: 脚注定义，不支持的渲染器
+        # 会把整节当未使用脚注丢弃
+        text += "\n\n# 参考文献"
         # 将脚注转换为列表并按 number 排序
         sorted_footnotes = sorted(self.footnotes.items(), key=lambda x: x[1]["number"])
         for _, footnote in sorted_footnotes:
-            text += f"\n\n[^{footnote['number']}]: {footnote['content']}"
+            text += f"\n\n[{footnote['number']}] {footnote['content']}"
         return text
 
     def get_result_to_save(self) -> str:
