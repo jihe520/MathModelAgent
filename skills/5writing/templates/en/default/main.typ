@@ -9,7 +9,7 @@
 #let problem-chosen = "A"
 #let paper-title = "[Paper Title]"
 #let summary-placeholder = "Summary content -- THIS IS THE MOST IMPORTANT PART"
-#let total-pages = "4"
+#let total-pages = context str(counter(page).final().first())
 
 #let page-header = [
   #grid(

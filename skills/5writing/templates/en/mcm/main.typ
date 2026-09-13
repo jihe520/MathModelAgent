@@ -11,7 +11,7 @@
 #let paper-date = "June 3, 2026"
 #let summary-placeholder = "[Summary: problem overview + methods for each sub-problem + key numerical results + conclusions, 300-500 words]"
 #let keywords = "[Keyword1]; [Keyword2]; [Keyword3]"
-#let total-pages = "4"
+#let total-pages = context str(counter(page).final().first() - 2)
 
 #let page-header = [
   #grid(
