@@ -297,7 +297,8 @@ $env:ENV="DEV"
 $env:REDIS_URL="redis://localhost:6379/0"
 # 2. 设置 PowerShell 执行策略策略为 RemoteSigned
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-# 3. 创建虚拟环境
+# 3. 创建虚拟环境（若已执行过 uv sync 则可跳过本步，其虚拟环境为 .venv；
+#    win_start.bat 会自动探测 venv / .venv 两者之一）
 python -m venv venv
 ```
 
@@ -329,11 +330,11 @@ source .venv/bin/activate
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
 ```
 
-```bash
+```powershell
 # ============ Windows PowerShell 安装命令 ============
 # 1. 切换到 backend 目录
 cd .\backend\
-# 2. 激活虚拟环境
+# 2. 激活虚拟环境（uv sync 用户路径为 .\.venv\Scripts\Activate.ps1）
 .\venv\Scripts\Activate.ps1
 # 3. 启动后端服务
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
