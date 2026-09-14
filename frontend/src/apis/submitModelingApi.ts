@@ -1,4 +1,5 @@
 import request from "@/utils/request";
+import type { AxiosProgressEvent } from "axios";
 
 /**
  * 提交数学建模任务
@@ -12,6 +13,7 @@ export function submitModelingTask(
 		format_output?: string;
 	},
 	files?: File[],
+	onUploadProgress?: (progressEvent: AxiosProgressEvent) => void,
 ) {
 	const formData = new FormData();
 	// 添加问题数据
@@ -36,7 +38,11 @@ export function submitModelingTask(
 			headers: {
 				"Content-Type": "multipart/form-data",
 			},
-			timeout: 30000, // 添加超时设置
+			onUploadProgress: (event) => {
+				if (!onUploadProgress) return;
+				onUploadProgress(event);
+			},
+			timeout: 300000,
 		});
 	}
 }
