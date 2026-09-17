@@ -5,8 +5,8 @@ WORKDIR /app
 # 复制依赖文件
 COPY package.json pnpm-lock.yaml ./
 
-# 安装 pnpm
-RUN npm install -g pnpm
+# 锁定 pnpm 9.x：与 lockfileVersion 9.0 匹配，避免 10+ 校验 lockfile 中不存在的 @pnpm/exe
+RUN npm install -g pnpm@9
 
 # 清理 npm 缓存并安装依赖
 RUN pnpm install --frozen-lockfile
