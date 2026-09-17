@@ -6,7 +6,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 
 # 锁定 pnpm 9.x：与 lockfileVersion 9.0 匹配，避免 10+ 校验 lockfile 中不存在的 @pnpm/exe
+# package.json 的 packageManager 仍可能写着 10.x，禁止 pnpm 自升级把 9 换掉
 RUN npm install -g pnpm@9
+ENV PNPM_CONFIG_MANAGE_PACKAGE_MANAGER_VERSIONS=false
 
 # 清理 npm 缓存并安装依赖
 RUN pnpm install --frozen-lockfile
