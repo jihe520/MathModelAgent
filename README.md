@@ -110,6 +110,36 @@ MathModelAgent SKILL —— 直接在 Harness 中驱动的数学建模自动化�
 **🔧 可组合、可扩展**
 每个阶段是独立 Skill，可单独调用（如只跑分析、只写论文）；模板和知识库可自由扩展；支持 Typst 生态排版。
 
+### Skills 一览
+
+工作流 Skills 按 1–6 阶段串联，也可以按需单独调用。
+
+| Skill | 用途 | 主要交付 |
+|-------|------|----------|
+| [1start-mathmodel](./skills/1start-mathmodel/SKILL.md) | 启动完整数学建模流程，安排各阶段任务 | 建模计划与任务清单 |
+| [2analysis-modeling](./skills/2analysis-modeling/SKILL.md) | 分析赛题与数据，设计模型和求解策略 | 建模报告、假设、公式与约束 |
+| [3coding-visual](./skills/3coding-visual/SKILL.md) | 编写并运行求解代码，生成数据图表 | 可复现代码、结果报告与图表 PDF |
+| [4drawio](./skills/4drawio/SKILL.md) | 绘制技术路线、求解流程与模型结构图 | 可编辑的 DrawIO 图与 PDF |
+| [5writing](./skills/5writing/SKILL.md) | 选择比赛模板，组织和排版论文 | Typst / LaTeX 论文源码与 PDF |
+| [6verity](./skills/6verity/SKILL.md) | 核对数值、引用、图表、编译与提交要求 | 验收报告与待修复问题 |
+| [mathmodel-to-ei](./skills/mathmodel-to-ei/SKILL.md) | 将完整数模论文改写为英文会议论文 | IEEE LaTeX 源码、PDF 与改稿说明 |
+| [doctor](./skills/doctor/SKILL.md) | 检查工作流依赖，指导补齐环境 | 环境检查结果与安装指引 |
+| [typst-author](./skills/typst-author/SKILL.md) | 编写、修改和排查 Typst 文档 | Typst 源码与排版修复 |
+| [mathmodel-figure-templates](./skills/mathmodel-figure-templates/SKILL.md) | 使用内置科研绘图模板，按需调整样式 | 绘图脚本与 PNG / PDF / SVG |
+| [_references](./skills/_references/SKILL.md) | 提供各阶段共用的建模、写作与图表规范 | 共享参考知识库，由其他 Skills 按需读取 |
+
+### 数模论文转 EI 会议论文
+
+已有完整的数学建模竞赛论文，可以使用 `mathmodel-to-ei` 提炼研究主线、重组章节、改写英文正文并整理图表。内置 IEEE conference LaTeX 模板，交付论文源码、编译成功的 PDF 和改稿说明；目标会议有指定模板时优先使用指定模板。
+
+```text
+使用 $mathmodel-to-ei，将这篇完整数模论文改写为英文会议论文，交付源码、PDF 和改稿说明。
+```
+
+下图展示了研赛 2025 A 题论文改写为英文会议初稿的示例，包含论文预览与交付清单。初稿仍需补齐作者信息并确认目标会议要求，不代表已录用或被 EI 收录。
+
+![数模论文转英文会议论文示例：改稿交付清单与 IEEE 双栏论文预览](./docs/mathmodel-to-ei-demo.png)
+
 ### 🎨 姊妹项目：sci-box（科研图表 & 流程图）
 
 科研绘图和流程图模板已独立成仓库 **[jihe520/sci-box](https://github.com/jihe520/sci-box)**，可单独安装、单独使用：

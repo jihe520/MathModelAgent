@@ -1,0 +1,4 @@
+interface:
+  display_name: "数模论文转 EI 会议论文"
+  short_description: "将完整数模论文改写为英文会议稿，内置 IEEE LaTeX 模板并核验图表与结果"
+  default_prompt: "使用 $mathmodel-to-ei，将我提供的完整数模论文改写为英文会议论文，使用内置 IEEE LaTeX 模板，交付源码、PDF 和改稿说明。"
