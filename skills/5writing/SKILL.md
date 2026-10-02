@@ -311,6 +311,31 @@ A_code.typ
 
 只使用真实存在的参考文献。文件名按引擎选择：Typst 用 `paper/references.typ`，LaTeX 用 `paper/references.tex`。
 
+学术文献必须通过学术数据库 API 检索核实，禁止凭记忆编造。优先使用 OpenAlex，也可用 Semantic Scholar 补充（如 OpenAlex 查不到或想交叉验证）：
+
+**OpenAlex（首选）**：
+
+- 检索：`https://api.openalex.org/works?search=关键词&per-page=10`（多个关键词用空格分隔，英文检索词效果更好）
+- 按 DOI 精确查：`https://api.openalex.org/works/doi:10.xxxx/xxxxx`
+- 从返回 JSON 中提取：`authorships`（作者）、`title`、`primary_location.source.display_name`（期刊）、`publication_year`、`doi`
+
+**Semantic Scholar（补充）**：
+
+- 检索：`https://api.semanticscholar.org/graph/v1/paper/search?query=关键词&limit=10&fields=title,authors,year,venue,externalIds`
+- 按 DOI 精确查：`https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}?fields=title,authors,year,venue,externalIds`（`DOI:` 前缀大写，doi 不带 `https://doi.org/`；查到返回 200，查不到返回 404）
+- 从返回 JSON 中提取：`authors`（作者）、`title`、`venue`（期刊/会议）、`year`、`externalIds.DOI`
+- 注意速率限制：无 API key 时约 100 次请求/5 分钟，批量检索或批量验证 DOI 时控制请求频率，遇到 429 需降速重试
+
+**统一要求**：
+
+- 只有带 DOI 的结果才允许写入参考文献；两个来源都检索不到的文献不得引用
+- **DOI 解析验证（强制）**：无论从 OpenAlex 还是 Semantic Scholar 查到文献，在写入参考文献之前，必须用该文献的 DOI 逐一验证能否解析到真实论文页面。验证方式（任选一，失败可换另一种复核）：
+  - 请求 `https://doi.org/{doi}`，确认能跳转/解析到真实论文页面（HTTP 200/302 到出版商页面），而不是返回 404 或 "DOI Not Found"
+  - 请求 `https://api.openalex.org/works/doi:{doi}`，确认返回该文献的真实元数据（HTTP 200）
+  - 验证不通过（DOI 无法解析、返回 404、或解析出的论文与拟引用文献不符）的文献，**一律不得引用**，直接从候选中剔除，不得"先写上再说"
+- 同一篇文献在不同来源的元数据不一致时，以 DOI 注册信息（可用 `https://api.openalex.org/works/doi:...` 复核）为准
+- 数据类引用（政府统计、官方网站）可不受此限，但需注明真实 URL
+
 **Typst 引擎**：
 
 ```typst
