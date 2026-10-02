@@ -26,6 +26,8 @@
 
 The desktop app bundles Claude Code and the full set of MathModelAgent SKILLS. No Python / Node.js / Redis installation and no manual SKILL setup — install it, add one model API key, and start modeling.
 
+For CUMCM tasks, the workflow records actual AI use throughout the run, automatically summarizes evidence-backed adoption, revisions, and checks without exposing core modeling details, and requires both `paper/main.pdf` and `supporting_materials/AI 工具使用详情.pdf` before reporting final completion.
+
 | OS | File |
 |----|------|
 | macOS (Apple Silicon) | `mathmodel-<version>-arm64.dmg` |
@@ -62,6 +64,7 @@ Automatically generate an award-level modeling paper
     - Local Interpreter: Based on Jupyter, code saved as notebook for easy editing
     - Cloud Code Interpreter: [E2B](https://e2b.dev/) and [daytona](https://app.daytona.io/)
 - 📝 Generate a well-formatted paper
+- 🧾 Generate the required CUMCM AI-usage disclosure PDF from confirmed run records
 - 🤝 Multi-agents: modeling expert, coding expert, paper expert, etc.
 - 🔄 Multi-LLMs: Different models for each agent
 - 🤖 Support for all models: [litellm](https://docs.litellm.ai/docs/providers)

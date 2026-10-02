@@ -1,12 +1,12 @@
 ---
 name: 6verity
-description: "数学建模竞赛最终验证和验收阶段，支持 Typst 和 LaTeX 双引擎。用于论文写完后检查章节数量、标题顺序、图表引用、数值一致性、占位符、内部文件泄露、参考文献、代码可复现性、编译和提交就绪状态。"
+description: "数学建模竞赛论文验证和验收阶段，支持 Typst 和 LaTeX 双引擎。用于论文写完后检查章节数量、标题顺序、图表引用、数值一致性、占位符、内部文件泄露、参考文献、代码可复现性、编译、AI 支撑材料状态和提交就绪状态。"
 allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetch
 ---
 
 # 验证和验收（Typst / LaTeX）
 
-本 skill 是完整工作流的最后一关。它不重新建模、不生成新结果、不代替写作阶段重写论文；它负责发现硬错误、修复可直接修复的问题，并输出 `reports/VERIFY_REPORT.md`。
+本 skill 是论文与项目产物的验收门禁。它不重新建模、不生成新结果、不代替写作阶段重写论文；它负责发现硬错误、修复可直接修复的问题，并输出 `reports/VERIFY_REPORT.md`。若项目使用过 AI，随后还必须由 `7ai-disclosure` 完成支撑材料终检与生成。
 
 ## 数学建模规范参考
 
@@ -16,6 +16,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 
 - 本阶段负责：结构验收、文本质量门禁、图表引用检查、结果一致性检查、Typst/LaTeX 编译检查、PDF 视觉检查、提交清单。
 - 本阶段不负责：重新设计模型、重新跑大规模实验、重新组织整篇论文。
+- 本阶段只核对 AI 使用日志和支撑材料状态，不补写或猜测 AI 使用记录；自动归纳由 `7ai-disclosure` 根据实际产物和检查证据完成。
 - 发现硬错误时，优先做小范围修复；如果需要回到前序阶段，写入 `reports/VERIFY_REPORT.md` 并标记为未通过。
 
 ## 输入
@@ -29,6 +30,7 @@ allowed-tools: Bash(*), Read, Write, Edit, Grep, Glob, Agent, WebSearch, WebFetc
 5. 图表目录
 6. 可复现代码目录。
 7. 编译后的 PDF，或可由入口文件编译得到的输出 PDF。
+8. 国赛任务必须提供 `reports/AI_USAGE_LOG.md`；最终验收还必须提供 `supporting_materials/AI 工具使用详情.tex` 和 `supporting_materials/AI 工具使用详情.pdf`。其他赛事仅在实际存在时检查。
 
 不要假设论文目录一定叫 `paper/`，也不要假设结果文件一定在项目根。若项目使用不同命名，按实际结构传参并在 `reports/VERIFY_REPORT.md` 中说明。
 
@@ -185,7 +187,17 @@ fi
 
 如果模型没有视觉能力，必须在 `reports/VERIFY_REPORT.md` 中明确写出“未执行视觉检查”的原因，并至少完成 PDF 非空、页数、页面尺寸等可程序化检查。
 
-### Step 9: 写验收报告
+### Step 9: 检查 AI 使用支撑材料状态
+
+- 先读取 `plan.md` 的竞赛类型。`CHINA`、国赛、CUMCM 或全国大学生数学建模竞赛均按国赛处理。
+- 国赛任务必须能够加载 `7ai-disclosure`，并存在 `reports/AI_USAGE_LOG.md`。桌面 Agent 参与论文生成时，不得写“全程未使用 AI”。
+- 首次验收论文时，用 `record` 模式检查日志。论文自身全部通过可以记录为 `PAPER_PASS`，但此状态不是最终提交 `PASS`。
+- `7ai-disclosure` 完成证据驱动的自动归纳、脱敏和 PDF 生成后，再用 `finalize` 模式检查日志，并检查 `supporting_materials/AI 工具使用详情.pdf` 文件名完全一致。
+- 检查该 PDF 非空、可提取文本、页面为 A4、包含规定四部分且无占位符或疑似密钥，并逐页查看是否越界、重叠、裁切或乱码。
+- 国赛任务只有 `paper/main.pdf` 与 `supporting_materials/AI 工具使用详情.pdf` 均通过检查，整体状态才能写 `PASS`。
+- 非国赛任务只有在用户明确要求时才检查该国赛支撑材料。
+
+### Step 10: 写验收报告
 
 创建 `reports/VERIFY_REPORT.md`：
 
@@ -193,7 +205,7 @@ fi
 # 验证和验收报告
 
 ## 结论
-PASS / FAIL
+PAPER_PASS / PASS / FAIL
 
 ## 检查项
 | 检查项 | 结果 | 说明 |
@@ -211,10 +223,12 @@ PASS / FAIL
 
 ## PDF 视觉检查
 
+## AI 工具使用支撑材料
+
 ## 仍需处理的问题
 ```
 
-只有当硬错误都修复、文本门禁通过、核心图表都引用、数值一致、编译通过或明确说明不可编译原因、视觉检查通过或明确说明无法执行原因时，才写 `PASS`。
+论文自身通过、但国赛 AI 支撑材料尚未完成自动归纳或尚未生成时，只能写 `PAPER_PASS`。只有全部硬错误都修复，且国赛要求的两个 PDF 均通过最终检查时，才写 `PASS`。
 
 ## 硬错误标准
 
@@ -232,6 +246,8 @@ PASS / FAIL
 - 编译器可用但论文编译失败。
 - 编译后的 PDF 为空、缺页、页数异常或页面尺寸异常且无法解释。
 - 视觉检查发现正文、表格、图片、公式、页眉页脚、页码等关键元素重叠、裁切、越界或乱码。
+- 日志表明使用过 AI，但最终提交缺少名称完全一致的 `AI 工具使用详情.pdf`。
+- AI 使用日志仍有待确认或未归纳内容、未经证据支持的人工表述、核心建模细节或疑似密钥，却将整体提交状态标记为 `PASS`。
 
 ## 警告标准
 

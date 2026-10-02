@@ -1,0 +1,85 @@
+% !TeX program = xelatex
+% 由 generate_ai_usage_pdf.py 根据自动归纳日志填充；不要直接提交本源文件。
+\documentclass[UTF8,a4paper,11pt]{ctexart}
+\usepackage[a4paper,top=2.0cm,bottom=2.0cm,left=2.15cm,right=2.15cm]{geometry}
+\usepackage{array,booktabs,longtable,fancyhdr,lastpage}
+\usepackage[table]{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{accent}{HTML}{315B7D}
+\definecolor{sectionbg}{HTML}{EDF3F7}
+\definecolor{tablehead}{HTML}{E4EDF3}
+\definecolor{rulegray}{HTML}{AAB8C2}
+\definecolor{bodytext}{HTML}{263746}
+\definecolor{mutedtext}{HTML}{667580}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\sectiontitle}[1]{%
+  \par\vspace{0.65em}\noindent
+  \begingroup\setlength{\fboxsep}{7pt}%
+  \colorbox{sectionbg}{\parbox{\dimexpr\textwidth-2\fboxsep\relax}{%
+    \textcolor{accent}{\rule{3pt}{1.15em}\hspace{0.65em}\bfseries\zihao{-3}#1}}}%
+  \endgroup\par\vspace{0.5em}}
+\newcommand{\recordheading}[2]{%
+  \vspace{0.25em}\noindent\textcolor{accent}{\bfseries 使用记录 #1（#2）}\par
+  \vspace{0.08em}{\color{rulegray}\hrule height 0.35pt}\vspace{0.2em}}
+\renewcommand{\arraystretch}{1.3}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.35em}
+\setlength{\LTpre}{0.2em}
+\setlength{\LTpost}{0.25em}
+\arrayrulecolor{rulegray}
+
+\pagestyle{fancy}
+\setlength{\headheight}{24pt}
+\addtolength{\topmargin}{-7pt}
+\fancyhf{}
+\fancyhead[L]{\textcolor{accent}{\bfseries AI 工具使用详情}}
+\fancyfoot[C]{\textcolor{mutedtext}{第 \thepage\ 页，共 \pageref{LastPage} 页}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{accent}\leaders\hrule height 0.6pt\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+\begin{document}
+\color{bodytext}
+
+\begin{center}
+  {\zihao{2}\bfseries\color{accent}AI 工具使用详情}\par
+  \vspace{0.3em}
+  {\color{rulegray}\rule{0.28\textwidth}{0.7pt}}
+\end{center}
+
+\sectiontitle{一、所用 AI 工具名称、版本或型号}
+\begin{longtable}{@{}L{2.1cm}L{6.2cm}L{7.1cm}@{}}
+\toprule
+\rowcolor{tablehead}\textcolor{accent}{\textbf{编号}} & \textcolor{accent}{\textbf{AI 工具名称}} & \textcolor{accent}{\textbf{版本或型号}} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{tablehead}\textcolor{accent}{\textbf{编号}} & \textcolor{accent}{\textbf{AI 工具名称}} & \textcolor{accent}{\textbf{版本或型号}} \\
+\midrule
+\endhead
+%%__TOOLS_ROWS__%%
+\bottomrule
+\end{longtable}
+
+\sectiontitle{二、具体使用目的和环节}
+\begin{longtable}{@{}L{3.0cm}L{4.2cm}L{8.2cm}@{}}
+\toprule
+\rowcolor{tablehead}\textcolor{accent}{\textbf{工具编号}} & \textcolor{accent}{\textbf{使用环节}} & \textcolor{accent}{\textbf{具体使用目的}} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{tablehead}\textcolor{accent}{\textbf{工具编号}} & \textcolor{accent}{\textbf{使用环节}} & \textcolor{accent}{\textbf{具体使用目的}} \\
+\midrule
+\endhead
+%%__PURPOSE_ROWS__%%
+\bottomrule
+\end{longtable}
+
+\sectiontitle{三、主要提示方式与使用过程说明}
+%%__PROCESS_BLOCKS__%%
+
+\sectiontitle{四、对 AI 输出的采纳、人工修改和核验的主要情况}
+%%__ADOPTION_BLOCKS__%%
+
+\end{document}
