@@ -244,13 +244,15 @@ async def modeling(
                     logger.warning("跳过空文件名")
                     continue
 
-                content = await file.read()
-                if not content:
-                    logger.warning(f"文件 {file.filename} 内容为空")
-                    continue
-
+                # 流式写入，避免一次性读取大文件
                 with open(data_file_path, "wb") as f:
-                    f.write(content)
+                    chunk_size = 1024 * 1024
+                    while True:
+                        chunk = await file.read(chunk_size)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                await file.close()
                 logger.info(f"成功保存文件: {data_file_path}")
 
             except Exception as e:
