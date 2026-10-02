@@ -129,13 +129,12 @@ Three deployment options are available, choose the one that suits you best:
 1. Configure Environment Variables
 
 ```bash
-cp backend/.env.dev.example backend/.env.dev
-cp frontend/.env.example frontend/.env.development
+cp backend/.env.example backend/.env.dev
 ```
 
 Fill in the configuration in:
 - backend/.env.dev
-- frontend/.env.development
+- frontend/.env.development (already in the repo, edit it directly)
 
 2. Start Services
 
@@ -155,13 +154,13 @@ You can now access:
 
 1. Configure Environment Variables
 
-Copy `/backend/.env.dev.example` to `/backend/.env.dev` (remove the `.example` suffix)
+Copy `/backend/.env.example` to `/backend/.env.dev` (remove the `.example` suffix)
 
 **Configure Environment Variables**
 
 It is recommended to use models with strong capabilities and large parameter counts.
 
-Copy `/frontend/.env.example` to `/frontend/.env.development` (remove the `.example` suffix)
+Edit `/frontend/.env.development` directly (the file is already in the repo)
 
 2. Install Dependencies
 
@@ -182,11 +181,12 @@ uv sync # Install dependencies
 # Start backend
 # Activate Python virtual environment
 source .venv/bin/activate # MacOS or Linux
-venv\Scripts\activate.bat # Windows
+.venv\Scripts\activate.bat # Windows (uv sync creates .venv)
 # Run this command for MacOS or Linux
 ENV=DEV uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
-# Run this command for Windows
-set ENV=DEV ; uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120
+# Run these commands for Windows (cmd does not treat ';' as a command separator)
+set ENV=DEV
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --ws-ping-interval 60 --ws-ping-timeout 120 --reload
 ```
 
 Start frontend
