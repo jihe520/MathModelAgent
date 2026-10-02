@@ -243,7 +243,7 @@ Thanks to the following projects:
 
 ### 💖 Sponsor
 
-[Buy Me a Coffee](./docs/sponser.md)
+[Buy Me a Coffee](./docs/md/sponser.md)
 
 Thanks to sponsors:
 [danmo-tyc](https://github.com/danmo-tyc)
