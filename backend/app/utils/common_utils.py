@@ -225,7 +225,9 @@ def split_footnotes(text: str) -> tuple[str, list[tuple[str, str]]]:
     """
     main_text = re.sub(
         r"\n\[\^\d+\]:.*?(?=\n\[\^|\n\n|\Z)", "", text, flags=re.DOTALL
-    ).strip()
+    )
+    # 正文中的脚注引用标记（如 [^1]）本身不是可读内容，随定义一起去除
+    main_text = re.sub(r"\[\^\d+\]", "", main_text).strip()
 
     # 匹配脚注定义
     footnotes = re.findall(r"\[\^(\d+)\]:\s*(.+?)(?=\n\[\^|\n\n|\Z)", text, re.DOTALL)
