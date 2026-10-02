@@ -49,8 +49,11 @@ def create_work_dir(task_id: str) -> str:
     Returns:
         工作目录路径。
     """
-    # 设置主工作目录和子目录
-    work_dir = os.path.join("project", "work_dir", task_id)
+    safe_task_id = ensure_safe_task_id(task_id)
+    base_dir = os.path.abspath(os.path.join("project", "work_dir"))
+    work_dir = os.path.abspath(os.path.join(base_dir, safe_task_id))
+    if not work_dir.startswith(base_dir):
+        raise ValueError("非法工作目录路径")
 
     try:
         # 创建目录，如果目录已存在也不会报错
@@ -103,7 +106,12 @@ def get_work_dir(task_id: str) -> str:
     Raises:
         FileNotFoundError: 工作目录不存在时抛出。
     """
-    work_dir = os.path.join("project", "work_dir", task_id)
+    safe_task_id = ensure_safe_task_id(task_id)
+    base_dir = os.path.abspath(os.path.join("project", "work_dir"))
+    work_dir = os.path.abspath(os.path.join(base_dir, safe_task_id))
+    if not work_dir.startswith(base_dir):
+        raise ValueError("非法工作目录路径")
+
     if os.path.exists(work_dir):
         return work_dir
     else:

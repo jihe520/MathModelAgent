@@ -62,6 +62,21 @@ class SaveApiConfigRequest(BaseModel):
     openalex_email: str
 
 
+def normalize_base_url(url: str | None) -> str | None:
+    """标准化 Base URL，去除末尾 /chat/completions 和多余斜杠。"""
+    if not url:
+        return None
+    cleaned = url.strip()
+    if not cleaned:
+        return None
+    suffixes = ["/chat/completions", "/chat/completions/", "/responses", "/responses/"]
+    for suffix in suffixes:
+        if cleaned.endswith(suffix):
+            cleaned = cleaned[:-len(suffix)]
+            break
+    return cleaned.rstrip("/")
+
+
 @router.post("/save-api-config")
 async def save_api_config(request: SaveApiConfigRequest):
     """
@@ -72,7 +87,7 @@ async def save_api_config(request: SaveApiConfigRequest):
         if request.coordinator:
             settings.COORDINATOR_API_KEY = request.coordinator.get("apiKey", "")
             settings.COORDINATOR_MODEL = request.coordinator.get("modelId", "")
-            settings.COORDINATOR_BASE_URL = request.coordinator.get("baseUrl", "")
+            settings.COORDINATOR_BASE_URL = normalize_base_url(request.coordinator.get("baseUrl", ""))
             if api_type := request.coordinator.get("apiType"):
                 settings.COORDINATOR_API_TYPE = api_type
             if cw := request.coordinator.get("contextWindow"):
@@ -81,7 +96,7 @@ async def save_api_config(request: SaveApiConfigRequest):
         if request.modeler:
             settings.MODELER_API_KEY = request.modeler.get("apiKey", "")
             settings.MODELER_MODEL = request.modeler.get("modelId", "")
-            settings.MODELER_BASE_URL = request.modeler.get("baseUrl", "")
+            settings.MODELER_BASE_URL = normalize_base_url(request.modeler.get("baseUrl", ""))
             if api_type := request.modeler.get("apiType"):
                 settings.MODELER_API_TYPE = api_type
             if cw := request.modeler.get("contextWindow"):
@@ -90,7 +105,7 @@ async def save_api_config(request: SaveApiConfigRequest):
         if request.coder:
             settings.CODER_API_KEY = request.coder.get("apiKey", "")
             settings.CODER_MODEL = request.coder.get("modelId", "")
-            settings.CODER_BASE_URL = request.coder.get("baseUrl", "")
+            settings.CODER_BASE_URL = normalize_base_url(request.coder.get("baseUrl", ""))
             if api_type := request.coder.get("apiType"):
                 settings.CODER_API_TYPE = api_type
             if cw := request.coder.get("contextWindow"):
@@ -99,7 +114,7 @@ async def save_api_config(request: SaveApiConfigRequest):
         if request.writer:
             settings.WRITER_API_KEY = request.writer.get("apiKey", "")
             settings.WRITER_MODEL = request.writer.get("modelId", "")
-            settings.WRITER_BASE_URL = request.writer.get("baseUrl", "")
+            settings.WRITER_BASE_URL = normalize_base_url(request.writer.get("baseUrl", ""))
             if api_type := request.writer.get("apiType"):
                 settings.WRITER_API_TYPE = api_type
             if cw := request.writer.get("contextWindow"):
@@ -129,12 +144,13 @@ async def validate_api_key(request: ValidateApiKeyRequest):
             case _:
                 provider = OpenAIChatProvider()
 
+        clean_base_url = normalize_base_url(request.base_url)
         await provider.call(
             messages=[{"role": "user", "content": "Hi"}],
             model=request.model_id,
             api_key=request.api_key,
-            base_url=request.base_url
-            if request.base_url != "https://api.openai.com/v1"
+            base_url=clean_base_url
+            if clean_base_url and clean_base_url != "https://api.openai.com/v1"
             else None,
             max_tokens=1,
         )
@@ -235,18 +251,22 @@ async def modeling(
         logger.info(f"开始处理上传的文件，工作目录: {work_dir}")
         for file in files:
             try:
-                assert file.filename is not None
-                data_file_path = os.path.join(work_dir, file.filename)
-                logger.info(f"保存文件: {file.filename} -> {data_file_path}")
-
-                # 确保文件名不为空
-                if not file.filename:
-                    logger.warning("跳过空文件名")
+                raw_filename = file.filename or ""
+                safe_filename = os.path.basename(raw_filename).strip()
+                if not safe_filename:
+                    logger.warning(f"跳过空或非法文件名: {raw_filename}")
                     continue
+
+                data_file_path = os.path.abspath(os.path.join(work_dir, safe_filename))
+                if not data_file_path.startswith(os.path.abspath(work_dir)):
+                    logger.warning(f"检测到非法文件路径遍历: {raw_filename}")
+                    continue
+
+                logger.info(f"保存文件: {safe_filename} -> {data_file_path}")
 
                 content = await file.read()
                 if not content:
-                    logger.warning(f"文件 {file.filename} 内容为空")
+                    logger.warning(f"文件 {safe_filename} 内容为空")
                     continue
 
                 with open(data_file_path, "wb") as f:

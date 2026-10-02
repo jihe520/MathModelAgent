@@ -55,7 +55,7 @@ if [ -f /etc/os-release ]; then
   . /etc/os-release
   echo "DISTRO=$ID"
 fi
-# Windows 包管理器检测（在 Git Bash / PowerShell 中）
+# Windows 包管理器检测（在 Git Bash 中；PowerShell 请使用 Get-Command winget 等）
 command -v winget >/dev/null 2>&1 && echo "PKG=winget"
 command -v scoop  >/dev/null 2>&1 && echo "PKG=scoop"
 command -v choco  >/dev/null 2>&1 && echo "PKG=choco"
@@ -64,13 +64,21 @@ command -v choco  >/dev/null 2>&1 && echo "PKG=choco"
 ### Step 2：检查所有工具
 
 ```bash
+# Windows（python.org 安装包 / Git Bash）通常只有 `python`，Linux/macOS 为 `python3`。
+# 注意：check_cmd 必须显式 return，否则函数以 echo 的退出码（恒为 0）结尾，
+# `check_cmd a || check_cmd b` 的回退分支永远不会执行。
 check_cmd() {
   if command -v "$1" >/dev/null 2>&1; then
     echo "OK  $1 ($(command -v "$1"))"
+    return 0
   else
     echo "MISS $1"
+    return 1
   fi
 }
+
+# 统一探测可用的 Python 解释器，供下方包检测使用
+PYTHON_BIN="$(command -v python3 || command -v python || true)"
 
 check_cmd typst
 check_cmd xelatex
@@ -81,7 +89,10 @@ check_cmd pdftoppm
 check_cmd mutool
 check_cmd magick
 
-python3 - <<'PYEOF'
+if [ -z "$PYTHON_BIN" ]; then
+  echo "MISS python3/python，跳过 Python 包检测"
+else
+"$PYTHON_BIN" - <<'PYEOF'
 import importlib
 pkgs = ["numpy", "scipy", "pandas", "matplotlib", "sklearn", "openpyxl"]
 for p in pkgs:
@@ -96,23 +107,21 @@ for p in pkgs:
     except ImportError:
         print(f"MISS {p}")
 PYEOF
+fi
 ```
 
 ### Step 3：输出检查报告
 
-将结果整理展示：
+对 Step 2 的检查结果进行归类：
 
 ```
-状态   工具/包              说明
-----   --------             ----
-✓      typst 0.13.0         论文编译
-✗      drawio               DrawIO 导出 PDF（可选）
-✓      python3 3.11.x       数值计算
-✗      scipy                科学计算（可选）
+=== 环境检查报告 ===
+OK   typst (0.13.0)
+OK   python3 (3.12.3)
 ...
 ```
 
-**必须项：** typst 或 xelatex（至少一个论文编译器）、python3、numpy、pandas、matplotlib  
+**必须项：** typst 或 xelatex（至少一个论文编译器）、python3/python、numpy、pandas、matplotlib  
 **可选项：** drawio、pdftoppm/mutool/magick 三选一、scipy、scikit-learn、openpyxl
 
 ### Step 4：提供安装命令（按平台）

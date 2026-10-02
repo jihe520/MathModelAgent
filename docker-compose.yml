@@ -24,6 +24,7 @@ services:
     volumes:
       - ./backend:/app # 挂载后端代码以实现热重载 (开发环境)
       - ./backend/project/work_dir:/app/project/work_dir # 持久化生成的文件
+      - ./backend/logs:/app/logs # 持久化任务日志与聊天历史记录
       - backend_venv:/app/.venv # 可选：持久化 venv 以在依赖不变时加快后续构建速度
     depends_on:
       - redis # 确保 Redis 在后端启动前启动
