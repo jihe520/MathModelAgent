@@ -1,7 +1,8 @@
-"""代码解释器工厂模块，根据配置创建本地或远程解释器。"""
+"""代码解释器工厂模块，根据配置创建本地、E2B 或 boxd 解释器。"""
 
 from typing import Literal
 from app.tools.base_interpreter import BaseCodeInterpreter
+from app.tools.boxd_interpreter import BoxdCodeInterpreter
 from app.tools.e2b_interpreter import E2BCodeInterpreter
 from app.tools.local_interpreter import LocalCodeInterpreter
 from app.tools.notebook_serializer import NotebookSerializer
@@ -10,7 +11,7 @@ from app.utils.log_util import logger
 
 
 async def create_interpreter(
-    kind: Literal["remote", "local"] = "local",
+    kind: Literal["remote", "local", "boxd"] = "local",
     *,
     task_id: str,
     work_dir: str,
@@ -20,7 +21,8 @@ async def create_interpreter(
     """创建代码解释器实例。
 
     Args:
-        kind: 解释器类型，"remote" 使用 E2B 沙箱，"local" 使用本地 Jupyter。
+        kind: 解释器类型，"remote" 使用 E2B 沙箱，"boxd" 使用 boxd 机器，
+            "local" 使用本地 Jupyter。实际类型由已配置的 API 密钥决定。
         task_id: 任务 ID。
         work_dir: 工作目录。
         notebook_serializer: Notebook 序列化器。
@@ -32,12 +34,15 @@ async def create_interpreter(
     Raises:
         ValueError: 未知的解释器类型时抛出。
     """
-    if not settings.E2B_API_KEY:
-        logger.info("默认使用本地解释器")
-        kind = "local"
-    else:
+    if settings.BOXD_API_KEY:
+        logger.info("使用 boxd 解释器")
+        kind = "boxd"
+    elif settings.E2B_API_KEY:
         logger.info("使用远程解释器")
         kind = "remote"
+    else:
+        logger.info("默认使用本地解释器")
+        kind = "local"
 
     interp: BaseCodeInterpreter
     if kind == "remote":
@@ -47,6 +52,14 @@ async def create_interpreter(
             notebook_serializer=notebook_serializer,
         )
         await interp.initialize(timeout=timeout)  # type: ignore[reportCallIssue]
+        return interp
+    elif kind == "boxd":
+        interp = await BoxdCodeInterpreter.create(
+            task_id=task_id,
+            work_dir=work_dir,
+            notebook_serializer=notebook_serializer,
+        )
+        await interp.initialize()
         return interp
     elif kind == "local":
         interp = LocalCodeInterpreter(

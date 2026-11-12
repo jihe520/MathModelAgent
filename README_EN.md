@@ -60,7 +60,7 @@ Automatically generate an award-level modeling paper
 - 🔍 Automatic problem analysis, mathematical modeling, code writing, error correction, and paper writing
 - 💻 Code Interpreter
     - Local Interpreter: Based on Jupyter, code saved as notebook for easy editing
-    - Cloud Code Interpreter: [E2B](https://e2b.dev/) and [daytona](https://app.daytona.io/)
+    - Cloud Code Interpreter: [E2B](https://e2b.dev/), [daytona](https://app.daytona.io/) and [boxd](https://boxd.sh?ref=MathModelAgent) (set `BOXD_API_KEY` to run each task in its own isolated cloud machine)
 - 📝 Generate a well-formatted paper
 - 🤝 Multi-agents: modeling expert, coding expert, paper expert, etc.
 - 🔄 Multi-LLMs: Different models for each agent

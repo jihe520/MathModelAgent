@@ -66,6 +66,11 @@ class Settings(BaseSettings):
     MAX_CHAT_TURNS: Optional[int] = None
     MAX_RETRIES: Optional[int] = None
     E2B_API_KEY: Optional[str] = None
+    BOXD_API_KEY: Optional[str] = None
+    BOXD_ORG: Optional[str] = None
+    BOXD_REGION: Optional[str] = None
+    BOXD_DELETE_AFTER: int = 86400
+    BOXD_CELL_TIMEOUT: int = 300
     LOG_LEVEL: str = "DEBUG"
     DEBUG: bool = True
     REDIS_URL: str = "redis://redis:6379/0"

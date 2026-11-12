@@ -61,7 +61,7 @@ macOS 安装包已 Developer ID 签名并通过 Apple 公证。
 - 🔍 自动分析问题，数学建模，编写代码，纠正错误，撰写论文
 - 💻 Code Interpreter
     - local Interpreter: 基于 jupyter , 代码保存为 notebook 方便再编辑
-    - 云端 code interpreter: [E2B](https://e2b.dev/) 和 [daytona](https://app.daytona.io/)
+    - 云端 code interpreter: [E2B](https://e2b.dev/)、[daytona](https://app.daytona.io/) 和 [boxd](https://boxd.sh?ref=MathModelAgent)（配置 `BOXD_API_KEY` 后每个任务使用一台隔离的云端机器）
 - 📝 生成一份编排好格式的论文
 - 🤝 multi-agents: 建模手，代码手，论文手等
 - 🔄 multi-llms: 每个 agent 设置不同的、合适的模型
