@@ -72,7 +72,7 @@ backend/
     routers/           # FastAPI 路由（REST + WebSocket）
     schemas/           # Pydantic 模型（请求/响应/枚举）
     services/          # Redis 管理、WebSocket 管理
-    tools/             # 代码解释器（本地 Jupyter / E2B 云端）
+    tools/             # 代码解释器（本地 Jupyter / E2B 云端 / boxd 云端）
     utils/             # 工具函数
     config/            # 配置（Pydantic Settings）
 
