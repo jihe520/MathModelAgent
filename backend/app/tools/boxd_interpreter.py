@@ -1,8 +1,10 @@
 """boxd 云端代码解释器模块，在 boxd 机器中的常驻 Jupyter 内核上执行 Python 代码。"""
 
+import asyncio
 import json
 import os
 import re
+import uuid
 from datetime import datetime
 from pathlib import Path
 
@@ -28,6 +30,7 @@ REMOTE_HOME = "/home/boxd/.mathmodelagent"
 REMOTE_PYTHON = f"{REMOTE_HOME}/venv/bin/python"
 REMOTE_RUNNER = f"{REMOTE_HOME}/kernel_runner.py"
 REMOTE_CONNECTION_FILE = f"{REMOTE_HOME}/kernel.json"
+REMOTE_KERNEL_PID_FILE = f"{REMOTE_HOME}/kernel.pid"
 
 # 代码手常用的库（参照后端依赖中的数据分析与建模库）
 KERNEL_PACKAGES = (
@@ -50,6 +53,11 @@ IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg")
 RUNNER_SOURCE = Path(__file__).with_name("boxd_kernel_runner.py")
 # 执行脚本的退出码：3 内核未就绪，4 内核在执行中退出
 KERNEL_GONE_EXIT_CODES = (3, 4)
+# 5 超时后已中断（变量保留），6 超时且内核不响应中断
+CELL_TIMED_OUT_EXIT_CODE = 5
+KERNEL_STUCK_EXIT_CODE = 6
+# 执行脚本自己负责超时；整次调用再多等这么久仍未返回，就放弃并重启内核
+EXEC_GRACE_SECONDS = 90
 
 
 class KernelRestartedError(RuntimeError):
@@ -80,6 +88,8 @@ class BoxdCodeInterpreter(BaseCodeInterpreter):
         self.machine_id: str | None = None
         self._cell_count = 0
         self._restarting = False
+        # 本实例独有的标签：创建请求出错时，用它确认机器是否其实已经建好
+        self._run_label = uuid.uuid4().hex
         # 已同步到本地的远端文件：文件名 -> (大小, 修改时间)
         self._synced: dict[str, tuple[int, datetime]] = {}
 
@@ -116,10 +126,11 @@ class BoxdCodeInterpreter(BaseCodeInterpreter):
                 self._machine_name(),
                 org=settings.BOXD_ORG or None,
                 isolated=True,
-                labels={"app": "mathmodelagent"},
+                labels={"app": "mathmodelagent", "run": self._run_label},
                 # 长时间纯计算没有网络流量，不能被待机打断
                 auto_suspend_timeout=0,
-                auto_destroy_timeout=settings.BOXD_AUTO_DESTROY_TIMEOUT,
+                # 到期后无论机器处于什么状态都会被删除，任务异常中断时不遗留机器
+                delete_after=settings.BOXD_DELETE_AFTER or None,
             )
             self.machine_id = machine.id
             logger.info(f"boxd 机器已创建: {machine.name} ({machine.id})")
@@ -130,9 +141,27 @@ class BoxdCodeInterpreter(BaseCodeInterpreter):
             logger.info("boxd 解释器初始化成功")
         except Exception as e:
             logger.error(f"初始化 boxd 解释器失败: {str(e)}")
+            if self.machine_id is None:
+                await self._find_created_machine()
             # 初始化失败时工作流拿不到解释器，也就不会调用 cleanup，这里删除机器
-            await self.cleanup()
+            await self.cleanup(sync_files=False)
             raise
+
+    async def _find_created_machine(self):
+        """创建请求出错（如超时）但机器可能已建好时，按本实例的标签找回它的 ID。"""
+        assert self.client is not None
+        try:
+            machines = await self.client.machines.list(
+                org=settings.BOXD_ORG or None, labels={"run": self._run_label}
+            )
+        except Exception as e:
+            logger.warning(f"查询 boxd 机器失败: {str(e)}")
+            return
+        for machine in machines:
+            if machine.name == self._machine_name():
+                self.machine_id = machine.id
+                logger.warning(f"创建请求出错但机器已建好: {machine.id}")
+                return
 
     async def _run(self, command: str | list[str], timeout: float | None = None):
         """在机器中执行命令。
@@ -179,12 +208,17 @@ class BoxdCodeInterpreter(BaseCodeInterpreter):
             RuntimeError: 内核未能启动时抛出。
         """
         # setsid + nohup 让内核脱离本次 exec，在后续调用之间保持运行
+        # 重启时先结束上一个内核及其子进程，卡住的代码不会继续占用机器
         start = (
+            f"if [ -s {REMOTE_KERNEL_PID_FILE} ]; then\n"
+            f"  kill -9 -- -$(cat {REMOTE_KERNEL_PID_FILE}) 2>/dev/null\n"
+            "fi\n"
             f"rm -f {REMOTE_CONNECTION_FILE}\n"
             f"cd {REMOTE_WORK_DIR}\n"
             "PYTHONIOENCODING=utf-8 PYTHONUTF8=1 "
             f"setsid nohup {REMOTE_PYTHON} -m ipykernel_launcher "
             f"-f {REMOTE_CONNECTION_FILE} > {REMOTE_HOME}/kernel.log 2>&1 < /dev/null &\n"
+            f"echo $! > {REMOTE_KERNEL_PID_FILE}\n"
             "for i in $(seq 150); do\n"
             f"  [ -s {REMOTE_CONNECTION_FILE} ] && exit 0\n"
             "  sleep 0.2\n"
@@ -255,10 +289,29 @@ class BoxdCodeInterpreter(BaseCodeInterpreter):
         assert self.client is not None and self.machine_id is not None
         self._cell_count += 1
         cell_path = f"{REMOTE_HOME}/cells/cell-{self._cell_count}.py"
-        command = [REMOTE_PYTHON, REMOTE_RUNNER, REMOTE_CONNECTION_FILE, cell_path]
+        cell_timeout = settings.BOXD_CELL_TIMEOUT
+        command = [
+            REMOTE_PYTHON,
+            REMOTE_RUNNER,
+            REMOTE_CONNECTION_FILE,
+            cell_path,
+            str(cell_timeout),
+        ]
         try:
             await self.client.machines.files.upload(self.machine_id, cell_path, code)
-            result = await self._run(command)
+            # 执行脚本会在超时后中断内核；这里的期限只在它自己也没返回时兜底
+            result = await asyncio.wait_for(
+                self._run(command),
+                cell_timeout + EXEC_GRACE_SECONDS if cell_timeout > 0 else None,
+            )
+        except asyncio.TimeoutError:
+            logger.warning("boxd 执行调用超时未返回，正在重启内核")
+            await self._restart_kernel()
+            raise KernelRestartedError(
+                f"代码执行超过 {cell_timeout} 秒仍未结束，Python 内核已重启，"
+                "之前定义的变量和导入已全部丢失，请重新导入库并加载数据，"
+                "并把耗时的计算拆小或减小规模后再继续。"
+            ) from None
         except ConflictError:
             machine = await self.client.machines.get(self.machine_id)
             if str(machine.status) != "stopped":
@@ -279,6 +332,26 @@ class BoxdCodeInterpreter(BaseCodeInterpreter):
                 "Python 内核已退出（可能内存不足或代码调用了 exit()），现已重启，"
                 "之前定义的变量和导入已全部丢失，请重新导入库并加载数据后再继续。"
             )
+        if result.exit_code == KERNEL_STUCK_EXIT_CODE:
+            logger.warning("boxd 内核超时后不响应中断，正在重启内核")
+            await self._restart_kernel()
+            raise KernelRestartedError(
+                f"代码执行超过 {cell_timeout} 秒且无法中断，Python 内核已重启，"
+                "之前定义的变量和导入已全部丢失，请重新导入库并加载数据，"
+                "并把耗时的计算拆小或减小规模后再继续。"
+            )
+        if result.exit_code == CELL_TIMED_OUT_EXIT_CODE:
+            logger.warning(f"boxd 代码执行超过 {cell_timeout} 秒，已中断")
+            outputs = self._parse_outputs(json.loads(result.stdout))
+            # 放在最后，作为返回给代码手的错误信息
+            outputs.append(
+                (
+                    "error",
+                    f"代码执行超过 {cell_timeout} 秒，已被中断。之前定义的变量仍然保留，"
+                    "请把耗时的计算拆小或减小规模后再继续。",
+                )
+            )
+            return outputs
         if result.exit_code != 0:
             raise RuntimeError(
                 f"boxd 内核执行失败 (exit {result.exit_code}): "
@@ -461,15 +534,21 @@ class BoxdCodeInterpreter(BaseCodeInterpreter):
         logger.info(f"{section}-新创建的图片列表: {new_images}")
         return list(new_images)
 
-    async def cleanup(self):
-        """同步文件后删除本任务创建的机器"""
+    async def cleanup(self, sync_files: bool = True):
+        """同步文件后删除本任务创建的机器。
+
+        Args:
+            sync_files: 删除前是否把机器中的文件同步到本地。初始化失败时
+                机器里还没有结果文件，直接删除。
+        """
         if not self.client:
             return
         if self.machine_id:
-            try:
-                await self.download_all_files_from_sandbox()
-            except Exception as e:
-                logger.error(f"下载文件失败: {str(e)}")
+            if sync_files:
+                try:
+                    await self.download_all_files_from_sandbox()
+                except Exception as e:
+                    logger.error(f"下载文件失败: {str(e)}")
             try:
                 await self.client.machines.delete(self.machine_id)
                 logger.info(f"已删除 boxd 机器: {self.machine_id}")

@@ -69,7 +69,8 @@ class Settings(BaseSettings):
     BOXD_API_KEY: Optional[str] = None
     BOXD_ORG: Optional[str] = None
     BOXD_REGION: Optional[str] = None
-    BOXD_AUTO_DESTROY_TIMEOUT: int = 86400
+    BOXD_DELETE_AFTER: int = 86400
+    BOXD_CELL_TIMEOUT: int = 300
     LOG_LEVEL: str = "DEBUG"
     DEBUG: bool = True
     REDIS_URL: str = "redis://redis:6379/0"
